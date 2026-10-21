@@ -192,8 +192,6 @@ export default function ExecPage() {
         }
       />
 
-      <p className="admin-muted exec-page-desc">{t("exec.description")}</p>
-
       <div className="page-card exec-page-card">
         <label className="admin-sidebar-form__label" htmlFor="exec-command">
           {t("exec.command")}

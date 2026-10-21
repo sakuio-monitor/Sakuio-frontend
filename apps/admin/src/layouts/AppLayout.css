@@ -331,14 +331,12 @@ html.theme-switching *::after {
   padding: 24px;
   animation: page-enter 0.2s ease;
   box-sizing: border-box;
-}
-
-.page-container--entity-list {
-  box-sizing: border-box;
   width: 100%;
   max-width: var(--admin-page-max-width, 1800px);
   margin-inline: auto;
-  min-width: 0;
+}
+
+.page-container--entity-list {
   overflow-x: clip;
 }
 
@@ -372,11 +370,12 @@ html.theme-switching *::after {
 .page-header {
   display: flex;
   flex-wrap: nowrap;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 16px;
   min-width: 0;
+  min-height: 32px;
 }
 
 .page-header__title {
@@ -385,8 +384,8 @@ html.theme-switching *::after {
   flex: 1;
   font-size: 22px;
   font-weight: 700;
+  line-height: 32px;
   letter-spacing: -0.02em;
-  line-height: 1.25;
   color: var(--color-black);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -401,6 +400,7 @@ html.theme-switching *::after {
   justify-content: flex-end;
   flex-shrink: 0;
   margin-left: auto;
+  align-self: center;
 }
 
 /* 批量操作按钮组：常驻占位（visibility 切换），出现/消失不推移周围布局 */
