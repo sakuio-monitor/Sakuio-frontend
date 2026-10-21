@@ -102,6 +102,25 @@ export function buildInstallArgs(o: InstallOptions): string[] {
   return args;
 }
 
+/** Windows 安装脚本自身的参数（其余 agent 参数原样透传）。 */
+function buildInstallScriptArgs(o: InstallOptions): string[] {
+  const args: string[] = [];
+  const pushValue = (flag: string, raw: string, fallback?: string) => {
+    const v = raw.trim();
+    if (!v) return;
+    if (fallback !== undefined && v === fallback) return;
+    args.push(flag, v);
+  };
+  if (o.versionEnabled) pushValue("--install-version", o.version);
+  if (o.proxyEnabled) {
+    const proxy = o.githubProxy.trim().replace(/\/+$/, "");
+    if (proxy) args.push("--install-ghproxy", proxy);
+  }
+  if (o.dirEnabled) pushValue("--install-dir", o.installDir);
+  if (o.svcEnabled) pushValue("--install-service-name", o.serviceName);
+  return args;
+}
+
 const quoteArg = (a: string) => (/\s/.test(a) ? `"${a}"` : a);
 
 /**
@@ -124,8 +143,21 @@ export function buildInstallCommand(
     return `zsh <(curl -fsSL ${INSTALL_SCRIPT_URL}) ${joined}`;
   }
   if (platform === "windows") {
-    const psArgs = args.map((a) => (/\s/.test(a) ? `\"${a}\"` : a)).join(" ");
-    return `powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "iwr '${INSTALL_PS1_URL}' -UseBasicParsing -OutFile 'install.ps1'; if ($?) { & '.\\install.ps1' ${psArgs} }"`;
+    // 版本/代理/目录/服务名是安装脚本自身的参数，其余原样透传给 agent
+    const skip = new Set(["--version", "--github-proxy", "--install-dir", "--service-name"]);
+    const authArgs = args.slice(0, 3);
+    const agentArgs: string[] = [];
+    for (let i = 3; i < args.length; i++) {
+      const a = args[i]!;
+      if (skip.has(a)) {
+        i++; // 连同该 flag 的值一起跳过
+        continue;
+      }
+      agentArgs.push(a);
+    }
+    const scriptJoined = buildInstallScriptArgs(o).map(quoteArg).join(" ");
+    const agentJoined = [...authArgs, ...agentArgs].map(quoteArg).join(" ");
+    return `powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "iwr '${INSTALL_PS1_URL}' -UseBasicParsing -OutFile 'install.ps1'; & '.\\install.ps1' ${scriptJoined} ${agentJoined}"`;
   }
   return `curl -fsSL ${INSTALL_SCRIPT_URL} | sudo bash -s -- ${joined}`;
 }
