@@ -1,13 +1,14 @@
 import { Button, toast } from "@sakuio/ui";
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { addPingTask, fetchAllPingTasks } from "../api/pingTasks";
+import { addPingTask, deletePingTasks, fetchAllPingTasks } from "../api/pingTasks";
 import { PageListHeader } from "../components/PageListHeader";
 import { PingTaskView } from "../components/ping/PingTaskView";
 import { ClientMultiSelectSidebar } from "../components/ping/ClientMultiSelectSidebar";
 import { PingTaskFormFields } from "../components/ping/PingTaskFormFields";
 import { GenericSidebar } from "../components/GenericSidebar/GenericSidebar";
+import { useConfirmDialog } from "../components/ConfirmDialog/ConfirmDialog";
 import { useAllAdminClients } from "../hooks/useAllAdminClients";
 import type { PingTask, PingTaskDraft } from "../types/ping";
 
@@ -22,10 +23,12 @@ const defaultDraft = (): PingTaskDraft => ({
 
 export default function PingPage() {
   const { t } = useTranslation();
+  const { confirm, confirmDialog } = useConfirmDialog();
   const { clients, loading: clientsLoading, error: clientsError } = useAllAdminClients();
   const [tasks, setTasks] = useState<PingTask[]>([]);
   const [tasksLoading, setTasksLoading] = useState(true);
   const [tasksError, setTasksError] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
 
   const [addOpen, setAddOpen] = useState(false);
   const [addForm, setAddForm] = useState<PingTaskDraft>(defaultDraft);
@@ -71,15 +74,56 @@ export default function PingPage() {
     }
   }
 
+  function bulkDelete() {
+    const ids = [...selectedIds];
+    if (!ids.length) {
+      return;
+    }
+    confirm({
+      title: t("admin.ping.bulkDeleteConfirm", { n: ids.length }),
+      danger: true,
+      onConfirm: async () => {
+        try {
+          await deletePingTasks(ids);
+          toast.success(t("admin.ping.bulkDeleteSuccess", { n: ids.length }));
+          setSelectedIds(new Set());
+          await reloadTasks();
+        } catch (e) {
+          toast.error(e instanceof Error ? e.message : t("common.error"));
+        }
+      },
+    });
+  }
+
   return (
     <section className="page-container page-container--entity-list">
+      {confirmDialog}
       <PageListHeader
         titleKey="admin.ping.title"
         actions={
-          <Button type="button" size="sm" onClick={() => setAddOpen(true)}>
-            <Plus size={16} aria-hidden />
-            {t("common.add")}
-          </Button>
+          <>
+            <span
+              className="admin-bulk-actions"
+              data-active={selectedIds.size > 0 || undefined}
+            >
+              <Button type="button" size="sm" variant="secondary" onClick={() => void bulkDelete()}>
+                <Trash2 size={14} aria-hidden />
+                {t("common.delete")}
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                onClick={() => setSelectedIds(new Set())}
+              >
+                {t("common.cancel")}
+              </Button>
+            </span>
+            <Button type="button" size="sm" onClick={() => setAddOpen(true)}>
+              <Plus size={16} aria-hidden />
+              {t("common.add")}
+            </Button>
+          </>
         }
       />
 
@@ -91,7 +135,13 @@ export default function PingPage() {
       ) : null}
 
       {!loading && !error ? (
-        <PingTaskView tasks={tasks} clients={clients} onChanged={() => void reloadTasks()} />
+        <PingTaskView
+          tasks={tasks}
+          clients={clients}
+          selectedIds={selectedIds}
+          onSelectionChange={setSelectedIds}
+          onChanged={() => void reloadTasks()}
+        />
       ) : null}
 
       <GenericSidebar

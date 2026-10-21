@@ -491,6 +491,9 @@
       "addTask": "添加监测任务",
       "editTask": "编辑任务",
       "deleteConfirm": "确定删除监测任务「{{name}}」？相关历史记录也会被清除。",
+      "bulkDeleteConfirm": "确定删除选中的 {{n}} 个监测任务？相关历史记录也会被清除。",
+      "bulkDeleteSuccess": "已删除 {{n}} 个监测任务",
+      "selectedCount": "已选 {{n}} 项",
       "emptyTasks": "暂无监测任务，点击右上角添加。"
     },
     "workbench": {

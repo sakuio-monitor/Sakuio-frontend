@@ -263,7 +263,7 @@ function TableRowImpl<T>({
         </td>
       )}
       {selectable && (
-        <td>
+        <td className="data-table__td-check">
           <input
             type="checkbox"
             className="data-table__checkbox"
@@ -523,7 +523,7 @@ export function DataTable<T>({
             <tr>
               {rowDrag && <th className="data-table__th-drag" style={{ width: 36 }} aria-hidden />}
               {selectable && (
-                <th style={{ width: 40 }}>
+                <th className="data-table__td-check" style={{ width: 40 }}>
                   <input
                     type="checkbox"
                     className="data-table__checkbox"

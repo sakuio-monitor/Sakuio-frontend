@@ -1,5 +1,5 @@
 import { Button, toast } from "@sakuio/ui";
-import { ChevronDown, ChevronUp, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { deletePingTasks, editPingTasks, orderPingTasks } from "../../api/pingTasks";
@@ -14,6 +14,8 @@ import { useConfirmDialog } from "../ConfirmDialog/ConfirmDialog";
 type Props = {
   tasks: PingTask[];
   clients: AdminClientSummary[];
+  selectedIds: Set<number>;
+  onSelectionChange: (ids: Set<number>) => void;
   onChanged: () => void;
 };
 
@@ -39,7 +41,7 @@ const emptyDraft = (): PingTaskDraft => ({
   clients: [],
 });
 
-export function PingTaskView({ tasks, clients, onChanged }: Props) {
+export function PingTaskView({ tasks, clients, selectedIds, onSelectionChange, onChanged }: Props) {
   const { t } = useTranslation();
   const { confirm, confirmDialog } = useConfirmDialog();
   const clientIds = useMemo(() => new Set(clients.map((c) => c.uuid)), [clients]);
@@ -85,15 +87,13 @@ export function PingTaskView({ tasks, clients, onChanged }: Props) {
   );
 
   const moveTask = useCallback(
-    async (index: number, direction: -1 | 1) => {
-      const target = index + direction;
-      if (target < 0 || target >= localTasks.length) {
+    async (from: number, to: number) => {
+      if (from === to || from < 0 || to < 0 || from >= localTasks.length || to >= localTasks.length) {
         return;
       }
       const reordered = [...localTasks];
-      const tmp = reordered[index];
-      reordered[index] = reordered[target];
-      reordered[target] = tmp;
+      const [moved] = reordered.splice(from, 1);
+      reordered.splice(to, 0, moved);
       await persistOrder(reordered);
     },
     [localTasks, persistOrder],
@@ -176,42 +176,14 @@ export function PingTaskView({ tasks, clients, onChanged }: Props) {
 
   const inlineTask = inlineTaskId !== null ? localTasks.find((x) => x.id === inlineTaskId) : null;
 
+  const PING_TYPE_TAG: Record<string, string> = {
+    icmp: "data-table-tag--green",
+    tcp: "data-table-tag--blue",
+    http: "data-table-tag--orange",
+  };
+
   const columns: Column<PingTask>[] = useMemo(
     () => [
-      {
-        key: "order",
-        title: t("common.sort"),
-        width: 88,
-        fixedWidth: true,
-        render: (_row, index) => (
-          <div className="data-table-actions data-table-actions--icons">
-            <CellTooltip tip={t("common.moveUp")}>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="data-table-icon-btn"
-                disabled={index === 0}
-                aria-label={t("common.moveUp")}
-                icon={<ChevronUp size={16} aria-hidden />}
-                onClick={() => void moveTask(index, -1)}
-              />
-            </CellTooltip>
-            <CellTooltip tip={t("common.moveDown")}>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="data-table-icon-btn"
-                disabled={index === localTasks.length - 1}
-                aria-label={t("common.moveDown")}
-                icon={<ChevronDown size={16} aria-hidden />}
-                onClick={() => void moveTask(index, 1)}
-              />
-            </CellTooltip>
-          </div>
-        ),
-      },
       {
         key: "name",
         title: t("common.name"),
@@ -259,7 +231,16 @@ export function PingTaskView({ tasks, clients, onChanged }: Props) {
         title: t("common.type"),
         width: 88,
         fixedWidth: true,
-        render: (row) => <span className="data-table-cell">{row.type}</span>,
+        render: (row) => {
+          const normalized = (row.type ?? "").trim().toLowerCase() || "—";
+          return (
+            <span className="data-table-cell">
+              <span className={`data-table-tag ${PING_TYPE_TAG[normalized] ?? "data-table-tag--green"}`}>
+                {normalized === "—" ? "—" : normalized.toUpperCase()}
+              </span>
+            </span>
+          );
+        },
       },
       {
         key: "interval",
@@ -303,7 +284,7 @@ export function PingTaskView({ tasks, clients, onChanged }: Props) {
         ),
       },
     ],
-    [clients, localTasks.length, moveTask, t],
+    [clients, t],
   );
 
   return (
@@ -315,6 +296,13 @@ export function PingTaskView({ tasks, clients, onChanged }: Props) {
         data={localTasks}
         rowKey={(row) => row.id}
         emptyText={t("admin.ping.emptyTasks")}
+        selectable
+        selectedKeys={selectedIds}
+        onSelectionChange={(keys) => onSelectionChange(new Set([...keys].map(Number)))}
+        rowDrag={{
+          onReorder: (from, to) => void moveTask(from, to),
+          handleLabel: t("admin.servers.dragToSort"),
+        }}
       />
 
       <GenericSidebar

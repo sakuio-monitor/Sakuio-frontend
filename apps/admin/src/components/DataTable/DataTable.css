@@ -789,11 +789,66 @@
   color: hsl(var(--foreground));
 }
 
+/* 复选框：毛玻璃质感自绘控件（去原生外观），单元格内垂直居中 */
+.data-table th.data-table__td-check,
+.data-table td.data-table__td-check {
+  text-align: center;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.data-table th.data-table__td-check .data-table__checkbox,
+.data-table td.data-table__td-check .data-table__checkbox {
+  vertical-align: middle;
+}
+
 .data-table__checkbox {
-  width: 16px;
-  height: 16px;
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  border-radius: 7px;
+  border: 1px solid hsl(var(--border) / 0.9);
+  background: hsl(var(--muted) / 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.06);
   cursor: pointer;
-  accent-color: hsl(var(--primary));
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+.data-table__checkbox::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M3 8.5 6.5 12 13 4.5' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/></svg>") center/contain no-repeat;
+  transform: scale(0);
+  transition: transform 0.15s ease;
+}
+
+.data-table__checkbox:hover {
+  border-color: hsl(var(--primary) / 0.55);
+  background: hsl(var(--muted) / 0.6);
+}
+
+.data-table__checkbox:checked {
+  background: hsl(var(--primary) / 0.85);
+  border-color: hsl(var(--primary) / 0.5);
+  box-shadow: 0 0 0 1px hsl(var(--primary) / 0.3), 0 2px 8px hsl(var(--primary) / 0.22);
+}
+
+.data-table__checkbox:checked::after {
+  transform: scale(1);
+}
+
+.data-table__checkbox:focus-visible {
+  outline: 2px solid hsl(var(--primary) / 0.6);
+  outline-offset: 2px;
 }
 
 /* 拖动把手列（通用）：三条横线 icon，grab 光标，hover 时显形 */

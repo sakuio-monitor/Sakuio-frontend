@@ -490,6 +490,9 @@
       "addTask": "Add task",
       "editTask": "Edit task",
       "deleteConfirm": "Delete monitoring task \"{{name}}\"? Its history will also be removed.",
+      "bulkDeleteConfirm": "Delete {{n}} selected monitoring tasks? Their history will also be removed.",
+      "bulkDeleteSuccess": "Deleted {{n}} monitoring tasks",
+      "selectedCount": "{{n}} selected",
       "emptyTasks": "No monitoring tasks yet. Click the top-right button to add one."
     },
     "workbench": {
