@@ -220,12 +220,12 @@ const COLUMN_WIDTHS_AGENT_SERVERS: Record<string, string> = {
   group_name: 'minmax(72px, 150px)',
   private_remark: 'minmax(72px, 150px)',
   billing: 'minmax(96px, 160px)',
-  actions: 'minmax(168px, 224px)',
+  actions: 'minmax(152px, 200px)',
 }
 
-/** 操作列：3×24px 按钮 + 2×8px 间距 + 单元格 padding（左 6px + 末列右 16px） */
-export const AGENT_SERVER_ACTIONS_MIN_PX = 112
-export const AGENT_SERVER_ACTIONS_MAX_PX = 160
+/** 操作列：4×24px 按钮 + 3×8px 间距 + 单元格 padding（左 6px + 末列右 16px） */
+export const AGENT_SERVER_ACTIONS_MIN_PX = 152
+export const AGENT_SERVER_ACTIONS_MAX_PX = 200
 
 /** entity-list 布局前置列：拖动把手 / 行选择复选框（固定宽，参与列宽预算） */
 export const ENTITY_LIST_DRAG_HANDLE_PX = 36

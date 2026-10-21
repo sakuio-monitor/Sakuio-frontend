@@ -111,6 +111,7 @@
   display: flex;
   gap: 4px;
   padding: 4px;
+  margin-bottom: 16px;
   border-radius: 10px;
   background: var(--menu-hover-bg, rgba(20, 24, 32, 0.05));
   flex-shrink: 0;
