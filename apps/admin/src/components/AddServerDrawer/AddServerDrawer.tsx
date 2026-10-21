@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "@sakuio/ui";
-import { Copy } from "lucide-react";
+import { Copy, ChevronDown } from "lucide-react";
 import { Button, Input } from "@sakuio/ui";
 import { GenericSidebar } from "../GenericSidebar/GenericSidebar";
 import { Switch } from "../ui/Switch";
@@ -10,7 +10,7 @@ import { boardWsEndpoint } from "../../utils/boardEndpoint";
 import "./AddServerDrawer.css";
 
 const INSTALL_SCRIPT_URL =
-  "https://raw.githubusercontent.com/sakuio-monitor/Sakuio-agent/refs/heads/main/install.sh";
+  "https://raw.githubusercontent.com/sakuio-monitor/Sakuio-agent/main/install.sh";
 
 type BoolOptKey =
   | "disableRemoteControl"
@@ -40,17 +40,17 @@ type Props = {
 };
 
 /**
- * Komari 式「添加服务器」抽屉：命名节点后立即创建并展示一键安装命令，
- * 安装选项的每次改动实时反映到命令。
+ * Komari 式「添加服务器」抽屉：名称、安装选项与一键安装命令同屏展示，
+ * 点击「添加」时创建节点，安装选项的每次改动实时反映到命令。
  */
 export function AddServerDrawer({ open, onClose, onCreated }: Props) {
   const { t } = useTranslation();
-  const [phase, setPhase] = useState<"name" | "install">("name");
-  const [name, setName] = useState("");
+  const [client, setClient] = useState<{ token: string } | null>(null);
   const [creating, setCreating] = useState(false);
-  const [token, setToken] = useState("");
+  const [name, setName] = useState("");
   const [endpoint, setEndpoint] = useState("");
   const [copied, setCopied] = useState(false);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   // 布尔开关
   const [boolOpts, setBoolOpts] = useState<Record<BoolOptKey, boolean>>({
@@ -87,11 +87,11 @@ export function AddServerDrawer({ open, onClose, onCreated }: Props) {
     };
   }, [open]);
 
-  const reset = () => {
-    setPhase("name");
+  function reset() {
+    setClient(null);
     setName("");
-    setToken("");
     setCopied(false);
+    setAdvancedOpen(false);
     setBoolOpts({
       disableRemoteControl: false,
       disableAutoUpdate: false,
@@ -109,7 +109,7 @@ export function AddServerDrawer({ open, onClose, onCreated }: Props) {
     setIncludeMountpoints("");
     setInterval(DEFAULT_INTERVAL);
     setMonthlyResetDay("");
-  };
+  }
 
   const handleClose = () => {
     onClose();
@@ -130,15 +130,12 @@ export function AddServerDrawer({ open, onClose, onCreated }: Props) {
         body: JSON.stringify(payload),
       });
       const data = (await res.json()) as { token?: string; message?: string };
-      if (!res.ok) {
+      if (!res.ok || !data.token) {
         toast.error(data.message ?? t("common.error"));
         return;
       }
-      if (data.token) {
-        setToken(data.token);
-        setPhase("install");
-        onCreated();
-      }
+      setClient({ token: data.token });
+      onCreated();
     } catch {
       toast.error(t("common.error"));
     } finally {
@@ -148,8 +145,8 @@ export function AddServerDrawer({ open, onClose, onCreated }: Props) {
 
   // 安装命令随选项实时更新
   const installCommand = useMemo(() => {
-    if (!token) return "";
-    const args: string[] = ["-e", endpoint, "-t", token];
+    if (!client) return "";
+    const args: string[] = ["-e", endpoint, "-t", client.token];
     for (const opt of BOOL_OPTS) {
       if (boolOpts[opt.key]) args.push(opt.flag);
     }
@@ -174,7 +171,7 @@ export function AddServerDrawer({ open, onClose, onCreated }: Props) {
     return `curl -fsSL ${INSTALL_SCRIPT_URL} | sudo bash -s -- ${args
       .map((a) => (/\s/.test(a) ? `"${a}"` : a))
       .join(" ")}`;
-  }, [token, endpoint, boolOpts, version, githubProxy, installDir, serviceName, includeNics, excludeNics, includeMountpoints, interval, monthlyResetDay]);
+  }, [client, endpoint, boolOpts, version, githubProxy, installDir, serviceName, includeNics, excludeNics, includeMountpoints, interval, monthlyResetDay]);
 
   function copyCommand() {
     if (!installCommand) return;
@@ -194,163 +191,163 @@ export function AddServerDrawer({ open, onClose, onCreated }: Props) {
       title={t("admin.servers.add")}
       onClose={handleClose}
       footer={
-        phase === "name" ? (
-          <>
-            <Button type="button" variant="ghost" onClick={handleClose}>
-              {t("common.cancel")}
-            </Button>
-            <Button type="button" disabled={creating} onClick={() => void createClient()}>
-              {creating ? t("common.saving") : t("admin.servers.create")}
-            </Button>
-          </>
-        ) : (
-          <>
-            <Button type="button" variant="ghost" onClick={reset}>
-              {t("admin.servers.addAnother")}
-            </Button>
-            <Button type="button" onClick={handleClose}>
-              {t("common.done")}
-            </Button>
-          </>
+        client ? undefined : (
+          <Button type="button" disabled={creating} onClick={() => void createClient()}>
+            {creating ? t("common.saving") : t("admin.servers.add")}
+          </Button>
         )
       }
     >
-      {phase === "name" ? (
-        <div className="admin-sidebar-form">
-          <label className="admin-sidebar-form__label">
-            {t("admin.servers.name")}
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder={t("admin.servers.namePlaceholder")}
-              aria-label={t("admin.servers.name")}
-              autoFocus
-            />
-            <p className="admin-sidebar-form__hint">{t("admin.servers.nameOptionalHint")}</p>
-          </label>
-        </div>
-      ) : (
-        <div className="admin-sidebar-form">
-          <p className="admin-sidebar-form__hint">{t("admin.servers.installHint")}</p>
+      <div className="admin-sidebar-form">
+        <label className="admin-sidebar-form__label">
+          {t("admin.servers.name")}
+          <Input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder={t("admin.servers.namePlaceholder")}
+            aria-label={t("admin.servers.name")}
+            disabled={!!client}
+            autoFocus
+          />
+          <p className="admin-sidebar-form__hint">{t("admin.servers.nameOptionalHint")}</p>
+        </label>
 
-          <div className="add-server-install">
-            <p className="add-server-install__heading">{t("admin.servers.installOptions")}</p>
-            <div className="add-server-install__switches">
-              {BOOL_OPTS.map((opt) => (
-                <label key={opt.key} className="add-server-install__switch-row">
-                  <Switch
-                    checked={boolOpts[opt.key]}
-                    label={t(opt.i18n)}
-                    onChange={(v) => setBoolOpts((prev) => ({ ...prev, [opt.key]: v }))}
+        <div className="add-server-install">
+          <p className="add-server-install__heading">{t("admin.servers.installOptions")}</p>
+          <div className="add-server-install__switches">
+            {BOOL_OPTS.map((opt) => (
+              <label key={opt.key} className="add-server-install__switch-row">
+                <Switch
+                  checked={boolOpts[opt.key]}
+                  label={t(opt.i18n)}
+                  onChange={(v) => setBoolOpts((prev) => ({ ...prev, [opt.key]: v }))}
+                />
+                <span>{t(opt.i18n)}</span>
+              </label>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            className="add-server-install__advanced-toggle"
+            onClick={() => setAdvancedOpen((v) => !v)}
+          >
+            <ChevronDown size={14} aria-hidden className={advancedOpen ? "rot-180" : undefined} />
+            <span>{t("admin.servers.advancedOptions")}</span>
+          </button>
+
+          {advancedOpen && (
+            <>
+              <label className="admin-sidebar-form__label">
+                {t("admin.servers.optVersion")}
+                <Input
+                  value={version}
+                  onChange={(e) => setVersion(e.target.value)}
+                  placeholder="0.1.0"
+                  aria-label={t("admin.servers.optVersion")}
+                />
+              </label>
+              <label className="admin-sidebar-form__label">
+                {t("admin.servers.optGithubProxy")}
+                <Input
+                  value={githubProxy}
+                  onChange={(e) => setGithubProxy(e.target.value)}
+                  placeholder="https://ghproxy.example.com"
+                  aria-label={t("admin.servers.optGithubProxy")}
+                />
+              </label>
+              <label className="admin-sidebar-form__label">
+                {t("admin.servers.optInstallDir")}
+                <Input
+                  value={installDir}
+                  onChange={(e) => setInstallDir(e.target.value)}
+                  placeholder={DEFAULT_INSTALL_DIR}
+                  aria-label={t("admin.servers.optInstallDir")}
+                />
+              </label>
+              <label className="admin-sidebar-form__label">
+                {t("admin.servers.optServiceName")}
+                <Input
+                  value={serviceName}
+                  onChange={(e) => setServiceName(e.target.value)}
+                  placeholder="sakuio-agent"
+                  aria-label={t("admin.servers.optServiceName")}
+                />
+              </label>
+              <label className="admin-sidebar-form__label">
+                {t("admin.servers.optIncludeNics")}
+                <Input
+                  value={includeNics}
+                  onChange={(e) => setIncludeNics(e.target.value)}
+                  placeholder="eth0, eth1"
+                  aria-label={t("admin.servers.optIncludeNics")}
+                />
+              </label>
+              <label className="admin-sidebar-form__label">
+                {t("admin.servers.optExcludeNics")}
+                <Input
+                  value={excludeNics}
+                  onChange={(e) => setExcludeNics(e.target.value)}
+                  placeholder="docker0, veth"
+                  aria-label={t("admin.servers.optExcludeNics")}
+                />
+              </label>
+              <label className="admin-sidebar-form__label">
+                {t("admin.servers.optIncludeMountpoints")}
+                <Input
+                  value={includeMountpoints}
+                  onChange={(e) => setIncludeMountpoints(e.target.value)}
+                  placeholder="/, /data"
+                  aria-label={t("admin.servers.optIncludeMountpoints")}
+                />
+              </label>
+              <div className="add-server-install__two-col">
+                <label className="admin-sidebar-form__label">
+                  {t("admin.servers.optInterval")}
+                  <Input
+                    value={interval}
+                    onChange={(e) => setInterval(e.target.value)}
+                    inputMode="decimal"
+                    aria-label={t("admin.servers.optInterval")}
                   />
-                  <span>{t(opt.i18n)}</span>
                 </label>
-              ))}
-            </div>
-
-            <label className="admin-sidebar-form__label">
-              {t("admin.servers.optVersion")}
-              <Input
-                value={version}
-                onChange={(e) => setVersion(e.target.value)}
-                placeholder="0.1.0"
-                aria-label={t("admin.servers.optVersion")}
-              />
-            </label>
-            <label className="admin-sidebar-form__label">
-              {t("admin.servers.optGithubProxy")}
-              <Input
-                value={githubProxy}
-                onChange={(e) => setGithubProxy(e.target.value)}
-                placeholder="https://ghproxy.example.com"
-                aria-label={t("admin.servers.optGithubProxy")}
-              />
-            </label>
-            <label className="admin-sidebar-form__label">
-              {t("admin.servers.optInstallDir")}
-              <Input
-                value={installDir}
-                onChange={(e) => setInstallDir(e.target.value)}
-                placeholder={DEFAULT_INSTALL_DIR}
-                aria-label={t("admin.servers.optInstallDir")}
-              />
-            </label>
-            <label className="admin-sidebar-form__label">
-              {t("admin.servers.optServiceName")}
-              <Input
-                value={serviceName}
-                onChange={(e) => setServiceName(e.target.value)}
-                placeholder="sakuio-agent"
-                aria-label={t("admin.servers.optServiceName")}
-              />
-            </label>
-            <label className="admin-sidebar-form__label">
-              {t("admin.servers.optIncludeNics")}
-              <Input
-                value={includeNics}
-                onChange={(e) => setIncludeNics(e.target.value)}
-                placeholder="eth0, eth1"
-                aria-label={t("admin.servers.optIncludeNics")}
-              />
-            </label>
-            <label className="admin-sidebar-form__label">
-              {t("admin.servers.optExcludeNics")}
-              <Input
-                value={excludeNics}
-                onChange={(e) => setExcludeNics(e.target.value)}
-                placeholder="docker0, veth"
-                aria-label={t("admin.servers.optExcludeNics")}
-              />
-            </label>
-            <label className="admin-sidebar-form__label">
-              {t("admin.servers.optIncludeMountpoints")}
-              <Input
-                value={includeMountpoints}
-                onChange={(e) => setIncludeMountpoints(e.target.value)}
-                placeholder="/, /data"
-                aria-label={t("admin.servers.optIncludeMountpoints")}
-              />
-            </label>
-            <div className="add-server-install__two-col">
-              <label className="admin-sidebar-form__label">
-                {t("admin.servers.optInterval")}
-                <Input
-                  value={interval}
-                  onChange={(e) => setInterval(e.target.value)}
-                  inputMode="decimal"
-                  aria-label={t("admin.servers.optInterval")}
-                />
-              </label>
-              <label className="admin-sidebar-form__label">
-                {t("admin.servers.optMonthResetDay")}
-                <Input
-                  value={monthlyResetDay}
-                  onChange={(e) => setMonthlyResetDay(e.target.value)}
-                  inputMode="numeric"
-                  placeholder="1"
-                  aria-label={t("admin.servers.optMonthResetDay")}
-                />
-              </label>
-            </div>
-          </div>
-
-          <p className="add-server-install__heading">{t("admin.servers.installCommand")}</p>
-          <div className="add-server-install__command">
-            <code>{installCommand}</code>
-            <Button
-              type="button"
-              size="sm"
-              variant="secondary"
-              className="add-server-install__copy"
-              onClick={copyCommand}
-              aria-label={t("common.copy")}
-            >
-              <Copy size={14} aria-hidden />
-              {copied ? t("common.copied") : t("common.copy")}
-            </Button>
-          </div>
+                <label className="admin-sidebar-form__label">
+                  {t("admin.servers.optMonthResetDay")}
+                  <Input
+                    value={monthlyResetDay}
+                    onChange={(e) => setMonthlyResetDay(e.target.value)}
+                    inputMode="numeric"
+                    placeholder="1"
+                    aria-label={t("admin.servers.optMonthResetDay")}
+                  />
+                </label>
+              </div>
+            </>
+          )}
         </div>
-      )}
+
+        <p className="add-server-install__heading">{t("admin.servers.installCommand")}</p>
+        <div className="add-server-install__command">
+          {client ? (
+            <>
+              <code>{installCommand}</code>
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                className="add-server-install__copy"
+                onClick={copyCommand}
+                aria-label={t("common.copy")}
+              >
+                <Copy size={14} aria-hidden />
+                {copied ? t("common.copied") : t("common.copy")}
+              </Button>
+            </>
+          ) : (
+            <p className="admin-sidebar-form__hint">{t("admin.servers.commandPendingHint")}</p>
+          )}
+        </div>
+      </div>
     </GenericSidebar>
   );
 }

@@ -65,6 +65,28 @@
   gap: 4px;
 }
 
+.add-server-install__advanced-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 4px 0;
+  border: none;
+  background: none;
+  font-size: 13px;
+  font-weight: 500;
+  color: hsl(var(--foreground));
+  cursor: pointer;
+}
+
+.add-server-install__advanced-toggle svg {
+  transition: transform 0.15s ease;
+}
+
+.add-server-install__advanced-toggle svg.rot-180 {
+  transform: rotate(180deg);
+}
+
 @media (max-width: 640px) {
   .add-server-install__switches,
   .add-server-install__two-col {
