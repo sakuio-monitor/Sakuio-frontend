@@ -1,0 +1,124 @@
+.tag-select {
+  position: relative;
+  width: 100%;
+}
+
+.tag-select__control {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 5px 10px;
+  border: 1px solid var(--glass-border, var(--color-gray-100));
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.38);
+  cursor: text;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.tag-select__control:focus-within {
+  border-color: var(--ui-primary, #1f6b5a);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ui-primary, #1f6b5a) 18%, transparent);
+}
+
+.dark .tag-select__control {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.tag-select__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 4px 3px 8px;
+  border-radius: 6px;
+  background: var(--menu-hover-bg, rgba(20, 24, 32, 0.06));
+  color: var(--color-black);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.dark .tag-select__chip {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.tag-select__chip-x {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-gray-600);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.tag-select__chip-x:hover {
+  background: rgba(220, 38, 38, 0.12);
+  color: #dc2626;
+}
+
+.tag-select__input {
+  flex: 1;
+  min-width: 120px;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 13px;
+  color: var(--color-black);
+}
+
+.tag-select__input::placeholder {
+  color: var(--color-gray-600);
+}
+
+.tag-select__dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px;
+  border: 1px solid var(--glass-border, var(--color-gray-100));
+  border-radius: 10px;
+  background: var(--glass-panel-solid, #ffffff);
+  box-shadow: 0 8px 24px rgba(20, 24, 32, 0.14);
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.dark .tag-select__dropdown {
+  background: var(--color-gray-200, #1e1e1e);
+}
+
+.tag-select__option {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  text-align: left;
+  font-size: 13px;
+  color: var(--color-black);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.tag-select__option:hover {
+  background: var(--menu-hover-bg, rgba(20, 24, 32, 0.06));
+}
+
+.dark .tag-select__option {
+  color: var(--menu-text, var(--color-black));
+}
+
+.dark .tag-select__option:hover {
+  background: rgba(255, 255, 255, 0.08);
+}

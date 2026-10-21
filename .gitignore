@@ -1,0 +1,35 @@
+# ---- 依赖 ----
+node_modules/
+.pnpm-store/
+
+# ---- 构建产物 ----
+dist/
+build/
+*.tsbuildinfo
+.vite/
+.turbo/
+.next/
+out/
+
+# ---- 环境与密钥 ----
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ---- 测试与覆盖率 ----
+coverage/
+.nyc_output/
+
+# ---- 日志与临时文件 ----
+*.log
+*.tmp
+*.bak
+
+# ---- 系统与编辑器 ----
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp

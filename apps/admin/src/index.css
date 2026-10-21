@@ -1,0 +1,58 @@
+@import "tailwindcss";
+@import "./styles/fonts.css";
+@import "./styles/admin-tokens.css";
+@import "./styles/notification.css";
+@import "./styles/site-settings.css";
+
+html {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  overflow-x: hidden;
+  min-width: 320px;
+  font-family: var(--font-family);
+  line-height: 1.5;
+  color: hsl(var(--foreground));
+  background: var(--ambient-base, #eef1f4);
+}
+
+.admin-font-number {
+  font-family: var(--font-family-number);
+  font-variant-numeric: tabular-nums;
+}
+
+.dark body {
+  color: var(--color-black, #f5f7f9);
+  background: var(--ambient-base, #0b0d11);
+}
+
+#root {
+  min-height: 100%;
+}
+
+/* 全局滚动条（与 YaoList 一致） */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-gray-200, #e8e8ed);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gray-400, #aeaeb2);
+}

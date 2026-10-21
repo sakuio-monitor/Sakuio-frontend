@@ -1,0 +1,14 @@
+/* MiSans：index.html 通过 HyperOS 字体 CDN 加载（与 Tanzaku web-admin 相同） */
+@font-face {
+  font-family: "TCloud Number VF";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("https://cdn.jsdelivr.net/npm/@tdesign/site-components@0.19.3/lib/font/TCloudNumber.ttf")
+    format("truetype");
+}
+
+:root {
+  --font-family: "MiSans VF", sans-serif;
+  --font-family-number: "TCloud Number VF", "MiSans VF", sans-serif;
+}

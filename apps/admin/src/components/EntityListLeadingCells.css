@@ -1,0 +1,162 @@
+.entity-list-cell {
+  box-sizing: border-box;
+  vertical-align: middle;
+}
+
+.data-table.data-table--entity-list td > .entity-list-cell.data-table-cell,
+.data-table.data-table--entity-list td > .cell-tooltip.entity-list-cell.data-table-cell {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  height: 48px;
+  box-sizing: border-box;
+}
+
+.data-table.data-table--entity-list td > .entity-list-cell--id.data-table-cell,
+.data-table.data-table--entity-list td > .cell-tooltip.entity-list-cell--id.data-table-cell {
+  overflow: visible;
+  text-overflow: clip;
+  max-width: none;
+}
+
+/* 前 4 列：内容再长也不撑开列宽 */
+.data-table td > .entity-list-cell--fixed.data-table-cell,
+.data-table td > .cell-tooltip.entity-list-cell--fixed.data-table-cell {
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.entity-list-cell--id {
+  font-family: var(--font-family-number, ui-monospace, monospace);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+  flex: 0 0 auto;
+}
+
+.entity-list-cell--status {
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+}
+
+.data-table-tag--role-admin {
+  color: hsl(var(--foreground));
+  background: hsl(var(--muted));
+}
+
+.data-table-tag--role-user {
+  color: hsl(var(--muted-foreground));
+  background: hsl(var(--muted) / 0.55);
+}
+
+.entity-list-cell__status-tag {
+  padding: 0 5px;
+  font-size: 11px;
+  line-height: 18px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.entity-list-cell--region {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0;
+}
+
+.entity-list-cell__flag {
+  width: 24px;
+  height: 17px;
+  border-radius: 2px;
+  object-fit: cover;
+  display: block;
+  flex-shrink: 0;
+}
+
+.entity-list-cell--ip {
+  display: block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.entity-list-cell--name {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.entity-list-cell--name-with-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+}
+
+.entity-list-cell--name-flag {
+  display: inline-flex;
+  flex-shrink: 0;
+  width: 24px;
+  height: 17px;
+  align-items: center;
+  justify-content: center;
+}
+
+.entity-list-cell--name-flag .admin-region-flag__img {
+  width: 24px;
+  height: 17px;
+  border-radius: 2px;
+  object-fit: cover;
+}
+
+.entity-list-cell__name-text {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.data-table.data-table--entity-list td > .entity-list-cell--ip-dual.data-table-cell {
+  overflow: hidden;
+  white-space: normal;
+  font-family: inherit;
+}
+
+.data-table.data-table--entity-list td > .entity-list-cell--ip-dual .ip-cell {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0;
+  min-width: 0;
+  width: 100%;
+  line-height: 1.2;
+}
+
+.data-table.data-table--entity-list td > .entity-list-cell--ip-dual .ip-cell__line {
+  font-size: 13px;
+  min-width: 0;
+}
+
+.data-table.data-table--entity-list td > .entity-list-cell--ip-dual .ip-cell__v6-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.data-table.data-table--entity-list td > .entity-list-cell--ip-dual .ip-cell__v6 {
+  font-size: 12px;
+}
+

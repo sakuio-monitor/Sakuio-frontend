@@ -1,0 +1,33 @@
+.sakuio-terminal-session .xterm-scrollable-element > .scrollbar {
+  width: 4px !important;
+  background: transparent !important;
+}
+
+.sakuio-terminal-session .xterm-viewport {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.sakuio-terminal-session .xterm-viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.sakuio-terminal-session .xterm-decoration-overview-ruler {
+  display: none !important;
+  visibility: hidden !important;
+  background: transparent !important;
+}
+
+.sakuio-terminal-session .xterm-scrollable-element > .scrollbar > .track {
+  width: 4px !important;
+}
+
+.sakuio-terminal-session .xterm-scrollable-element > .scrollbar > .slider {
+  width: 4px !important;
+  border-radius: 2px;
+}
+
+.sakuio-terminal-session .xterm-scrollable-element > .scrollbar > .scra,
+.sakuio-terminal-session .xterm-scrollable-element > .scrollbar > .arrow-background {
+  display: none !important;
+}

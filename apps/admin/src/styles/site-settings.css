@@ -1,0 +1,68 @@
+.site-settings-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding: 20px;
+  width: 100%;
+  max-width: 860px;
+  box-sizing: border-box;
+}
+
+.site-settings-card__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--color-black);
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.site-settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 4px 0;
+}
+
+.site-settings-row + .site-settings-row {
+  border-top: 1px solid var(--glass-border);
+  padding-top: 16px;
+}
+
+.site-settings-row__text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-black);
+}
+
+.site-settings-row__text .admin-sidebar-form__hint {
+  font-weight: 400;
+}
+
+.site-settings-row__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.site-settings-share-link {
+  word-break: break-all;
+  user-select: all;
+}
+
+.site-settings-favicon-preview {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  border-radius: 6px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-panel);
+}
