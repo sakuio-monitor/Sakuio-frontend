@@ -1,12 +1,11 @@
 import { Button, Input, Select, toast } from "@sakuio/ui";
-import { Activity, Copy, Cpu, HardDrive, Info, MemoryStick, Menu, RotateCcw, Terminal, Trash2 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { Activity, Cpu, Download, HardDrive, Info, MemoryStick, Menu, RotateCcw, Terminal, Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { fetchSiteSettings } from "../api/siteSettings";
-import { boardWsEndpoint } from "../utils/boardEndpoint";
 import { CellTooltip } from "./CellTooltip/CellTooltip";
 import { useConfirmDialog } from "./ConfirmDialog/ConfirmDialog";
 import { GenericSidebar } from "./GenericSidebar/GenericSidebar";
+import { InstallSidebar } from "./InstallSidebar/InstallSidebar";
 import { IpRegionFlag } from "./RegionFlag";
 import { Switch } from "./ui/Switch";
 import { TagSelectInput } from "./ui/TagSelectInput";
@@ -14,6 +13,8 @@ import { TagSelectInput } from "./ui/TagSelectInput";
 export type ServerActionRow = {
   uuid: string;
   name: string;
+  /** Agent 令牌（管理端列表返回，用于渲染安装命令） */
+  token?: string;
   region?: string;
   region6?: string;
   ipv4: string;
@@ -185,19 +186,6 @@ export function ServerRowActions({ row, groupOptions, onChanged }: ServerRowActi
   const [moreOpen, setMoreOpen] = useState(false);
   const [tab, setTab] = useState<MoreTab>("host");
   const [saving, setSaving] = useState(false);
-  const [agentAddress, setAgentAddress] = useState("");
-
-  useEffect(() => {
-    let alive = true;
-    fetchSiteSettings()
-      .then((s) => {
-        if (alive) setAgentAddress(s.agent_connect_address);
-      })
-      .catch(() => {});
-    return () => {
-      alive = false;
-    };
-  }, []);
 
   const [editName, setEditName] = useState(row.name);
   const [editGroups, setEditGroups] = useState<string[]>(splitGroups(row.group_name));
@@ -215,15 +203,7 @@ export function ServerRowActions({ row, groupOptions, onChanged }: ServerRowActi
   const [statMode, setStatMode] = useState(row.traffic_stat_mode?.trim() || "max");
   const [resetMode, setResetMode] = useState(row.traffic_reset_mode?.trim() || "cycle");
 
-  const installCommand = useMemo(() => {
-    const endpoint = boardWsEndpoint(agentAddress);
-    return [
-      `export SAKUIO_BOARD_ENDPOINT="${endpoint}"`,
-      'export SAKUIO_NODE_TOKEN="<创建节点时保存的 Token>"',
-      "# 开发环境示例：",
-      `# cargo run -p sakuio-agent -- --endpoint ${endpoint} --token "<TOKEN>"`,
-    ].join("\n");
-  }, [agentAddress]);
+  const [installOpen, setInstallOpen] = useState(false);
 
   const info = row.basic_info;
   const runtime = row.runtime;
@@ -407,15 +387,6 @@ export function ServerRowActions({ row, groupOptions, onChanged }: ServerRowActi
     });
   }
 
-  async function copyInstall() {
-    try {
-      await navigator.clipboard.writeText(installCommand);
-      toast.success(t("common.copySuccess"));
-    } catch {
-      toast.error(t("common.error"));
-    }
-  }
-
   return (
     <>
       <div className="data-table-actions data-table-actions--icons">
@@ -428,6 +399,16 @@ export function ServerRowActions({ row, groupOptions, onChanged }: ServerRowActi
             onClick={openTerminal}
           >
             <Terminal size={18} aria-hidden />
+          </button>
+        </CellTooltip>
+        <CellTooltip tip={t("admin.servers.install")}>
+          <button
+            type="button"
+            className="data-table-icon-btn"
+            aria-label={t("admin.servers.install")}
+            onClick={() => setInstallOpen(true)}
+          >
+            <Download size={18} aria-hidden />
           </button>
         </CellTooltip>
         <CellTooltip tip={t("common.more")}>
@@ -483,14 +464,6 @@ export function ServerRowActions({ row, groupOptions, onChanged }: ServerRowActi
 
         {tab === "host" ? (
           <div className="admin-sidebar-form">
-            <label className="admin-sidebar-form__label">
-              {t("admin.servers.installCommand")}
-              <pre className="admin-install-command">{installCommand}</pre>
-            </label>
-            <Button type="button" size="sm" variant="ghost" onClick={() => void copyInstall()}>
-              <Copy size={14} aria-hidden />
-              {t("common.copy")}
-            </Button>
             <div className="admin-metric-cards">
               <div className="admin-metric-card">
                 <div className="admin-metric-card__label">
@@ -787,6 +760,13 @@ export function ServerRowActions({ row, groupOptions, onChanged }: ServerRowActi
           </div>
         ) : null}
       </GenericSidebar>
+
+      <InstallSidebar
+        open={installOpen}
+        onClose={() => setInstallOpen(false)}
+        token={row.token ?? ""}
+        name={row.name}
+      />
     </>
   );
 }

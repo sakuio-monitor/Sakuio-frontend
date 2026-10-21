@@ -409,11 +409,11 @@ function AdminStep({
         />
         <Input
           label={t("install.password")}
-          type="password"
+            type="password"
           value={form.password}
           onChange={(e) => update("password", e.target.value)}
           autoComplete="new-password"
-          required
+            required
         />
         <Input
           label={t("install.passwordConfirm")}
@@ -423,7 +423,7 @@ function AdminStep({
           autoComplete="new-password"
           required
         />
-      </div>
+    </div>
     </>
   );
 }

@@ -1,0 +1,28 @@
+.install-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 16px;
+}
+
+.install-options__cell {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.install-options__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: hsl(var(--foreground));
+  cursor: pointer;
+  min-height: 24px;
+}
+
+@media (max-width: 640px) {
+  .install-options {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

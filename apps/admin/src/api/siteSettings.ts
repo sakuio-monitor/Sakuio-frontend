@@ -8,6 +8,7 @@ export type SiteSettings = {
   ssrf_protection: boolean;
   show_partial_ip: boolean;
   agent_connect_address: string;
+  auto_discovery_key: string;
   private_site: boolean;
   share_token: string;
   custom_head: string;
