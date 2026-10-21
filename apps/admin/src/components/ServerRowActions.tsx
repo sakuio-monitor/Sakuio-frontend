@@ -3,6 +3,7 @@ import { Activity, Copy, Cpu, HardDrive, Info, MemoryStick, Menu, RotateCcw, Ter
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { fetchSiteSettings } from "../api/siteSettings";
+import { boardWsEndpoint } from "../utils/boardEndpoint";
 import { CellTooltip } from "./CellTooltip/CellTooltip";
 import { useConfirmDialog } from "./ConfirmDialog/ConfirmDialog";
 import { GenericSidebar } from "./GenericSidebar/GenericSidebar";
@@ -74,15 +75,6 @@ function splitGroups(value: string | null | undefined): string[] {
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
-}
-
-function boardWsEndpoint(agentAddress: string): string {
-  const trimmed = agentAddress.trim().replace(/\/+$/, "");
-  if (trimmed) {
-    return `${trimmed.replace(/^http/, "ws")}/api/agent/link`;
-  }
-  const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
-  return `${proto}//${window.location.host}/api/agent/link`;
 }
 
 function formatBytes(bytes: number | null | undefined): string {

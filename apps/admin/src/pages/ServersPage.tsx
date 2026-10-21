@@ -1,4 +1,4 @@
-import { Button, Input, toast } from "@sakuio/ui";
+import { Button, toast } from "@sakuio/ui";
 import { Plus, Trash2 } from "lucide-react";
 import { Fragment, useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
@@ -12,6 +12,7 @@ import { PageListHeader } from "../components/PageListHeader";
 import { useConfirmDialog } from "../components/ConfirmDialog/ConfirmDialog";
 import { GenericSidebar } from "../components/GenericSidebar/GenericSidebar";
 import { ServerRowActions } from "../components/ServerRowActions";
+import { AddServerDrawer } from "../components/AddServerDrawer/AddServerDrawer";
 import { TagSelectInput } from "../components/ui/TagSelectInput";
 
 type ClientRow = {
@@ -125,10 +126,7 @@ function formatBilling(row: ClientRow, t: (key: string) => string): ReactNode {
 export default function ServersPage() {
   const { t } = useTranslation();
   const { confirm, confirmDialog } = useConfirmDialog();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [newName, setNewName] = useState("");
-  const [creating, setCreating] = useState(false);
-  const [lastToken, setLastToken] = useState<string | null>(null);
+  const [addOpen, setAddOpen] = useState(false);
   const [listEpoch, setListEpoch] = useState(0);
 
   // SSE/降级轮询共用的页面数据；items 按行复用对象，行内容不变不重渲染
@@ -322,8 +320,7 @@ export default function ServersPage() {
   );
 
   function openCreateSidebar() {
-    setNewName("");
-    setSidebarOpen(true);
+    setAddOpen(true);
   }
 
   /** 拖拽排序：本地乐观重排，PUT 后端全量重写序号（SSE 随后校准） */
@@ -402,38 +399,6 @@ export default function ServersPage() {
     }
   }
 
-  async function createClient() {
-    setCreating(true);
-    try {
-      const payload: { name?: string } = {};
-      const trimmed = newName.trim();
-      if (trimmed) {
-        payload.name = trimmed;
-      }
-      const res = await fetch("/api/admin/clients", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const data = (await res.json()) as { token?: string; message?: string };
-      if (!res.ok) {
-        toast.error(data.message ?? t("common.error"));
-        return;
-      }
-      if (data.token) {
-        setLastToken(data.token);
-        toast.success(t("admin.servers.tokenCreated"));
-      }
-      setSidebarOpen(false);
-      setNewName("");
-      setListEpoch((n) => n + 1);
-    } catch {
-      toast.error(t("common.error"));
-    } finally {
-      setCreating(false);
-    }
-  }
-
   const items = pageData.items;
   const hasPrev = cursorIndex > 0;
   const hasNext = Boolean(pageData.nextCursor);
@@ -443,15 +408,6 @@ export default function ServersPage() {
   return (
     <>
       {confirmDialog}
-      {lastToken ? (
-        <div className="page-container">
-          <div className="page-card admin-stat-card admin-token-card">
-            <p className="admin-stat-label">{t("admin.servers.tokenLabel")}</p>
-            <code className="admin-token-value">{lastToken}</code>
-            <p className="admin-muted">{t("admin.servers.tokenHint")}</p>
-          </div>
-        </div>
-      ) : null}
 
       <section className="page-container page-container--entity-list">
         <PageListHeader
@@ -541,34 +497,11 @@ export default function ServersPage() {
         />
       </section>
 
-      <GenericSidebar
-        open={sidebarOpen}
-        title={t("admin.servers.add")}
-        onClose={() => setSidebarOpen(false)}
-        footer={
-          <>
-            <Button type="button" variant="ghost" onClick={() => setSidebarOpen(false)}>
-              {t("common.cancel")}
-            </Button>
-            <Button type="button" disabled={creating} onClick={() => void createClient()}>
-              {t("admin.servers.create")}
-            </Button>
-          </>
-        }
-      >
-        <div className="admin-sidebar-form">
-          <label className="admin-sidebar-form__label">
-            {t("admin.servers.name")}
-            <Input
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              placeholder={t("admin.servers.namePlaceholder")}
-              aria-label={t("admin.servers.name")}
-            />
-            <p className="admin-sidebar-form__hint">{t("admin.servers.nameOptionalHint")}</p>
-          </label>
-        </div>
-      </GenericSidebar>
+      <AddServerDrawer
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        onCreated={() => setListEpoch((n) => n + 1)}
+      />
 
       <GenericSidebar
         open={bulkGroupOpen}

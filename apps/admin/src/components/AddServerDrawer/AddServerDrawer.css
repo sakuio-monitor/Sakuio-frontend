@@ -1,0 +1,73 @@
+.add-server-install {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--admin-border-radius, 8px);
+  background: hsl(var(--muted) / 0.35);
+}
+
+.add-server-install__heading {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+.add-server-install__switches {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 16px;
+}
+
+.add-server-install__switch-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: hsl(var(--foreground));
+  cursor: pointer;
+  min-height: 24px;
+}
+
+.add-server-install__two-col {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.add-server-install__command {
+  position: relative;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--admin-border-radius, 8px);
+  background: hsl(var(--muted) / 0.6);
+  padding: 12px 12px 40px;
+}
+
+.add-server-install__command code {
+  display: block;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 12px;
+  line-height: 1.7;
+  word-break: break-all;
+  white-space: pre-wrap;
+  color: hsl(var(--foreground));
+  user-select: all;
+}
+
+.add-server-install__copy {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+@media (max-width: 640px) {
+  .add-server-install__switches,
+  .add-server-install__two-col {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
