@@ -710,7 +710,16 @@
       "noOptions": "暂无可选项",
       "manageWithName": "{{name}} 主题管理",
       "settings": "设置",
-      "general": "常规"
+      "general": "常规",
+      "ecosystemBanner": "Sakuio 将长期使用 Komari 兼容 API，并长期支持 Komari 主题生态。",
+      "manageSources": "管理源",
+      "sourcesHint": "主题市场源需返回 Komari 兼容的 v1.json 目录。默认源已提供 GitHub 加速。",
+      "addSource": "添加源",
+      "sourceName": "源名称",
+      "githubProxy": "GitHub 加速站",
+      "githubProxyHint": "例如 https://ghfast.top。配置后主题预览图片与 GitHub 资源会通过该站点加速。",
+      "sourceInvalid": "请输入有效的源名称和 HTTP(S) 地址",
+      "sourceDuplicate": "该源已存在"
     },
     "logs": {
       "allActions": "全部操作",
@@ -814,7 +823,7 @@
       "dbSize": "数据库大小",
       "dbWritesPerSec": "写入速率（次/秒）",
       "dbWritePressure": "写入压力",
-      "dbConnections": "连接数（使用/空闲/上限）",
+      "dbConnections": "连接数（当前/空闲/上限）",
       "dbTitle": "数据库占用",
       "dbDescription": "按审计日志、服务器数据、监控指标和其他表统计数据库占用。",
       "dbFile": "数据库文件",
@@ -833,7 +842,7 @@
       "allItems": "查看全部项目",
       "cpuProcess": "本进程已使用",
       "cpuSystemOther": "系统其他使用",
-      "dbPoolPressure": "连接池压力",
+      "dbPoolPressure": "连接池压力（峰值/上限）",
       "allocRate": "分配速率",
       "dbQueriesPerSec": "查询速率（次/秒）",
       "heapOther": "堆分配（应用缓存之外）",
@@ -844,7 +853,8 @@
       "heapOtherDetail": "已扣除应用缓存后的堆分配",
       "codeDetail": "可执行文件与共享库",
       "anonymousDetail": "运行时匿名映射",
-      "fileMappingsDetail": "文件、数据库与内核映射"
+      "fileMappingsDetail": "文件、数据库与内核映射",
+      "dbPeakConnections": "采样周期内峰值使用"
     }
   },
   "public": {

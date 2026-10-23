@@ -1,5 +1,5 @@
-import { Button, Spinner, toast } from "@sakuio/ui";
-import { Check, Download, Palette, RefreshCw, Settings2, Trash2, Upload } from "lucide-react";
+import { Button, Input, Spinner, toast } from "@sakuio/ui";
+import { Check, Download, Palette, Plus, RefreshCw, Settings2, Trash2, Upload } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -18,6 +18,7 @@ import {
   type ThemeRow,
 } from "../api/themes";
 import { PageListHeader } from "../components/PageListHeader";
+import { GenericSidebar } from "../components/GenericSidebar/GenericSidebar";
 import "../styles/themes.css";
 
 type Props = { mode: "installed" | "market" };
@@ -29,24 +30,86 @@ function formatBytes(bytes: number): string {
   return `${(bytes / 1024 ** index).toFixed(index === 0 ? 0 : 1)} ${units[index]}`;
 }
 
-function ThemePreview({ src, alt }: { src: string | null; alt: string }) {
+const DEFAULT_SOURCE = {
+  name: "Komari Official",
+  url: "https://ghfast.top/raw.githubusercontent.com/komari-monitor/theme-market/main/v1.json",
+};
+
+type ThemeSource = { name: string; url: string };
+
+function loadSources(): ThemeSource[] {
+  try {
+    const raw = localStorage.getItem("sakuio.theme.sources");
+    const parsed = raw ? (JSON.parse(raw) as ThemeSource[]) : [];
+    const valid = parsed.filter((item) => item?.name && item?.url);
+    return valid.length ? valid : [DEFAULT_SOURCE];
+  } catch {
+    return [DEFAULT_SOURCE];
+  }
+}
+
+function loadProxy(): string {
+  try { return localStorage.getItem("sakuio.github.proxy") ?? ""; } catch { return ""; }
+}
+
+function accelerated(url: string, proxy: string): string {
+  const value = proxy.trim().replace(/\/+$/, "");
+  if (!value) return url;
+  if (!/^https?:\/\//i.test(url)) return url;
+  if (url.startsWith(value)) return url;
+  try {
+    const host = new URL(url).hostname.toLowerCase();
+    if (host === "github.com" || host === "raw.githubusercontent.com" || host.endsWith(".githubusercontent.com")) {
+      return `${value}/${url}`;
+    }
+  } catch {
+    // Leave malformed URLs untouched; the image/error handler will surface it.
+  }
+  return url;
+}
+
+function ThemePreview({ src, alt, proxy }: { src: string | null; alt: string; proxy: string }) {
   const [broken, setBroken] = useState(false);
-  useEffect(() => setBroken(false), [src]);
-  if (!src || broken) {
+  const [loadedUrl, setLoadedUrl] = useState<string | null>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
+  const actualSrc = src ? accelerated(src, proxy) : null;
+
+  useEffect(() => {
+    setBroken(false);
+  }, [actualSrc]);
+
+  useEffect(() => {
+    // Cached images can finish before React's onLoad handler is attached.
+    if (imageRef.current?.complete && imageRef.current.naturalWidth > 0) {
+      setLoadedUrl(actualSrc);
+    }
+  }, [actualSrc]);
+
+  if (!actualSrc || broken) {
     return (
       <div className="theme-card__placeholder">
         <Palette size={32} aria-hidden />
       </div>
     );
   }
+  const loading = loadedUrl !== actualSrc;
   return (
-    <img
-      className="theme-card__preview"
-      src={src}
-      alt={alt}
-      loading="lazy"
-      onError={() => setBroken(true)}
-    />
+    <>
+      <img
+        ref={imageRef}
+        className="theme-card__preview"
+        src={actualSrc}
+        alt={alt}
+        loading="lazy"
+        onLoad={() => setLoadedUrl(actualSrc)}
+        onError={() => { setLoadedUrl(actualSrc); setBroken(true); }}
+      />
+      {loading ? (
+        <div className="theme-card__preview-loading" role="status" aria-label="加载预览图">
+          <Spinner size={22} />
+        </div>
+      ) : null}
+    </>
   );
 }
 
@@ -100,6 +163,12 @@ export default function ThemesPage({ mode }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [jobs, setJobs] = useState<Record<string, ThemeJobEvent>>({});
   const [starting, setStarting] = useState<Record<string, boolean>>({});
+  const [sources, setSources] = useState<ThemeSource[]>(loadSources);
+  const [activeSource, setActiveSource] = useState<ThemeSource>(() => loadSources()[0]);
+  const [sourceOpen, setSourceOpen] = useState(false);
+  const [newSourceName, setNewSourceName] = useState("");
+  const [newSourceUrl, setNewSourceUrl] = useState("");
+  const [githubProxy, setGithubProxy] = useState(loadProxy);
   const fileRef = useRef<HTMLInputElement>(null);
   const jobClosers = useRef(new Map<string, () => void>());
 
@@ -116,7 +185,7 @@ export default function ThemesPage({ mode }: Props) {
     setError(null);
     try {
       if (mode === "market") {
-        const data = await fetchMarket();
+        const data = await fetchMarket(false, accelerated(activeSource.url, githubProxy));
         setMarket(data.themes);
         const installed = await fetchThemes();
         setThemes(installed.themes);
@@ -132,7 +201,7 @@ export default function ThemesPage({ mode }: Props) {
     } finally {
       setLoading(false);
     }
-  }, [mode, t]);
+  }, [mode, t, activeSource.url, githubProxy]);
 
   useEffect(() => {
     void reload(true);
@@ -231,10 +300,49 @@ export default function ThemesPage({ mode }: Props) {
     void run(theme.short, () => deleteTheme(theme.short), t("admin.themes.deleteSuccess"));
   }
 
+  const persistSources = (next: ThemeSource[]) => {
+    setSources(next);
+    try { localStorage.setItem("sakuio.theme.sources", JSON.stringify(next)); } catch { /* ignore */ }
+  };
+
+  const saveGithubProxy = (value: string) => {
+    setGithubProxy(value);
+    try { localStorage.setItem("sakuio.github.proxy", value.trim()); } catch { /* ignore */ }
+  };
+
+  const addSource = () => {
+    const name = newSourceName.trim();
+    const url = newSourceUrl.trim();
+    if (!name || !/^https?:\/\//i.test(url)) {
+      toast.error(t("admin.themes.sourceInvalid"));
+      return;
+    }
+    if (sources.some((source) => source.url === url)) {
+      toast.error(t("admin.themes.sourceDuplicate"));
+      return;
+    }
+    const next = [...sources, { name, url }];
+    persistSources(next);
+    setActiveSource({ name, url });
+    setNewSourceName("");
+    setNewSourceUrl("");
+  };
+
+  const removeSource = (url: string) => {
+    if (url === DEFAULT_SOURCE.url) return;
+    const next = sources.filter((source) => source.url !== url);
+    persistSources(next.length ? next : [DEFAULT_SOURCE]);
+    if (activeSource.url === url) setActiveSource(next[0] ?? DEFAULT_SOURCE);
+  };
+
   const installedByShort = new Map(themes.map((theme) => [theme.short, theme]));
 
   return (
     <section className="page-container">
+      <div className="theme-market-banner">
+        <Palette size={18} aria-hidden />
+        <span>{t("admin.themes.ecosystemBanner")}</span>
+      </div>
       <PageListHeader
         titleKey={mode === "market" ? "admin.nav.marketThemes" : "admin.nav.themes"}
         actions={
@@ -259,15 +367,9 @@ export default function ThemesPage({ mode }: Props) {
                 </Button>
               </>
             ) : null}
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              disabled={loading}
-              onClick={() => void reload(true)}
-            >
-              <RefreshCw size={16} aria-hidden />
-              {t("common.refresh")}
+            <Button type="button" variant="secondary" size="sm" onClick={() => setSourceOpen(true)}>
+              <Settings2 size={16} aria-hidden />
+              {t("admin.themes.manageSources")}
             </Button>
           </>
         }
@@ -281,7 +383,7 @@ export default function ThemesPage({ mode }: Props) {
           {themes.map((theme) => (
             <article className="page-card theme-card" key={theme.short}>
               <div className="theme-card__media">
-                <ThemePreview src={theme.preview_url} alt={theme.name} />
+                <ThemePreview src={theme.preview_url} alt={theme.name} proxy={githubProxy} />
                 <ThemeCardStatus event={jobs[theme.short]} />
               </div>
               <div className="theme-card__body">
@@ -364,7 +466,7 @@ export default function ThemesPage({ mode }: Props) {
             return (
               <article className="page-card theme-card" key={entry.short}>
                 <div className="theme-card__media">
-                  <ThemePreview src={entry.preview || null} alt={entry.name} />
+                  <ThemePreview src={entry.preview || null} alt={entry.name} proxy={githubProxy} />
                   <ThemeCardStatus event={jobs[entry.short]} />
                 </div>
                 <div className="theme-card__body">
@@ -442,6 +544,54 @@ export default function ThemesPage({ mode }: Props) {
           })}
         </div>
       ) : null}
+
+      <GenericSidebar
+        open={sourceOpen}
+        title={t("admin.themes.manageSources")}
+        onClose={() => setSourceOpen(false)}
+        initialWidth={520}
+      >
+        <div className="theme-source-panel">
+          <p className="theme-source-hint">{t("admin.themes.sourcesHint")}</p>
+          <div className="theme-source-list">
+            {sources.map((source) => (
+              <div className={`theme-source-row${source.url === activeSource.url ? " is-active" : ""}`} key={source.url}>
+                <button
+                  type="button"
+                  className="theme-source-select"
+                  onClick={() => setActiveSource(source)}
+                >
+                  <span>{source.name}</span>
+                  <small>{source.url}</small>
+                  {source.url === activeSource.url ? <Check size={15} /> : null}
+                </button>
+                {source.url !== DEFAULT_SOURCE.url ? (
+                  <Button type="button" size="sm" variant="ghost" onClick={() => removeSource(source.url)}>
+                    <Trash2 size={14} aria-hidden />
+                  </Button>
+                ) : null}
+              </div>
+            ))}
+          </div>
+
+          <div className="theme-source-add">
+            <strong>{t("admin.themes.addSource")}</strong>
+            <Input value={newSourceName} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewSourceName(e.target.value)} placeholder={t("admin.themes.sourceName")} />
+            <Input value={newSourceUrl} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewSourceUrl(e.target.value)} placeholder="https://example.com/v1.json" />
+            <Button type="button" size="sm" onClick={addSource}><Plus size={14} />{t("common.add")}</Button>
+          </div>
+
+          <label className="admin-sidebar-form__label">
+            <span className="admin-sidebar-form__label-text">{t("admin.themes.githubProxy")}</span>
+            <Input
+              value={githubProxy}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => saveGithubProxy(e.target.value)}
+              placeholder="https://ghfast.top"
+            />
+            <span className="admin-sidebar-form__hint">{t("admin.themes.githubProxyHint")}</span>
+          </label>
+        </div>
+      </GenericSidebar>
 
     </section>
   );

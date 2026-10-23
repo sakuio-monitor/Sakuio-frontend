@@ -709,7 +709,16 @@
       "noOptions": "No options available",
       "manageWithName": "{{name}} Theme Management",
       "settings": "Settings",
-      "general": "General"
+      "general": "General",
+      "ecosystemBanner": "Sakuio will keep using the Komari-compatible API and supporting the Komari theme ecosystem.",
+      "manageSources": "Manage sources",
+      "sourcesHint": "Market sources must return a Komari-compatible v1.json catalog. The default source already uses a GitHub accelerator.",
+      "addSource": "Add source",
+      "sourceName": "Source name",
+      "githubProxy": "GitHub accelerator",
+      "githubProxyHint": "For example https://ghfast.top. Theme previews and GitHub assets will use this accelerator.",
+      "sourceInvalid": "Enter a valid source name and HTTP(S) URL",
+      "sourceDuplicate": "This source already exists"
     },
     "logs": {
       "allActions": "All actions",
@@ -813,7 +822,7 @@
       "dbSize": "Database size",
       "dbWritesPerSec": "Writes / sec",
       "dbWritePressure": "Write pressure",
-      "dbConnections": "Connections (used/idle/max)",
+      "dbConnections": "Connections (current / idle / max)",
       "dbTitle": "Database usage",
       "dbDescription": "Database usage by audit logs, server data, metrics and other tables.",
       "dbFile": "Database file",
@@ -832,7 +841,7 @@
       "allItems": "View all items",
       "cpuProcess": "This process",
       "cpuSystemOther": "Other system usage",
-      "dbPoolPressure": "Pool pressure",
+      "dbPoolPressure": "Pool pressure (peak / max)",
       "allocRate": "Allocation rate",
       "dbQueriesPerSec": "Queries / sec",
       "heapOther": "Heap allocation (outside app caches)",
@@ -843,7 +852,8 @@
       "heapOtherDetail": "Heap after excluding application caches",
       "codeDetail": "Executable and shared libraries",
       "anonymousDetail": "Runtime anonymous mappings",
-      "fileMappingsDetail": "Files, database and kernel mappings"
+      "fileMappingsDetail": "Files, database and kernel mappings",
+      "dbPeakConnections": "Peak in use during sample"
     }
   },
   "public": {

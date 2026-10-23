@@ -266,3 +266,39 @@
   background: rgba(56, 189, 248, 0.1);
   color: #e2e8f0;
 }
+.theme-market-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 11px 14px;
+  border: 1px solid color-mix(in srgb, var(--admin-accent, #22c55e) 30%, var(--glass-border, rgba(255,255,255,.12)));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--admin-accent, #22c55e) 9%, var(--glass-panel, rgba(255,255,255,.78)));
+  color: var(--color-gray-700);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.theme-card__preview-loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #cbd5e1;
+  background: rgba(15, 23, 42, .32);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  pointer-events: none;
+}
+.theme-source-panel { display: flex; flex-direction: column; gap: 16px; }
+.theme-source-hint { margin: 0; color: var(--color-gray-500); font-size: 12px; line-height: 1.6; }
+.theme-source-list { display: flex; flex-direction: column; gap: 8px; }
+.theme-source-row { display: flex; align-items: center; gap: 6px; padding: 6px; border: 1px solid var(--glass-border); border-radius: 8px; background: var(--glass-panel); }
+.theme-source-row.is-active { border-color: color-mix(in srgb, var(--admin-accent, #22c55e) 45%, var(--glass-border)); }
+.theme-source-select { display: flex; flex: 1; flex-direction: column; align-items: flex-start; gap: 3px; min-width: 0; border: 0; background: transparent; color: var(--color-gray-700); text-align: left; cursor: pointer; }
+.theme-source-select span { font-size: 13px; }
+.theme-source-select small { max-width: 100%; overflow: hidden; color: var(--color-gray-400); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.theme-source-select svg { position: absolute; opacity: 0; }
+.theme-source-row.is-active .theme-source-select svg { position: static; color: #16a34a; opacity: 1; align-self: flex-end; margin-top: -18px; }
+.theme-source-add { display: flex; flex-direction: column; gap: 8px; padding: 12px; border: 1px solid var(--glass-border); border-radius: 8px; }
+.theme-source-add strong { font-size: 13px; }

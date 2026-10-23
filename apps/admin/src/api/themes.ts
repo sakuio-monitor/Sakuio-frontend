@@ -88,16 +88,23 @@ export type ThemeJobEvent = {
   updated: boolean | null;
 };
 
-export async function updateTheme(short: string): Promise<{ job_id: string }> {
-  const res = await adminFetch(`/api/admin/themes/${encodeURIComponent(short)}/update?refresh=1`, {
-    method: "POST",
-  });
+export async function updateTheme(short: string, proxy?: string): Promise<{ job_id: string }> {
+  const params = new URLSearchParams({ refresh: "1" });
+  if (proxy) params.set("proxy", proxy);
+  const res = await adminFetch(
+    `/api/admin/themes/${encodeURIComponent(short)}/update?${params.toString()}`,
+    { method: "POST" },
+  );
   return parse(res);
 }
 
-export async function installMarketTheme(short: string): Promise<{ job_id: string }> {
+export async function installMarketTheme(short: string, source?: string, proxy?: string): Promise<{ job_id: string }> {
+  const params = new URLSearchParams();
+  if (source) params.set("source", source);
+  if (proxy) params.set("proxy", proxy);
+  const query = params.toString();
   const res = await adminFetch(
-    `/api/admin/themes/market/${encodeURIComponent(short)}/install`,
+    `/api/admin/themes/market/${encodeURIComponent(short)}/install${query ? `?${query}` : ""}`,
     { method: "POST" },
   );
   return parse(res);
@@ -162,11 +169,15 @@ export function watchThemeJob(
   return stop;
 }
 
-export async function fetchMarket(refresh = false): Promise<{
+export async function fetchMarket(refresh = false, source?: string): Promise<{
   themes: MarketRow[];
   market_url: string;
 }> {
-  const res = await adminFetch(`/api/admin/themes/market${refresh ? "?refresh=1" : ""}`);
+  const params = new URLSearchParams();
+  if (refresh) params.set("refresh", "1");
+  if (source) params.set("source", source);
+  const query = params.toString();
+  const res = await adminFetch(`/api/admin/themes/market${query ? `?${query}` : ""}`);
   return parse(res);
 }
 
