@@ -1,5 +1,5 @@
 import { Button, toast } from "@sakuio/ui";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, RefreshCw, Trash2 } from "lucide-react";
 import { Fragment, useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import type { Column } from "../components/DataTable/DataTable";
@@ -14,6 +14,7 @@ import { GenericSidebar } from "../components/GenericSidebar/GenericSidebar";
 import { ServerRowActions } from "../components/ServerRowActions";
 import { AddServerDrawer } from "../components/AddServerDrawer/AddServerDrawer";
 import { TagSelectInput } from "../components/ui/TagSelectInput";
+import { fetchAgentVersion, triggerAgentUpdate } from "../api/agent";
 
 type ClientRow = {
   uuid: string;
@@ -130,6 +131,7 @@ export default function ServersPage() {
   const { confirm, confirmDialog } = useConfirmDialog();
   const [addOpen, setAddOpen] = useState(false);
   const [listEpoch, setListEpoch] = useState(0);
+  const [latestAgentVersion, setLatestAgentVersion] = useState("");
 
   // SSE/降级轮询共用的页面数据；items 按行复用对象，行内容不变不重渲染
   const [pageData, setPageData] = useState<{ items: ClientRow[]; nextCursor: string | null }>({
@@ -148,6 +150,10 @@ export default function ServersPage() {
   const [bulkSaving, setBulkSaving] = useState(false);
 
   const activeCursor = cursorStack[cursorIndex];
+
+  useEffect(() => {
+    void fetchAgentVersion().then(setLatestAgentVersion).catch(() => {});
+  }, []);
 
   // 增删改后回到第一页，并触发 SSE 重连即时拿最新快照
   useEffect(() => {
@@ -278,9 +284,44 @@ export default function ServersPage() {
       {
         key: "agent_version",
         title: t("admin.servers.clientVersion"),
-        render: (row) => (
-          <span className="data-table-cell">{cellText(row.agent_version ?? undefined)}</span>
-        ),
+        render: (row) => {
+          const version = row.agent_version?.trim() ?? "";
+          const outdated = Boolean(version && latestAgentVersion && version !== latestAgentVersion);
+          return (
+            <span className="data-table-cell agent-version-cell">
+              {version || "—"}
+              {outdated ? (
+                <button
+                  type="button"
+                  className="data-table-icon-btn"
+                  aria-label={t("admin.servers.updateAgent")}
+                  title={t("admin.servers.updateAgentHint", { version: latestAgentVersion })}
+                  onClick={() => {
+                    confirm({
+                      title: t("admin.servers.updateAgent"),
+                      description: t("admin.servers.updateAgentConfirm", {
+                        name: row.name,
+                        from: version,
+                        to: latestAgentVersion,
+                      }),
+                      confirmLabel: t("admin.servers.updateAgent"),
+                      onConfirm: async () => {
+                        try {
+                          await triggerAgentUpdate(row.uuid);
+                          toast.success(t("admin.servers.updateAgentSent"));
+                        } catch (error) {
+                          toast.error(error instanceof Error ? error.message : t("common.error"));
+                        }
+                      },
+                    });
+                  }}
+                >
+                  <RefreshCw size={14} aria-hidden />
+                </button>
+              ) : null}
+            </span>
+          );
+        },
       },
       {
         key: "group_name",
@@ -333,7 +374,7 @@ export default function ServersPage() {
         ),
       },
     ],
-    [t, groupOptions],
+    [t, groupOptions, latestAgentVersion],
   );
 
   function openCreateSidebar() {

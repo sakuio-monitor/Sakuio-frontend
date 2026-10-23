@@ -624,7 +624,11 @@
       "reportInterval": "Report interval (ms)",
       "status": "Status",
       "online": "Online",
-      "offline": "Offline"
+      "offline": "Offline",
+      "updateAgent": "Update agent",
+      "updateAgentHint": "Update to board-supported version {version}",
+      "updateAgentConfirm": "Update “{name}” from {from} to {to}? The agent will restart after updating.",
+      "updateAgentSent": "Update command sent; the agent is updating"
     },
     "ping": {
       "title": "Latency monitoring",

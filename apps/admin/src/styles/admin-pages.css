@@ -842,3 +842,5 @@
   justify-content: flex-end;
 }
 .data-table-cell.is-disabled { color: var(--color-gray-400); }
+.agent-version-cell { display: inline-flex; align-items: center; gap: 6px; }
+.agent-version-cell .data-table-icon-btn { width: 24px; height: 24px; color: var(--color-gray-500); }
