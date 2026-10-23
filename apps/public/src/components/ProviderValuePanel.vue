@@ -333,7 +333,7 @@ const listSurfaceClass = computed(() => [
           </div>
         </template>
 
-        <NListItem v-if="sortedRows.length === 0" class="node-list-row">
+        <NListItem v-if="sortedRows.length === 0" class="node-list-row node-list-row--empty">
           <NEmpty description="暂无可对比的付费节点" size="small" />
         </NListItem>
         <NListItem v-for="row in sortedRows" :key="row.key" class="node-list-row">

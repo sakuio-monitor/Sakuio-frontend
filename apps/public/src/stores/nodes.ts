@@ -210,6 +210,14 @@ const useNodesStore = defineStore('nodes', () => {
     }
   }
 
+  function assignStatusInPlace(node: NodeData, status: StatusData): void {
+    const next = updateNodeStatus(node, status)
+    for (const key of Object.keys(next) as Array<keyof NodeData>) {
+      if (node[key] !== next[key])
+        (node as Record<string, unknown>)[key] = next[key]
+    }
+  }
+
   /**
    * 从 NodeStatus 提取状态数据
    */
@@ -303,8 +311,54 @@ const useNodesStore = defineStore('nodes', () => {
       if (!node)
         return
 
-      nodes.value[index] = updateNodeStatus(node, extractStatusData(status))
+      assignStatusInPlace(node, extractStatusData(status))
     })
+  }
+
+  /**
+   * Apply the public SSE snapshot (same v2 payload as `/api/clients`).
+   * Missing nodes are marked offline without wiping their last metrics.
+   */
+  function applySseSnapshot(online: Set<string>, data: Record<string, any>): void {
+    // Mutate the existing array in place. Replacing the whole array makes the
+    // entire keyed v-for tree re-render even when only one node changed.
+    for (let i = 0; i < nodes.value.length; i++) {
+      const node = nodes.value[i]
+      if (!node)
+        continue
+      const isOnline = online.has(node.uuid)
+      const raw = data[node.uuid]
+      if (!raw) {
+        if (node.online !== isOnline)
+          node.online = isOnline
+        continue
+      }
+      assignStatusInPlace(node, {
+        client: node.uuid,
+        time: String(raw.updated_at ?? ''),
+        cpu: Number(raw.cpu?.usage ?? 0),
+        gpu: Number(raw.gpu ?? 0),
+        ram: Number(raw.ram?.used ?? 0),
+        ram_total: Number(raw.ram?.total ?? 0),
+        swap: Number(raw.swap?.used ?? 0),
+        swap_total: Number(raw.swap?.total ?? 0),
+        load: Number(raw.load?.load1 ?? 0),
+        load5: Number(raw.load?.load5 ?? 0),
+        load15: Number(raw.load?.load15 ?? 0),
+        temp: 0,
+        disk: Number(raw.disk?.used ?? 0),
+        disk_total: Number(raw.disk?.total ?? 0),
+        net_in: Number(raw.network?.down ?? 0),
+        net_out: Number(raw.network?.up ?? 0),
+        net_total_up: Number(raw.network?.totalUp ?? 0),
+        net_total_down: Number(raw.network?.totalDown ?? 0),
+        process: Number(raw.process ?? 0),
+        connections: Number(raw.connections?.tcp ?? 0) + Number(raw.connections?.udp ?? 0),
+        connections_udp: Number(raw.connections?.udp ?? 0),
+        online: isOnline,
+        uptime: Number(raw.uptime ?? 0),
+      })
+    }
   }
 
   /**
@@ -324,6 +378,10 @@ const useNodesStore = defineStore('nodes', () => {
           return
 
         const baseNode = createNodeFromClient(client)
+        // The public API may hide IPs for guests; keep the authenticated IP
+        // override when the periodic public client payload omits it.
+        baseNode.ipv4 = client.ipv4 || currentNode.ipv4
+        baseNode.ipv6 = client.ipv6 || currentNode.ipv6
         nodes.value[index] = updateNodeStatus(baseNode, {
           online: currentNode.online,
           time: currentNode.time,
@@ -374,6 +432,15 @@ const useNodesStore = defineStore('nodes', () => {
     }
   }
 
+  function applyIpOverrides(overrides: Record<string, { ipv4?: string, ipv6?: string }>): void {
+    nodes.value = nodes.value.map((node) => {
+      const value = overrides[node.uuid]
+      return value
+        ? { ...node, ipv4: value.ipv4 || node.ipv4, ipv6: value.ipv6 || node.ipv6 }
+        : node
+    })
+  }
+
   /**
    * 清空所有节点数据
    */
@@ -395,6 +462,8 @@ const useNodesStore = defineStore('nodes', () => {
     initNodes,
     updateNodeStatuses,
     updateNodeClients,
+    applySseSnapshot,
+    applyIpOverrides,
     sortNodesByWeight,
     updateWsState,
     clearNodes,

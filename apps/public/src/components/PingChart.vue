@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import dayjs from 'dayjs'
-import { NButton, NEmpty, NSpin, NSwitch, NTooltip } from 'naive-ui'
+import { NButton, NEmpty, NSwitch, NTooltip } from 'naive-ui'
+import SakuioSpin from './SakuioSpin.vue'
 import { computed, onMounted, ref, shallowRef, watch } from 'vue'
 import VChart from 'vue-echarts'
 import { useAppStore } from '@/stores/app'
@@ -132,6 +133,7 @@ interface PingRecordsResponse {
 const remoteData = shallowRef<PingRecord[]>([])
 const tasks = shallowRef<TaskInfo[]>([])
 const loading = ref(false)
+const hasLoaded = ref(false)
 const error = ref<string | null>(null)
 
 // 任务选择
@@ -146,7 +148,8 @@ async function fetchRecords() {
   if (!props.uuid)
     return
 
-  loading.value = true
+  if (!hasLoaded.value)
+    loading.value = true
   error.value = null
 
   try {
@@ -173,6 +176,7 @@ async function fetchRecords() {
   }
   finally {
     loading.value = false
+    hasLoaded.value = true
   }
 }
 
@@ -387,6 +391,7 @@ const pingChartOption = computed(() => {
   const series = taskList.map((task) => {
     const color = getTaskColor(task.id)
     return {
+      id: `task-${task.id}`,
       name: task.name,
       type: 'line' as const,
       data: data.map(d => d[task.id] as number | null ?? null),
@@ -406,7 +411,11 @@ const pingChartOption = computed(() => {
   })
 
   return {
-    animation: false,
+    animation: true,
+  animationDuration: 260,
+  animationDurationUpdate: 0,
+  animationEasing: 'cubicOut',
+  animationEasingUpdate: 'cubicOut',
     // 全局颜色设置（用于图例等）
     color: tasks.value.map((_, idx) => {
       const safeIdx = Math.max(0, idx % chartColors.length)
@@ -501,6 +510,7 @@ watch(() => props.uuid, () => {
   remoteData.value = []
   tasks.value = []
   selectedTaskIds.value = []
+  hasLoaded.value = false
   fetchRecords()
 })
 
@@ -548,7 +558,7 @@ const blurClass = computed(() => {
     </div>
 
     <!-- 内容区域 -->
-    <NSpin :show="loading" content-class="flex flex-col gap-4">
+    <SakuioSpin :show="loading" class="flex flex-col gap-4">
       <div v-if="error" class="text-red-500 py-8 text-center">
         {{ error }}
       </div>
@@ -666,10 +676,10 @@ const blurClass = computed(() => {
 
         <!-- 图表 -->
         <div class="h-80">
-          <VChart :option="pingChartOption" autoresize />
+          <VChart :option="pingChartOption" :update-options="{ notMerge: false, replaceMerge: ['series'], lazyUpdate: true }" autoresize />
         </div>
       </template>
-    </NSpin>
+    </SakuioSpin>
   </div>
 </template>
 

@@ -109,7 +109,7 @@ function getFlagSrc(region: string): string {
               </div>
             </div>
           </template>
-          <NListItem v-if="rows.length === 0" class="node-list-row">
+          <NListItem v-if="rows.length === 0" class="node-list-row node-list-row--empty">
             <NEmpty :description="emptyDescription" size="small" />
           </NListItem>
           <NListItem

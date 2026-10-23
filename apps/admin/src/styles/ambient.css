@@ -41,7 +41,6 @@
   z-index: -1;
   pointer-events: none;
   background: var(--ambient-mesh);
-  animation: ambient-drift 14s ease-in-out infinite alternate;
 }
 
 @keyframes ambient-drift {

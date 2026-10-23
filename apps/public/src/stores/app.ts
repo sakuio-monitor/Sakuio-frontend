@@ -7,11 +7,11 @@ import { computed, ref, watch } from 'vue'
 type ThemeMode = 'auto' | 'light' | 'dark'
 type Lang = 'zh-CN' | 'en-US'
 type NodeViewMode = 'card' | 'list'
-type RpcTransportMode = 'websocket' | 'http'
+type RpcTransportMode = 'websocket' | 'http' | 'sse'
 type AlertType = 'default' | 'info' | 'success' | 'warning' | 'error'
 
 /** 默认的 List 视图列配置 */
-const DEFAULT_LIST_VIEW_COLUMNS = ['status', 'region', 'name', 'tags', 'uptime', 'os', 'cpu', 'mem', 'disk', 'traffic', 'rate'] as const
+const DEFAULT_LIST_VIEW_COLUMNS = ['status', 'region', 'name', 'uptime', 'tags', 'os', 'cpu', 'mem', 'disk', 'traffic', 'rate'] as const
 type ListViewColumn = typeof DEFAULT_LIST_VIEW_COLUMNS[number]
 
 /** 默认的 List 视图列宽度配置 */
@@ -95,11 +95,11 @@ const useAppStore = defineStore('app', () => {
     const settings = publicSettings.value?.theme_settings
     if (settings && typeof settings.rpcTransportMode === 'string') {
       const mode = settings.rpcTransportMode
-      if (mode === 'websocket' || mode === 'http') {
+      if (mode === 'websocket' || mode === 'http' || mode === 'sse') {
         return mode
       }
     }
-    return 'websocket'
+    return 'sse'
   })
 
   // 计算属性：从主题配置获取是否显示登录按钮

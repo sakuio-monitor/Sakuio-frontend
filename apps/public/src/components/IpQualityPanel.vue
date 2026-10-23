@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { NodeData } from '@/stores/nodes'
 import type { IpcosAnalyzeFetchResult, IpcosAnalyzeReport } from '@/utils/ipnekoApi'
-import { NBadge, NCard, NEmpty, NList, NListItem, NPopover, NSpin, NTag, NText } from 'naive-ui'
+import { NBadge, NCard, NEmpty, NList, NListItem, NPopover, NTag, NText } from 'naive-ui'
+import SakuioSpinner from './SakuioSpinner.vue'
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import NodeListNameCell from '@/components/NodeListNameCell.vue'
@@ -306,7 +307,7 @@ watch(nodeListFingerprint, () => {
             </div>
           </template>
 
-          <NListItem v-if="rows.length === 0" class="node-list-row">
+          <NListItem v-if="rows.length === 0" class="node-list-row node-list-row--empty">
             <NEmpty description="暂无节点" size="small" />
           </NListItem>
           <NListItem
@@ -336,7 +337,7 @@ watch(nodeListFingerprint, () => {
 
               <div class="ip-quality-cell min-w-0">
                 <div v-if="row.slot.loading" class="ip-quality-cell__loading">
-                  <NSpin :size="14" />
+                  <SakuioSpinner :size="14" />
                 </div>
                 <NText v-else-if="row.slot.error" type="error" class="truncate block text-xs">
                   {{ row.slot.error }}
@@ -408,7 +409,7 @@ watch(nodeListFingerprint, () => {
                   v-else-if="row.slot.loading && !isAiToolRegionExcluded(row.node.region)"
                   class="ip-quality-cell__loading"
                 >
-                  <NSpin :size="14" />
+                  <SakuioSpinner :size="14" />
                 </div>
                 <NText v-else depth="3">
                   —

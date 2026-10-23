@@ -8,7 +8,7 @@
   "preview": "preview.png",
   "configuration": {
     "type": "managed",
-    "name": "Naive 设置",
+    "name": "Sakuio 设置",
     "data": [
       {
         "name": "基础设置",
@@ -18,16 +18,16 @@
         "key": "dataUpdateInterval",
         "name": "数据更新间隔",
         "type": "number",
-        "default": 3,
-        "help": "实时数据刷新间隔，单位：秒（建议 1-10 秒）"
+        "default": 1,
+        "help": "实时数据刷新间隔，单位：秒（默认 1 秒）"
       },
       {
         "key": "rpcTransportMode",
         "name": "RPC 连接模式",
         "type": "select",
-        "default": "websocket",
-        "options": "websocket,http",
-        "help": "RPC 默认连接模式，推荐使用 websocket，若您无法使用 websocket 请选择 http"
+        "default": "sse",
+        "options": "sse,websocket,http",
+        "help": "RPC 连接模式，默认 SSE；可选 SSE、WebSocket、HTTP 轮询"
       },
       {
         "key": "defaultViewMode",
@@ -150,7 +150,7 @@
         "key": "listViewColumns",
         "name": "显示列",
         "type": "string",
-        "default": "[\"status\",\"region\",\"name\",\"tags\",\"uptime\",\"os\",\"cpu\",\"mem\",\"disk\",\"traffic\"]",
+        "default": "[\"status\",\"region\",\"name\",\"uptime\",\"tags\",\"os\",\"cpu\",\"mem\",\"disk\",\"traffic\",\"rate\"]",
         "help": "List 视图下显示的列，JSON 数组格式（ASN/厂商在节点名称下方；价格与自定义标签在 tags 列）"
       },
       {
@@ -191,13 +191,6 @@
         "type": "string",
         "default": "1800px",
         "help": "页面内容的最大宽度（如 1800px、100rem）"
-      },
-      {
-        "key": "borderRadius",
-        "name": "圆角大小",
-        "type": "string",
-        "default": "3px",
-        "help": "全局圆角大小（如 3px、0.5rem）"
       },
       {
         "key": "fontFamily",

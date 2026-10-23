@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useDebounceFn } from '@vueuse/core'
-import { NAlert, NButton, NDivider, NEmpty, useMessage } from 'naive-ui'
+import { NAlert, NButton, NDivider, NEmpty, NTooltip, useMessage } from 'naive-ui'
 import { computed, defineAsyncComponent, nextTick, onActivated, onDeactivated, onMounted, onUnmounted, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
 import { useAppStore } from '@/stores/app'
 import { useNodesStore } from '@/stores/nodes'
@@ -27,13 +27,63 @@ const EarthMapPanel = defineAsyncComponent(() => import('@/components/EarthMapPa
 const IpQualityPanel = defineAsyncComponent(() => import('@/components/IpQualityPanel.vue'))
 
 type NodesExtraPanel = 'none' | 'providerValue' | 'financeValue' | 'networkQuality' | 'earthMap' | 'ipQuality'
-const nodesExtraPanel = ref<NodesExtraPanel>('none')
+type ExtraPanel = Exclude<NodesExtraPanel, 'none'>
+const PANEL_ROUTES: Record<ExtraPanel, string> = {
+  providerValue: '/provider-value',
+  financeValue: '/asset-value',
+  networkQuality: '/network-quality',
+  earthMap: '/earth-map',
+  ipQuality: '/ip-quality',
+}
+
+function panelFromPath(path: string): ExtraPanel | 'none' {
+  if (path === '/provider-value')
+    return 'providerValue'
+  if (path === '/asset-value' || path === '/finance-value')
+    return 'financeValue'
+  if (path === '/network-quality')
+    return 'networkQuality'
+  if (path === '/earth-map' || path === '/node-map')
+    return 'earthMap'
+  if (path === '/ip-quality' || path === '/ipquality' || path === '/ipquaility')
+    return 'ipQuality'
+  return 'none'
+}
+
+const appStore = useAppStore()
+const nodesStore = useNodesStore()
+const route = useRoute()
+const router = useRouter()
+
+const nodesExtraPanel = ref<NodesExtraPanel>(panelFromPath(route.path))
+
+function setExtraPanel(panel: ExtraPanel | 'none') {
+  nodesExtraPanel.value = panel
+  const target = panel === 'none' ? '/' : PANEL_ROUTES[panel]
+  if (route.path !== target)
+    void router.push(target)
+}
+
+function handleViewToggle() {
+  if (nodesToolbarExtraOpen.value) {
+    setExtraPanel('none')
+    return
+  }
+  appStore.nodeViewMode = appStore.nodeViewMode === 'card' ? 'list' : 'card'
+}
 
 function toggleNodesExtraPanel(panel: Exclude<NodesExtraPanel, 'none'>) {
   if (panel === 'ipQuality' && !appStore.isLoggedIn)
     return
-  nodesExtraPanel.value = nodesExtraPanel.value === panel ? 'none' : panel
+  setExtraPanel(nodesExtraPanel.value === panel ? 'none' : panel)
 }
+
+watch(
+  () => route.path,
+  path => {
+    nodesExtraPanel.value = panelFromPath(path)
+  },
+)
 
 const showProviderValuePanel = computed(() => nodesExtraPanel.value === 'providerValue')
 const showFinanceValuePanel = computed(() => nodesExtraPanel.value === 'financeValue')
@@ -51,10 +101,6 @@ const currentGroupLabel = computed(() => {
   return appStore.nodeSelectedGroup
 })
 
-const appStore = useAppStore()
-const nodesStore = useNodesStore()
-
-const router = useRouter()
 const message = useMessage()
 
 // 组件激活时恢复滚动位置
@@ -305,82 +351,62 @@ function copyNodeInfo() {
           </div>
         </div>
         <div class="ml-auto flex shrink-0 gap-2 items-center">
-          <NButton
-            quaternary
-            class="node-toolbar__action"
-            :class="{ 'node-toolbar__action--active': showProviderValuePanel }"
-            title="单机资源成本对比"
-            aria-label="单机资源成本对比"
-            @click="toggleNodesExtraPanel('providerValue')"
-          >
-            <template #icon>
-              <div class="i-lucide-scale" />
+          <NTooltip placement="bottom">
+            <template #trigger>
+              <NButton quaternary class="node-toolbar__action" :class="{ 'node-toolbar__action--active': showProviderValuePanel }" aria-label="单机资源成本对比" @click="toggleNodesExtraPanel('providerValue')">
+                <template #icon><div class="i-lucide-scale" /></template>
+              </NButton>
             </template>
-          </NButton>
-          <NButton
-            quaternary
-            class="node-toolbar__action"
-            :class="{ 'node-toolbar__action--active': showFinanceValuePanel }"
-            title="资产价值"
-            aria-label="资产价值"
-            @click="toggleNodesExtraPanel('financeValue')"
-          >
-            <template #icon>
-              <div class="i-lucide-wallet" />
+            单机资源成本对比
+          </NTooltip>
+          <NTooltip placement="bottom">
+            <template #trigger>
+              <NButton quaternary class="node-toolbar__action" :class="{ 'node-toolbar__action--active': showFinanceValuePanel }" aria-label="资产价值" @click="toggleNodesExtraPanel('financeValue')">
+                <template #icon><div class="i-lucide-wallet" /></template>
+              </NButton>
             </template>
-          </NButton>
-          <NButton
-            quaternary
-            class="node-toolbar__action"
-            :class="{ 'node-toolbar__action--active': showNetworkQualityPanel }"
-            title="网络质量"
-            aria-label="网络质量"
-            @click="toggleNodesExtraPanel('networkQuality')"
-          >
-            <template #icon>
-              <div class="i-lucide-wifi" />
+            资产价值
+          </NTooltip>
+          <NTooltip placement="bottom">
+            <template #trigger>
+              <NButton quaternary class="node-toolbar__action" :class="{ 'node-toolbar__action--active': showNetworkQualityPanel }" aria-label="网络质量" @click="toggleNodesExtraPanel('networkQuality')">
+                <template #icon><div class="i-lucide-wifi" /></template>
+              </NButton>
             </template>
-          </NButton>
-          <NButton
-            quaternary
-            class="node-toolbar__action"
-            :class="{ 'node-toolbar__action--active': showEarthMapPanel }"
-            title="节点分布"
-            aria-label="节点分布"
-            @click="toggleNodesExtraPanel('earthMap')"
-          >
-            <template #icon>
-              <div class="i-lucide-globe" />
+            网络质量
+          </NTooltip>
+          <NTooltip placement="bottom">
+            <template #trigger>
+              <NButton quaternary class="node-toolbar__action" :class="{ 'node-toolbar__action--active': showEarthMapPanel }" aria-label="节点分布" @click="toggleNodesExtraPanel('earthMap')">
+                <template #icon><div class="i-lucide-globe" /></template>
+              </NButton>
             </template>
-          </NButton>
-          <NButton
-            v-if="showIpQualityEntry"
-            quaternary
-            class="node-toolbar__action"
-            :class="{ 'node-toolbar__action--active': showIpQualityPanel }"
-            title="IP 质量"
-            aria-label="IP 质量"
-            @click="toggleNodesExtraPanel('ipQuality')"
-          >
-            <template #icon>
-              <div class="i-lucide-shield" />
+            节点分布
+          </NTooltip>
+          <NTooltip v-if="showIpQualityEntry" placement="bottom">
+            <template #trigger>
+              <NButton quaternary class="node-toolbar__action" :class="{ 'node-toolbar__action--active': showIpQualityPanel }" aria-label="IP 质量" @click="toggleNodesExtraPanel('ipQuality')">
+                <template #icon><div class="i-lucide-shield" /></template>
+              </NButton>
             </template>
-          </NButton>
-          <NButton
-            quaternary
-            class="node-toolbar__action"
-            :disabled="nodesToolbarExtraOpen"
-            @click="appStore.nodeViewMode = appStore.nodeViewMode === 'card' ? 'list' : 'card'"
-          >
-            <template #icon>
-              <div :class="appStore.nodeViewMode === 'card' ? 'i-lucide-list' : 'i-lucide-layout-grid'" />
+            IP 质量
+          </NTooltip>
+          <NTooltip placement="bottom">
+            <template #trigger>
+              <NButton quaternary class="node-toolbar__action" aria-label="切换视图" @click="handleViewToggle">
+                <template #icon><div :class="appStore.nodeViewMode === 'card' ? 'i-lucide-list' : 'i-lucide-layout-grid'" /></template>
+              </NButton>
             </template>
-          </NButton>
-          <NButton quaternary class="node-toolbar__action" @click="copyNodeInfo">
-            <template #icon>
-              <div class="i-lucide-copy" />
+            {{ appStore.nodeViewMode === 'card' ? '切换为列表视图' : '切换为卡片视图' }}
+          </NTooltip>
+          <NTooltip placement="bottom">
+            <template #trigger>
+              <NButton quaternary class="node-toolbar__action" aria-label="复制节点信息" @click="copyNodeInfo">
+                <template #icon><div class="i-lucide-copy" /></template>
+              </NButton>
             </template>
-          </NButton>
+            复制节点信息
+          </NTooltip>
         </div>
       </div>
       <div class="nodes-stage">
@@ -438,6 +464,16 @@ function copyNodeInfo() {
   width: var(--node-toolbar-height) !important;
   height: var(--node-toolbar-height) !important;
   padding: 0 !important;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  transition: color .15s ease, background .15s ease, border-color .15s ease, transform .15s ease;
+}
+
+.node-toolbar__action:hover {
+  border-color: var(--glass-border);
+  background: var(--glass-panel) !important;
+  color: var(--n-primary-color) !important;
+  transform: translateY(-1px);
 }
 
 .node-toolbar__action--active {

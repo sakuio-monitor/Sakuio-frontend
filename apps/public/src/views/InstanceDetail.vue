@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { NButton, NCard, NDivider, NEmpty, NIcon, NTabPane, NTabs, NTag, NText } from 'naive-ui'
+import { NButton, NCard, NDivider, NEmpty, NIcon, NTag, NText } from 'naive-ui'
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
@@ -224,15 +224,35 @@ const lightCardContrastEnabled = computed(() => appStore.lightCardContrast && !a
       </div>
 
       <!-- 图表标签页 -->
-      <div class="p-4">
-        <NTabs v-model:value="chartView" type="segment" animated>
-          <NTabPane name="load" tab="负载">
-            <LoadChart :uuid="data.uuid" />
-          </NTabPane>
-          <NTabPane name="ping" tab="延迟">
-            <PingChart :uuid="data.uuid" />
-          </NTabPane>
-        </NTabs>
+      <div class="p-4 chart-section">
+        <div class="chart-tabs" role="tablist" aria-label="图表类型">
+          <button
+            type="button"
+            role="tab"
+            class="chart-tab"
+            :class="{ 'chart-tab--active': chartView === 'load' }"
+            :aria-selected="chartView === 'load'"
+            @click="chartView = 'load'"
+          >
+            负载
+          </button>
+          <button
+            type="button"
+            role="tab"
+            class="chart-tab"
+            :class="{ 'chart-tab--active': chartView === 'ping' }"
+            :aria-selected="chartView === 'ping'"
+            @click="chartView = 'ping'"
+          >
+            延迟
+          </button>
+        </div>
+        <div class="chart-viewport">
+          <Transition name="chart-slide" mode="out-in">
+            <LoadChart v-if="chartView === 'load'" key="load" :uuid="data.uuid" />
+            <PingChart v-else key="ping" :uuid="data.uuid" />
+          </Transition>
+        </div>
       </div>
     </template>
   </div>
@@ -278,5 +298,67 @@ html.dark :deep(.n-tabs-tab--segment) {
 
 :deep(.n-tabs-tab--segment.n-tabs-tab--active) {
   background-color: var(--n-tab-color-active) !important;
+}
+
+.chart-tabs {
+  display: flex;
+  width: 100%;
+  gap: 4px;
+  margin-bottom: 14px;
+  padding: 4px;
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--glass-panel) 70%, transparent);
+}
+
+.chart-tab {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 32px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--n-text-color-3);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color .18s, background .18s, box-shadow .18s;
+}
+
+.chart-tab:hover {
+  color: var(--primary-color);
+  background: var(--glass-panel);
+}
+
+.chart-tab--active {
+  color: var(--n-text-color-1);
+  background: var(--glass-panel);
+  box-shadow: 0 2px 8px rgba(20, 32, 28, .07);
+}
+
+.chart-viewport {
+  overflow: hidden;
+  min-height: 300px;
+}
+
+.chart-slide-enter-active,
+.chart-slide-leave-active {
+  transition: opacity .22s ease, transform .22s cubic-bezier(.2, .8, .2, 1);
+}
+
+.chart-slide-enter-from {
+  opacity: 0;
+  transform: translateX(18px);
+}
+
+.chart-slide-leave-to {
+  opacity: 0;
+  transform: translateX(-18px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chart-slide-enter-active,
+  .chart-slide-leave-active { transition: none; }
 }
 </style>

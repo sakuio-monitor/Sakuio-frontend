@@ -40,6 +40,7 @@ class InitManager {
   private isPolling = false
   private isInitialized = false
   private useWebSocket: boolean | null = null // 根据主题配置决定
+  private sse: EventSource | null = null
   private postFailureCount = 0
   private visibilityHandler: (() => void) | null = null
 
@@ -61,7 +62,7 @@ class InitManager {
     if (typeof interval === 'number' && interval >= 1 && interval <= 60) {
       return interval * 1000 // 转换为毫秒
     }
-    return 3000 // 默认 3 秒
+    return 1000 // 默认 1 秒
   }
 
   /**
@@ -85,6 +86,7 @@ class InitManager {
 
       // 4. 获取节点信息和最新状态
       await this.fetchNodesData()
+      await this.fetchAdminIps()
 
       // 5. 解除加载状态
       this.appStore.loading = false
@@ -159,6 +161,7 @@ class InitManager {
   async refreshAfterLogin(): Promise<void> {
     await this.fetchUserInfo()
     await this.fetchNodesData()
+    await this.fetchAdminIps()
   }
 
   /**
@@ -176,6 +179,7 @@ class InitManager {
       await this.fetchPublicSettings()
       await this.fetchUserInfo()
       await this.fetchNodesData()
+      await this.fetchAdminIps()
 
       // 解除加载状态
       this.appStore.loading = false
@@ -242,11 +246,55 @@ class InitManager {
   }
 
   /**
+   * The public node API intentionally hides IPs. A logged-in administrator
+   * may read the admin client list so IP quality / ASN metadata can work.
+   */
+  private async fetchAdminIps(): Promise<void> {
+    if (!this.appStore.isLoggedIn)
+      return
+    try {
+      const overrides: Record<string, { ipv4?: string, ipv6?: string }> = {}
+      let cursor: string | undefined
+      for (let page = 0; page < 50; page++) {
+        const params = new URLSearchParams({ limit: '100' })
+        if (cursor)
+          params.set('cursor', cursor)
+        const response = await fetch(`/api/admin/clients?${params.toString()}`, {
+          credentials: 'include',
+        })
+        if (!response.ok)
+          return
+        const body = await response.json() as {
+          items?: Array<{ uuid: string, ipv4?: string, ipv6?: string }>
+          next_cursor?: string | null
+        }
+        for (const item of body.items ?? []) {
+          overrides[item.uuid] = { ipv4: item.ipv4, ipv6: item.ipv6 }
+        }
+        cursor = body.next_cursor?.trim() || undefined
+        if (!cursor)
+          break
+      }
+      this.nodesStore.applyIpOverrides(overrides)
+    }
+    catch (error) {
+      console.warn('[InitManager] Failed to load admin IP metadata:', error)
+    }
+  }
+
+  /**
    * 启动 WebSocket 连接和轮询
    */
   private startWebSocketAndPolling(): void {
     // 根据主题配置决定初始连接模式
     const configuredMode = this.appStore.rpcTransportMode
+
+    if (configuredMode === 'sse') {
+      this.startSse()
+      this.bindVisibilityListener()
+      return
+    }
+
     this.useWebSocket = configuredMode === 'websocket'
 
     if (this.useWebSocket) {
@@ -265,6 +313,42 @@ class InitManager {
 
     // 监听页面可见性变化，切回前台时检查 WebSocket 状态
     this.bindVisibilityListener()
+  }
+
+  /**
+   * Public SSE transport. It consumes the same v2 snapshot as `/api/clients`
+   * and falls back to HTTP polling if the stream cannot be established.
+   */
+  private startSse(): void {
+    this.sse?.close()
+    this.useWebSocket = false
+    this.nodesStore.updateWsState('connecting', 0)
+    const source = new EventSource('/api/clients/sse')
+    this.sse = source
+
+    source.addEventListener('nodes', (event) => {
+      try {
+        const payload = JSON.parse((event as MessageEvent).data) as {
+          data?: { online?: string[], data?: Record<string, any> }
+        }
+        const online = new Set(payload.data?.online ?? [])
+        this.nodesStore.applySseSnapshot(online, payload.data?.data ?? {})
+        this.nodesStore.updateWsState('connected', 0)
+        this.appStore.connectionError = false
+      }
+      catch (error) {
+        console.warn('[InitManager] Invalid SSE payload:', error)
+      }
+    })
+
+    source.onerror = () => {
+      source.close()
+      this.sse = null
+      this.nodesStore.updateWsState('disconnected')
+      // Fall back to the HTTP polling path without touching existing APIs.
+      this.rpc.getClient().setTransport(false)
+      this.startPolling()
+    }
   }
 
   /**
@@ -507,6 +591,8 @@ class InitManager {
    * 销毁管理器
    */
   destroy(): void {
+    this.sse?.close()
+    this.sse = null
     this.stopPolling()
     this.rpc.close()
     this.nodesStore.clearNodes()

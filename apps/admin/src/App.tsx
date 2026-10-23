@@ -14,6 +14,7 @@ import LoginPage from "./pages/LoginPage";
 import TerminalPage from "./pages/terminal";
 import { RPC2Provider } from "./contexts/RPC2Context";
 import { NodeListProvider } from "./contexts/NodeListContext";
+import { SiteFaviconSync } from "./components/SiteFaviconSync";
 
 function TerminalRoute() {
   return (
@@ -42,6 +43,7 @@ export default function App() {
   return (
     <InstallProvider>
       <AuthProvider>
+      <SiteFaviconSync />
       <Routes>
         <Route path="/" element={<RootRedirect />} />
         <Route element={<RequireBackend />}>

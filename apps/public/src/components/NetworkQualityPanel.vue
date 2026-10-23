@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { NodeData } from '@/stores/nodes'
 import type { PingTaskColumn } from '@/composables/useNodesPingQuality'
-import { NBadge, NAlert, NCard, NEmpty, NList, NListItem, NSpin, NTag, NText } from 'naive-ui'
+import { NBadge, NAlert, NCard, NEmpty, NList, NListItem, NTag, NText } from 'naive-ui'
+import SakuioSpin from './SakuioSpin.vue'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import NodeListNameCell from '@/components/NodeListNameCell.vue'
@@ -253,7 +254,7 @@ function qualityTagStyle(level: PingQualityLevel) {
     </NAlert>
 
     <div v-else class="node-list-table network-quality-panel__table" :style="listTableStyle">
-      <NSpin :show="showTableSpin" class="network-quality-panel__spin">
+      <SakuioSpin :show="showTableSpin" class="network-quality-panel__spin">
         <div class="node-list-table__scroll app-scrollbar">
           <NList
             hoverable
@@ -300,7 +301,7 @@ function qualityTagStyle(level: PingQualityLevel) {
           </div>
         </template>
 
-        <NListItem v-if="sortedRows.length === 0" class="node-list-row">
+        <NListItem v-if="sortedRows.length === 0" class="node-list-row node-list-row--empty">
           <NEmpty description="暂无节点" size="small" />
         </NListItem>
         <NListItem
@@ -358,7 +359,7 @@ function qualityTagStyle(level: PingQualityLevel) {
         </NListItem>
           </NList>
         </div>
-      </NSpin>
+      </SakuioSpin>
     </div>
   </div>
 </template>

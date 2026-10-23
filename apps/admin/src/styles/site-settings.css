@@ -58,10 +58,12 @@
 }
 
 .site-settings-favicon-preview {
-  width: 28px;
-  height: 28px;
-  object-fit: contain;
-  border-radius: 6px;
+  width: 64px;
+  height: 64px;
+  flex: 0 0 64px;
+  object-fit: cover;
+  border-radius: 50%;
   border: 1px solid var(--glass-border);
   background: var(--glass-panel);
+  box-shadow: 0 4px 14px rgba(20, 24, 32, .08);
 }

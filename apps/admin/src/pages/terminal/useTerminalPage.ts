@@ -54,8 +54,9 @@ export const useTerminalPage = () => {
   const [serverMenuOpen, setServerMenuOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [leftWidth, setLeftWidth] = useState<number>(window.innerWidth * 0.7);
+  const localHost = ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
   const [httpsCalloutOpen, setHttpsCalloutOpen] = useState(
-    window.location.protocol !== "https:",
+    window.location.protocol !== "https:" && !localHost,
   );
   const [twoFaEnabled, setTwoFaEnabled] = useState(false);
   const [twoFaResolved, setTwoFaResolved] = useState(false);

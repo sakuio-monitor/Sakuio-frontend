@@ -320,3 +320,20 @@ body,
 .n-base-select-menu .n-base-select-option:hover {
   background: var(--n-option-color-hover, rgba(128, 138, 133, .12)) !important;
 }
+
+
+/* Glass tooltips must also flip text color with the page theme. */
+.n-tooltip {
+  --n-text-color: #1d2124 !important;
+  color: #1d2124 !important;
+}
+
+.n-tooltip .n-tooltip__content,
+.n-tooltip .n-tooltip__content * {
+  color: inherit !important;
+}
+
+html.dark .n-tooltip {
+  --n-text-color: #eef0f2 !important;
+  color: #eef0f2 !important;
+}

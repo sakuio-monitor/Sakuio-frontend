@@ -84,6 +84,7 @@ export default function SettingsSitePage() {
         audit_retention_days: settings.audit_retention_days,
       });
       setSettings(saved);
+      window.dispatchEvent(new Event("sakuio:favicon-changed"));
       toast.success(t("common.success"));
     } catch {
       toast.error(t("common.error"));
@@ -392,13 +393,11 @@ export default function SettingsSitePage() {
             </span>
           </div>
           <div className="site-settings-row__actions">
-            {settings.favicon ? (
-              <img
-                src={settings.favicon}
-                alt={t("admin.siteSettings.favicon")}
-                className="site-settings-favicon-preview"
-              />
-            ) : null}
+            <img
+              src={settings.favicon || "/admin/favicon.ico"}
+              alt={t("admin.siteSettings.favicon")}
+              className="site-settings-favicon-preview"
+            />
             <Button
               type="button"
               variant="secondary"

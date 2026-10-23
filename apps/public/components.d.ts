@@ -38,6 +38,8 @@ declare module 'vue' {
     ProviderValuePanel: typeof import('./src/components/ProviderValuePanel.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    SakuioSpin: typeof import('./src/components/SakuioSpin.vue')['default']
+    SakuioSpinner: typeof import('./src/components/SakuioSpinner.vue')['default']
     TrafficProgress: typeof import('./src/components/TrafficProgress.vue')['default']
   }
 }

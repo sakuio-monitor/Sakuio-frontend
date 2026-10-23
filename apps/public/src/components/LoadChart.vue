@@ -3,7 +3,8 @@ import type { RecordFormat } from '@/utils/recordHelper'
 import type { StatusRecord } from '@/utils/rpc'
 import { useIntervalFn } from '@vueuse/core'
 import dayjs from 'dayjs'
-import { NButton, NCard, NEmpty, NSpin } from 'naive-ui'
+import { NButton, NCard, NEmpty } from 'naive-ui'
+import SakuioSpin from './SakuioSpin.vue'
 import { computed, onMounted, ref, shallowRef, watch } from 'vue'
 import VChart from 'vue-echarts'
 import { useAppStore } from '@/stores/app'
@@ -147,6 +148,7 @@ const isRealtime = computed(() => selectedView.value === '实时')
 // 数据状态
 const remoteData = shallowRef<StatusRecord[]>([])
 const loading = ref(false)
+const hasLoaded = ref(false)
 const isInitialLoad = ref(true) // 是否为首次加载（用于控制实时模式下的 NSpin 显示）
 const error = ref<string | null>(null)
 
@@ -208,6 +210,7 @@ async function fetchRecentData() {
   finally {
     loading.value = false
     isInitialLoad.value = false
+    hasLoaded.value = true
   }
 }
 
@@ -217,7 +220,8 @@ async function fetchHistoryData() {
 
   const hours = selectedHours.value || 4
 
-  loading.value = true
+  if (!hasLoaded.value)
+    loading.value = true
   error.value = null
 
   try {
@@ -244,6 +248,7 @@ async function fetchHistoryData() {
   }
   finally {
     loading.value = false
+    hasLoaded.value = true
   }
 }
 
@@ -354,7 +359,11 @@ const baseYAxisConfig = computed(() => ({
 
 // CPU 图表
 const cpuChartOption = computed(() => ({
-  animation: false,
+  animation: true,
+  animationDuration: 260,
+  animationDurationUpdate: 0,
+  animationEasing: 'cubicOut',
+  animationEasingUpdate: 'cubicOut',
   // 全局颜色配置（确保 Tooltip 圆点颜色与线条一致）
   color: [chartColors.primary, chartColors.secondary],
   tooltip: {
@@ -408,6 +417,7 @@ const cpuChartOption = computed(() => ({
   ],
   series: [
     {
+      id: 'cpu',
       name: 'CPU',
       type: 'line',
       data: chartData.value.map(r => r.cpu),
@@ -430,6 +440,7 @@ const cpuChartOption = computed(() => ({
       },
     },
     {
+      id: 'load',
       name: '负载',
       type: 'line',
       data: chartData.value.map(r => r.load),
@@ -443,7 +454,11 @@ const cpuChartOption = computed(() => ({
 
 // 内存图表
 const memoryChartOption = computed(() => ({
-  animation: false,
+  animation: true,
+  animationDuration: 260,
+  animationDurationUpdate: 0,
+  animationEasing: 'cubicOut',
+  animationEasingUpdate: 'cubicOut',
   color: [chartColors.primary, chartColors.secondary],
   tooltip: {
     ...baseTooltipConfig.value,
@@ -495,6 +510,7 @@ const memoryChartOption = computed(() => ({
   },
   series: [
     {
+      id: 'ram',
       name: 'RAM',
       type: 'line',
       data: chartData.value.map(r => r.ram ?? 0),
@@ -516,6 +532,7 @@ const memoryChartOption = computed(() => ({
       },
     },
     {
+      id: 'swap',
       name: 'Swap',
       type: 'line',
       data: chartData.value.map(r => r.swap ?? 0),
@@ -528,7 +545,11 @@ const memoryChartOption = computed(() => ({
 
 // 磁盘图表
 const diskChartOption = computed(() => ({
-  animation: false,
+  animation: true,
+  animationDuration: 260,
+  animationDurationUpdate: 0,
+  animationEasing: 'cubicOut',
+  animationEasingUpdate: 'cubicOut',
   color: [chartColors.tertiary],
   tooltip: {
     ...baseTooltipConfig.value,
@@ -570,6 +591,7 @@ const diskChartOption = computed(() => ({
   },
   series: [
     {
+      id: 'disk',
       name: '磁盘已用',
       type: 'line',
       data: chartData.value.map(r => r.disk ?? 0),
@@ -595,7 +617,11 @@ const diskChartOption = computed(() => ({
 
 // 网络图表
 const networkChartOption = computed(() => ({
-  animation: false,
+  animation: true,
+  animationDuration: 260,
+  animationDurationUpdate: 0,
+  animationEasing: 'cubicOut',
+  animationEasingUpdate: 'cubicOut',
   color: [chartColors.quinary, chartColors.quaternary],
   tooltip: {
     ...baseTooltipConfig.value,
@@ -645,6 +671,7 @@ const networkChartOption = computed(() => ({
   },
   series: [
     {
+      id: 'net-in',
       name: '下载',
       type: 'line',
       data: chartData.value.map(r => r.net_in ?? 0),
@@ -653,6 +680,7 @@ const networkChartOption = computed(() => ({
       lineStyle: { width: 2.5, color: chartColors.quinary, cap: 'round' as const },
     },
     {
+      id: 'net-out',
       name: '上传',
       type: 'line',
       data: chartData.value.map(r => r.net_out ?? 0),
@@ -665,7 +693,11 @@ const networkChartOption = computed(() => ({
 
 // 连接数图表
 const connectionsChartOption = computed(() => ({
-  animation: false,
+  animation: true,
+  animationDuration: 260,
+  animationDurationUpdate: 0,
+  animationEasing: 'cubicOut',
+  animationEasingUpdate: 'cubicOut',
   color: [chartColors.primary, chartColors.tertiary],
   tooltip: {
     ...baseTooltipConfig.value,
@@ -716,6 +748,7 @@ const connectionsChartOption = computed(() => ({
   },
   series: [
     {
+      id: 'tcp',
       name: 'TCP',
       type: 'line',
       data: chartData.value.map(r => r.connections ?? 0),
@@ -724,6 +757,7 @@ const connectionsChartOption = computed(() => ({
       lineStyle: { width: 2.5, color: chartColors.primary, cap: 'round' as const },
     },
     {
+      id: 'udp',
       name: 'UDP',
       type: 'line',
       data: chartData.value.map(r => r.connections_udp ?? 0),
@@ -736,7 +770,11 @@ const connectionsChartOption = computed(() => ({
 
 // 进程数图表
 const processChartOption = computed(() => ({
-  animation: false,
+  animation: true,
+  animationDuration: 260,
+  animationDurationUpdate: 0,
+  animationEasing: 'cubicOut',
+  animationEasingUpdate: 'cubicOut',
   color: [chartColors.quaternary],
   tooltip: {
     ...baseTooltipConfig.value,
@@ -776,6 +814,7 @@ const processChartOption = computed(() => ({
   },
   series: [
     {
+      id: 'process',
       name: '进程数',
       type: 'line',
       data: chartData.value.map(r => r.process ?? 0),
@@ -840,13 +879,13 @@ const blurClass = computed(() => {
 // ==================== 生命周期 ====================
 
 watch(selectedView, () => {
-  isInitialLoad.value = true // 切换视图时重置首次加载状态
   fetchData()
 })
 
 watch(() => props.uuid, () => {
   remoteData.value = []
-  isInitialLoad.value = true // 切换节点时重置首次加载状态
+  hasLoaded.value = false
+  isInitialLoad.value = true
   fetchData()
 })
 
@@ -871,7 +910,7 @@ onMounted(() => {
     </div>
 
     <!-- 内容区域 -->
-    <NSpin :show="loading">
+    <SakuioSpin :show="loading">
       <div v-if="error" class="text-red-500 py-8 text-center">
         {{ error }}
       </div>
@@ -894,7 +933,7 @@ onMounted(() => {
             </div>
           </template>
           <div class="h-48">
-            <VChart :option="cpuChartOption" autoresize />
+            <VChart :option="cpuChartOption" :update-options="{ notMerge: false, replaceMerge: ['series'], lazyUpdate: true }" autoresize />
           </div>
         </NCard>
 
@@ -919,7 +958,7 @@ onMounted(() => {
             </div>
           </template>
           <div class="h-48">
-            <VChart :option="memoryChartOption" autoresize />
+            <VChart :option="memoryChartOption" :update-options="{ notMerge: false, replaceMerge: ['series'], lazyUpdate: true }" autoresize />
           </div>
         </NCard>
 
@@ -944,7 +983,7 @@ onMounted(() => {
             </div>
           </template>
           <div class="h-48">
-            <VChart :option="diskChartOption" autoresize />
+            <VChart :option="diskChartOption" :update-options="{ notMerge: false, replaceMerge: ['series'], lazyUpdate: true }" autoresize />
           </div>
         </NCard>
 
@@ -971,7 +1010,7 @@ onMounted(() => {
             </div>
           </template>
           <div class="h-48">
-            <VChart :option="networkChartOption" autoresize />
+            <VChart :option="networkChartOption" :update-options="{ notMerge: false, replaceMerge: ['series'], lazyUpdate: true }" autoresize />
           </div>
         </NCard>
 
@@ -990,7 +1029,7 @@ onMounted(() => {
             </div>
           </template>
           <div class="h-48">
-            <VChart :option="connectionsChartOption" autoresize />
+            <VChart :option="connectionsChartOption" :update-options="{ notMerge: false, replaceMerge: ['series'], lazyUpdate: true }" autoresize />
           </div>
         </NCard>
 
@@ -1005,11 +1044,11 @@ onMounted(() => {
             </div>
           </template>
           <div class="h-48">
-            <VChart :option="processChartOption" autoresize />
+            <VChart :option="processChartOption" :update-options="{ notMerge: false, replaceMerge: ['series'], lazyUpdate: true }" autoresize />
           </div>
         </NCard>
       </div>
-    </NSpin>
+    </SakuioSpin>
   </div>
 </template>
 

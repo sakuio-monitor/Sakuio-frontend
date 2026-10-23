@@ -78,7 +78,7 @@ const themeOverride = computed<GlobalThemeOverrides>(() => {
   const settings = appStore.publicSettings?.theme_settings as Record<string, unknown> | undefined
 
   // 通用默认值
-  const borderRadius = (settings?.borderRadius as string) || '8px'
+  const borderRadius = '16px'
   const fontFamily = (settings?.fontFamily as string) || '"MiSans VF", sans-serif'
 
   // 根据当前主题模式选择颜色配置
@@ -120,6 +120,22 @@ watch(
     if (overrides.common?.primaryColorPressed) {
       root.style.setProperty('--primary-color-pressed', overrides.common.primaryColorPressed)
     }
+  },
+  { immediate: true },
+)
+
+// Keep the browser-tab icon in sync with the admin site favicon setting.
+watch(
+  () => appStore.publicSettings?.favicon,
+  (favicon) => {
+    const href = favicon?.trim() || '/favicon.ico?v=sakuio-icon-2'
+    let link = document.querySelector<HTMLLinkElement>('link[rel~="icon"]')
+    if (!link) {
+      link = document.createElement('link')
+      link.rel = 'icon'
+      document.head.appendChild(link)
+    }
+    link.href = href
   },
   { immediate: true },
 )

@@ -11,7 +11,7 @@ const appStore = useAppStore()
 // 从 Provider 注入滚动状态
 const isScrolled = inject<ReturnType<typeof ref<boolean>>>('isScrolled', ref(false))
 
-const siteFavicon = ref('/favicon.ico')
+const siteFavicon = computed(() => appStore.publicSettings?.favicon || '/favicon.ico?v=sakuio-icon-2')
 const searchPopoverVisible = ref(false)
 const searchInputRef = ref<{ focus: () => void } | null>(null)
 

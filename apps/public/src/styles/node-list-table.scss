@@ -126,3 +126,79 @@
   justify-content: center;
   align-items: center;
 }
+
+/* Empty finance / provider tables: give the empty state a full, centered area. */
+.node-list-table__surface .n-list-item.node-list-row--empty {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100%;
+  height: auto !important;
+  min-height: 240px !important;
+  max-height: none !important;
+}
+
+.node-list-row--empty .n-list-item__main {
+  display: flex;
+  width: 100%;
+  min-height: 240px;
+  align-items: center;
+  justify-content: center;
+}
+
+.node-list-row--empty .n-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: auto;
+}
+
+.node-list-row--empty .n-empty__description {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Empty rows are informational only: never show list hover/cursor treatment. */
+.node-list-table__surface .n-list-item.node-list-row--empty,
+.node-list-table__surface .n-list-item.node-list-row--empty:hover,
+.node-list-row--empty:hover .n-list-item__main,
+.node-list-row--empty:hover .n-list-item__main:hover {
+  background: transparent !important;
+  cursor: default !important;
+}
+
+/* An empty list is a full-height informational surface. */
+.node-list-table__surface:has(.node-list-row--empty) {
+  min-height: 260px;
+}
+
+.node-list-table__surface .n-list-item.node-list-row--empty,
+.node-list-table__surface .n-list-item.node-list-row--empty.n-list-item--hoverable,
+.node-list-table__surface .n-list-item.node-list-row--empty.n-list-item--hoverable:hover,
+.node-list-table__surface .n-list-item.node-list-row--empty:hover,
+.node-list-table__surface .n-list-item.node-list-row--empty .n-list-item__main,
+.node-list-table__surface .n-list-item.node-list-row--empty:hover .n-list-item__main {
+  width: 100%;
+  height: auto !important;
+  min-height: 260px !important;
+  max-height: none !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  cursor: default !important;
+}
+
+.node-list-table__surface .n-list-item.node-list-row--empty .n-list-item__main {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.node-list-table__surface .n-list-item.node-list-row--empty .n-empty {
+  margin: auto !important;
+  padding: 24px;
+}

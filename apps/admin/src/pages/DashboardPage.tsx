@@ -40,7 +40,7 @@ import {
   Wifi,
   X,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import {
@@ -495,12 +495,15 @@ function SortableWidget({
   );
 }
 
+const WidgetContent = memo(WidgetContentInner);
+
 function DashboardBoard({
   layout,
   editing,
   setLayout,
   titles,
   data,
+  liveOverview,
   onPingSelect,
   onRankMore,
 }: {
@@ -509,6 +512,7 @@ function DashboardBoard({
   setLayout: (layout: DashboardWidgetLayout[]) => void;
   titles: Record<DashboardWidgetId, string>;
   data: DashboardData;
+  liveOverview: { online: number; total: number } | null;
   onPingSelect: (item: DashboardQualityItem) => void;
   onRankMore: (detail: RankDetail) => void;
 }) {
@@ -535,7 +539,14 @@ function DashboardBoard({
               onRemove={() => setLayout(layout.filter((entry) => entry.id !== item.id))}
               onPatch={(patch) => setLayout(layout.map((entry) => entry.id === item.id ? { ...entry, ...patch } : entry))}
             >
-              <WidgetContent id={item.id} data={data} limit={item.limit} onPingSelect={onPingSelect} onRankMore={onRankMore} />
+              <WidgetContent
+                id={item.id}
+                data={data}
+                limit={item.limit}
+                liveOverview={item.id === "overview" ? liveOverview : undefined}
+                onPingSelect={onPingSelect}
+                onRankMore={onRankMore}
+              />
             </SortableWidget>
           ))}
         </div>
@@ -544,32 +555,38 @@ function DashboardBoard({
   );
 }
 
-function WidgetContent({
+function WidgetContentInner({
   id,
   data,
   limit,
+  liveOverview,
   onPingSelect,
   onRankMore,
 }: {
   id: DashboardWidgetId;
   data: DashboardData;
   limit: number;
+  liveOverview?: { online: number; total: number } | null;
   onPingSelect: (item: DashboardQualityItem) => void;
   onRankMore: (detail: RankDetail) => void;
 }) {
   const { t } = useTranslation();
   switch (id) {
-    case "overview":
+    case "overview": {
+      const online = liveOverview?.online ?? data.overview.online;
+      const total = liveOverview?.total || data.overview.total;
+      const percent = total > 0 ? (online / total) * 100 : 0;
       return (
         <div className="dash-overview">
-          <OverviewRing percent={data.overview.online_percent} />
+          <OverviewRing percent={percent} />
           <div>
-            <strong>{data.overview.online_percent >= 100 ? "全部在线" : data.overview.online_percent >= 75 ? "部分服务器离线" : "集群异常"}</strong>
-            <p>在线 {data.overview.online}/{data.overview.total} 台</p>
-            <p className={data.overview.offline ? "dash-danger" : "dash-muted"}>离线 {data.overview.offline} 台</p>
+            <strong>{percent >= 100 ? "全部在线" : percent >= 75 ? "部分服务器离线" : "集群异常"}</strong>
+            <p>在线 {online}/{total} 台</p>
+            <p className={total - online ? "dash-danger" : "dash-muted"}>离线 {Math.max(0, total - online)} 台</p>
           </div>
         </div>
       );
+    }
     case "database":
       return (
         <div className="dash-kv-list">
@@ -670,7 +687,7 @@ function WidgetContent({
       return (
         <div className="dash-shortcuts">
           <Link to="/servers"><Server size={16} />服务器管理<ArrowUpRight size={14} /></Link>
-          <Link to="/terminal" target="_blank"><Terminal size={16} />远程工作台<ArrowUpRight size={14} /></Link>
+          <Link to="/workbench"><Terminal size={16} />远程工作台<ArrowUpRight size={14} /></Link>
           <Link to="/settings/notification"><Bell size={16} />通知配置<ArrowUpRight size={14} /></Link>
         </div>
       );
@@ -685,6 +702,7 @@ export default function DashboardPage() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [data, setData] = useState<DashboardData | null>(null);
+  const [liveOverview, setLiveOverview] = useState<{ online: number; total: number } | null>(null);
   const [layout, setLayout] = useState<DashboardWidgetLayout[]>(defaultDashboardLayout);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -695,6 +713,7 @@ export default function DashboardPage() {
   const [pingDetail, setPingDetail] = useState<DashboardQualityItem | null>(null);
   const [rankDetail, setRankDetail] = useState<RankDetail | null>(null);
   const revisionRef = useRef(0);
+  const lastLiveReloadRef = useRef(0);
 
   const load = useCallback(async (next: string, start?: string, end?: string) => {
     setLoading(true);
@@ -712,23 +731,14 @@ export default function DashboardPage() {
   useEffect(() => { void fetchDashboardLayout().then(setLayout).catch(() => undefined); }, []);
   useEffect(() => {
     const close = watchDashboardLive((live) => {
-      setData((previous) => {
-        if (!previous) return previous;
-        const total = live.total || previous.overview.total;
-        const online = live.online;
-        return {
-          ...previous,
-          overview: {
-            ...previous.overview,
-            online,
-            total,
-            offline: Math.max(0, total - online),
-            online_percent: total > 0 ? (online / total) * 100 : 0,
-          },
-        };
-      });
+      // The live frame only updates the small overview block. Reloading all
+      // dashboard widgets on every frame caused the whole page to flicker.
+      setLiveOverview({ online: live.online, total: live.total });
       if (live.revision !== revisionRef.current) {
         revisionRef.current = live.revision;
+        const now = Date.now();
+        if (now - lastLiveReloadRef.current < 30_000) return;
+        lastLiveReloadRef.current = now;
         const start = startDate ? `${startDate}T00:00:00` : undefined;
         const end = endDate ? `${endDate}T23:59:59.999` : undefined;
         const startIso = start ? new Date(start).toISOString() : undefined;
@@ -856,6 +866,7 @@ export default function DashboardPage() {
             setLayout={setLayout}
             titles={titles}
             data={data}
+            liveOverview={liveOverview}
             onPingSelect={setPingDetail}
             onRankMore={setRankDetail}
           />

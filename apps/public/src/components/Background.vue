@@ -207,8 +207,6 @@ onUnmounted(() => {
 .background-loading {
   background: var(--ambient-mesh);
   background-size: 120% 120%;
-  animation: ambientDrift 14s ease-in-out infinite alternate;
-  will-change: transform;
 }
 
 @keyframes ambientDrift {
@@ -217,8 +215,6 @@ onUnmounted(() => {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .background-default,
-  .background-loading { animation: none; }
 }
 
 .background-media {

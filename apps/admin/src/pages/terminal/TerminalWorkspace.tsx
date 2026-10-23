@@ -181,12 +181,14 @@ const TerminalWorkspace = ({
             : "hidden"
         }`}
       >
-        <div className="min-h-0 flex-1 overflow-hidden">
-          <FileManagerPanel
-            uuid={tabs.find((tab) => tab.id === activeTabId)?.uuid ?? null}
-            clientOs={clients.find((client) => client.uuid === tabs.find((tab) => tab.id === activeTabId)?.uuid)?.os}
-          />
-        </div>
+        {isSidebarOpen && (
+          <div className="min-h-0 flex-1 overflow-hidden">
+            <FileManagerPanel
+              uuid={tabs.find((tab) => tab.id === activeTabId)?.uuid ?? null}
+              clientOs={clients.find((client) => client.uuid === tabs.find((tab) => tab.id === activeTabId)?.uuid)?.os}
+            />
+          </div>
+        )}
       </aside>
     </div>
   );
