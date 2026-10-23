@@ -22,7 +22,7 @@ export default defineConfig({
     port: 5174,
     proxy: {
       "/api": {
-        target: "http://127.0.0.1:8555",
+        target: process.env.VITE_DEV_API_PROXY || "http://127.0.0.1:8555",
         changeOrigin: true,
         rewriteWsOrigin: true,
         ws: true,

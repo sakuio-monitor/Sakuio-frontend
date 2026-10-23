@@ -252,7 +252,7 @@ onUnmounted(() => {
 // 过渡动画
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.8s ease;
+  transition: none;
 }
 
 .fade-enter-from,

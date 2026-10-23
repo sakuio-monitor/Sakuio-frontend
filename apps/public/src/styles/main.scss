@@ -214,13 +214,12 @@ html.dark {
   --glass-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 3px 16px rgba(0, 0, 0, 0.22);
 }
 
-html {
-  background: var(--ambient-base);
-}
-
+html,
 body,
 #app {
-  background: transparent !important;
+  min-height: 100%;
+  background: var(--ambient-base) !important;
+  background-color: var(--ambient-base) !important;
 }
 
 

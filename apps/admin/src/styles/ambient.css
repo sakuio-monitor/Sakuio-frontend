@@ -57,3 +57,21 @@
     animation: none;
   }
 }
+
+/*
+ * Flicker mitigation without removing the glass effect: the root always paints
+ * a solid ambient color, and the background layer gets a stable compositing
+ * hint so transparent regions cannot flash white between paints.
+ */
+html,
+body,
+#root {
+  min-height: 100%;
+  background-color: var(--ambient-base);
+}
+
+.ambient-surface::before,
+.background-container {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
