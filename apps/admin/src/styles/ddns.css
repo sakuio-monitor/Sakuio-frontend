@@ -1,0 +1,134 @@
+.ddns-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+.ddns-card { display: flex; flex-direction: column; gap: 12px; padding: 18px; }
+.ddns-card__head { display: flex; align-items: flex-start; gap: 10px; }
+.ddns-card__icon { display: grid; place-items: center; width: 34px; height: 34px; flex: none; border-radius: 9px; background: var(--menu-hover-bg, rgba(20, 24, 32, .06)); color: var(--color-gray-700); }
+.ddns-card__head > div { display: flex; flex: 1; flex-direction: column; gap: 2px; min-width: 0; }
+.ddns-card__head strong { font-size: 15px; }
+.ddns-card__head span { color: var(--color-gray-500); font-size: 12px; }
+.ddns-card__desc { margin: 0; color: var(--color-gray-500); font-size: 12px; line-height: 1.5; }
+.ddns-card__meta { display: flex; justify-content: space-between; gap: 12px; color: var(--color-gray-500); font-size: 12px; }
+.ddns-card__meta strong { color: var(--color-gray-700); font-weight: 500; text-align: right; }
+.ddns-card__actions { display: flex; gap: 8px; margin-top: auto; }
+.ddns-status { display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px; border-radius: 999px; background: var(--glass-border); color: var(--color-gray-500); font-size: 10px; white-space: nowrap; }
+.ddns-status--ok { background: rgba(34, 197, 94, .1); color: #16a34a; }
+.ddns-empty { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 42px 20px; color: var(--color-gray-500); text-align: center; }
+.ddns-empty strong { color: var(--color-black); font-size: 16px; }
+.ddns-empty span { font-size: 13px; }
+.ddns-list { display: flex; flex-direction: column; gap: 12px; }
+.ddns-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; padding: 16px 18px; }
+.ddns-row__main { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+.ddns-row__title { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.ddns-row__title strong { font-size: 14px; }
+.ddns-type, .ddns-proxy { padding: 2px 7px; border-radius: 5px; background: var(--menu-hover-bg, rgba(20, 24, 32, .06)); color: var(--color-gray-600); font-family: var(--font-family-number); font-size: 10px; }
+.ddns-proxy { color: #b45309; }
+.ddns-row__meta { display: flex; flex-wrap: wrap; gap: 6px 16px; color: var(--color-gray-500); font-size: 12px; }
+.ddns-row__error { margin: 2px 0 0; color: #dc2626; font-size: 12px; }
+.ddns-row__actions { display: flex; flex: none; flex-wrap: wrap; gap: 8px; }
+.ddns-form { display: flex; flex-direction: column; gap: 14px; }
+.ddns-form__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.ddns-form__switch { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 4px 0; }
+.ddns-form__switch > span { display: flex; flex-direction: column; gap: 2px; }
+.ddns-form__switch strong { font-size: 13px; }
+.ddns-form__switch small { color: var(--color-gray-500); font-size: 11px; }
+.ddns-hint { display: flex; align-items: flex-start; gap: 6px; margin: 0; color: var(--color-gray-500); font-size: 12px; line-height: 1.5; }
+@media (max-width: 720px) {
+  .ddns-card-grid { grid-template-columns: 1fr; }
+  .ddns-row { flex-direction: column; }
+  .ddns-row__actions { width: 100%; }
+  .ddns-row__actions .btn { flex: 1; }
+  .ddns-form__grid { grid-template-columns: 1fr; }
+}
+.server-search-select { position: relative; width: 100%; }
+.server-search-select__input { display: flex; align-items: center; gap: 8px; min-height: 38px; padding: 0 10px; border: 1px solid var(--ui-border, var(--glass-border)); border-radius: 8px; background: var(--ui-bg, var(--glass-panel)); color: var(--color-gray-500); }
+.server-search-select__input input { flex: 1; min-width: 0; height: 36px; border: 0; outline: none; background: transparent; color: var(--color-black); font-family: var(--font-family); font-size: 13px; }
+.server-search-select__clear { border: 0; background: transparent; color: var(--color-gray-400); font-size: 17px; cursor: pointer; }
+.server-search-select__menu { position: absolute; top: calc(100% + 4px); left: 0; z-index: 100; width: 100%; max-height: 360px; overflow-y: auto; border: 1px solid var(--glass-border); border-radius: 9px; background: var(--glass-panel); box-shadow: 0 14px 36px rgba(0, 0, 0, .14); }
+.server-search-select__item { display: flex; flex-direction: column; gap: 2px; width: 100%; padding: 9px 12px; border: 0; background: transparent; color: var(--color-gray-700); text-align: left; cursor: pointer; }
+.server-search-select__item:hover, .server-search-select__item.is-selected { background: var(--menu-hover-bg, rgba(20, 24, 32, .06)); }
+.server-search-select__item span { font-size: 13px; }
+.server-search-select__item small { color: var(--color-gray-400); font-family: var(--font-family-number); font-size: 10px; }
+.server-search-select__empty { padding: 16px 12px; color: var(--color-gray-400); font-size: 12px; text-align: center; }
+.server-search-select__error { color: #dc2626; }
+.server-search-select__footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px; border-top: 1px solid var(--glass-border); color: var(--color-gray-500); font-size: 11px; }
+.server-search-select__footer > div { display: flex; align-items: center; gap: 6px; }
+.server-search-select__footer button { display: grid; place-items: center; width: 24px; height: 24px; padding: 0; border: 1px solid var(--glass-border); border-radius: 5px; background: transparent; color: var(--color-gray-600); cursor: pointer; }
+.server-search-select__footer button:disabled { opacity: .4; cursor: default; }
+.ddns-auth-list { display: flex; flex-direction: column; gap: 10px; }
+.ddns-auth-row { display: flex; align-items: center; gap: 14px; padding: 14px 16px; }
+.ddns-auth-row__main { display: flex; flex: 1; flex-direction: column; gap: 5px; min-width: 0; }
+.ddns-auth-row__title { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.ddns-auth-row__title strong { font-size: 15px; }
+.ddns-auth-row__meta { display: flex; flex-wrap: wrap; gap: 5px 16px; color: var(--color-gray-500); font-size: 12px; }
+.ddns-auth-row__actions { display: flex; flex: none; gap: 8px; }
+@media (max-width: 720px) {
+  .ddns-auth-row { align-items: flex-start; flex-wrap: wrap; }
+  .ddns-auth-row__actions { width: 100%; padding-left: 48px; }
+}
+.server-search-select__menu {
+  background: var(--glass-panel);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: var(--glass-shadow);
+  transform-origin: top center;
+  animation: server-select-in 180ms cubic-bezier(.22, 1, .36, 1);
+}
+.server-search-select__menu.is-closing {
+  animation: server-select-out 150ms ease-in forwards;
+  pointer-events: none;
+}
+.server-search-select__input:focus-within {
+  border-color: var(--color-gray-400);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-black) 6%, transparent);
+}
+@keyframes server-select-in {
+  from { opacity: 0; transform: translateY(-5px) scale(.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes server-select-out {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(-4px) scale(.99); }
+}
+.server-search-select__item { flex-direction: row; align-items: baseline; justify-content: space-between; gap: 10px; }
+.server-search-select__item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.server-search-select__item small { flex: none; color: var(--color-gray-400); font-family: var(--font-family-number); font-size: 11px; }
+.server-search-select__footer { border-top: 0; }
+.driver-tag { display: inline-flex; align-items: center; gap: 6px; }
+.driver-icon { width: 14px; height: 14px; object-fit: contain; }
+.data-table--list-auth_providers th.data-table__th--actions,
+.data-table--list-auth_providers td.data-table__td--actions { text-align: right; }
+.data-table--list-auth_providers td.data-table__td--actions > .data-table-actions {
+  display: flex;
+  width: 100%;
+  justify-content: flex-end;
+}
+.ddns-form__actions { display: flex; justify-content: flex-end; padding: 4px 0 12px; }
+.driver-option { display: inline-flex; align-items: center; gap: 7px; }
+.ddns-domain { display: inline-flex; align-items: center; gap: 6px; }
+.ddns-status--pending { color: #b45309; background: rgba(245, 158, 11, .12); }
+.ddns-status--error { color: #dc2626; background: rgba(239, 68, 68, .1); }
+.ddns-status--pending svg { animation: ddns-spin 1s linear infinite; }
+@keyframes ddns-spin { to { transform: rotate(360deg); } }
+.data-table--list-ddns_records th.data-table__th--actions,
+.data-table--list-ddns_records td.data-table__td--actions { text-align: right; }
+.data-table--list-ddns_records td.data-table__td--actions > .data-table-actions {
+  display: flex;
+  width: 100%;
+  justify-content: flex-end;
+}
+.ddns-type--a { color: #2563eb; background: rgba(37, 99, 235, .1); }
+.ddns-type--aaaa { color: #7c3aed; background: rgba(124, 58, 237, .1); }
+.ddns-type--both { color: #047857; background: rgba(4, 120, 87, .12); }
+.data-table--list-notification_channels th.data-table__th--actions,
+.data-table--list-notification_channels td.data-table__td--actions,
+.data-table--list-notification_rules th.data-table__th--actions,
+.data-table--list-notification_rules td.data-table__td--actions {
+  text-align: right;
+}
+.data-table--list-notification_channels td.data-table__td--actions > .data-table-actions,
+.data-table--list-notification_rules td.data-table__td--actions > .data-table-actions {
+  display: flex;
+  width: 100%;
+  justify-content: flex-end;
+}
+.data-table-cell.is-disabled { color: var(--color-gray-400); }
