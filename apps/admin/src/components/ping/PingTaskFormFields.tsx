@@ -1,14 +1,16 @@
-import { Button, ChoiceGroup, Input, Select } from "@sakuio/ui";
+import { Input, Select } from "@sakuio/ui";
 import { useTranslation } from "react-i18next";
-import type { PingTaskDraft } from "../../types/ping";
+import type { AdminClientSummary, PingTaskDraft } from "../../types/ping";
+import { Switch } from "../ui/Switch";
+import { SearchableServerMultiSelect } from "./SearchableServerMultiSelect";
 
 type Props = {
   form: PingTaskDraft;
+  clients: AdminClientSummary[];
   onChange: (next: PingTaskDraft) => void;
-  onPickClients: () => void;
 };
 
-export function PingTaskFormFields({ form, onChange, onPickClients }: Props) {
+export function PingTaskFormFields({ form, clients, onChange }: Props) {
   const { t } = useTranslation();
 
   return (
@@ -42,33 +44,29 @@ export function PingTaskFormFields({ form, onChange, onPickClients }: Props) {
           required
         />
       </label>
-      <ChoiceGroup
-        ariaLabel={t("admin.ping.defaultOn")}
-        value={form.default_on ? "default" : "manual"}
-        onChange={(v) => onChange({ ...form, default_on: v === "default" })}
-        options={[
-          {
-            value: "manual",
-            title: t("admin.ping.bindServers"),
-            hint: t("common.selectClients"),
-          },
-          {
-            value: "default",
-            title: t("admin.ping.defaultOn"),
-            hint: t("admin.ping.defaultOnHint"),
-          },
-        ]}
-      />
-      {!form.default_on ? (
-        <div className="admin-sidebar-form__label">
-          <Button type="button" variant="secondary" size="sm" onClick={onPickClients}>
-            {t("common.selectClients")}
-          </Button>
-          <p className="admin-sidebar-form__hint">
-            {t("common.selectedCount", { count: form.clients.length })}
-          </p>
-        </div>
-      ) : null}
+      <div className="ddns-form__switch">
+        <span>
+          <strong>{t("admin.ping.defaultOn")}</strong>
+          <small>{t("admin.ping.defaultOnHint")}</small>
+        </span>
+        <Switch
+          checked={form.default_on}
+          label={t("admin.ping.defaultOn")}
+          onChange={(checked) => onChange({ ...form, default_on: checked })}
+        />
+      </div>
+      <div className="admin-sidebar-form__label">
+        <span>{t("common.selectClients")}</span>
+        <SearchableServerMultiSelect
+          clients={clients}
+          values={form.clients}
+          onChange={(next) => onChange({ ...form, clients: next })}
+          placeholder={t("common.selectPlaceholder")}
+        />
+        <p className="admin-sidebar-form__hint">
+          {t("common.selectedCount", { n: form.clients.length })}
+        </p>
+      </div>
       <label className="admin-sidebar-form__label">
         {t("admin.ping.interval")} ({t("time.second")})
         <Input

@@ -132,3 +132,7 @@
   justify-content: flex-end;
 }
 .data-table-cell.is-disabled { color: var(--color-gray-400); }
+
+.server-search-select__chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
+.server-search-select__chip { display: inline-flex; align-items: center; gap: 4px; max-width: 100%; padding: 3px 7px; border: 1px solid var(--glass-border); border-radius: 6px; background: var(--ui-bg, var(--glass-panel)); color: var(--color-gray-700); font-size: 11px; }
+.server-search-select__chip button { display: grid; place-items: center; padding: 0; border: 0; background: transparent; color: var(--color-gray-400); cursor: pointer; }

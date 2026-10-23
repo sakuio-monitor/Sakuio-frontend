@@ -107,10 +107,20 @@
     "update_available": "Update available",
     "updated_successfully": "Updated successfully",
     "upload": "Upload",
-    "weight": "Weight"
+    "weight": "Weight",
+    "copySuccess": "Copied",
+    "deleted": "Deleted",
+    "empty": "No data",
+    "offline": "Offline",
+    "online": "Online",
+    "saved": "Saved",
+    "selectClients": "Select servers",
+    "selectPlaceholder": "Search server name or UUID",
+    "selectedCount": "{{n}} selected"
   },
   "time": {
-    "second": "seconds"
+    "second": "seconds",
+    "day": "day"
   },
   "fields": {
     "id": "ID",
@@ -680,7 +690,12 @@
       "password": "Password",
       "twoFa": "Two-factor code",
       "twoFaRequired": "Two-factor is enabled for this account; enter the code and log in again",
-      "submit": "Log in"
+      "submit": "Log in",
+      "twoFaBack": "Back to sign in",
+      "twoFaCodeShort": "Code",
+      "twoFaPageHint": "Enter the 6-digit code from your authenticator app",
+      "twoFaPageTitle": "Two-factor verification",
+      "twoFaVerify": "Verify"
     },
     "themes": {
       "upload": "Upload theme",
@@ -1066,5 +1081,14 @@
     "disableTwoFactor": "Disable two-factor authentication",
     "twoFactorDisabled": "Two-factor authentication disabled",
     "qrCode": "QR code"
+  },
+  "dashboard": {
+    "uploadRate": "Upload rate",
+    "downloadRate": "Download rate"
+  },
+  "nodeCard": {
+    "disk": "Disk",
+    "ram": "Memory",
+    "offline": "Offline"
   }
 }

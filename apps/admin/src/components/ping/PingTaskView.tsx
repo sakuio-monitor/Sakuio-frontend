@@ -37,7 +37,7 @@ const emptyDraft = (): PingTaskDraft => ({
   type: "icmp",
   target: "",
   interval: 60,
-  default_on: false,
+  default_on: true,
   clients: [],
 });
 
@@ -322,11 +322,8 @@ export function PingTaskView({ tasks, clients, selectedIds, onSelectionChange, o
       >
         <PingTaskFormFields
           form={editForm}
+          clients={clients}
           onChange={setEditForm}
-          onPickClients={() => {
-            setClientPickerMode("edit");
-            setClientPickerOpen(true);
-          }}
         />
       </GenericSidebar>
 

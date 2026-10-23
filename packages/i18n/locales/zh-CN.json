@@ -107,10 +107,20 @@
     "update_available": "有新版本",
     "updated_successfully": "成功更新",
     "upload": "上传",
-    "weight": "权重"
+    "weight": "权重",
+    "copySuccess": "复制成功",
+    "deleted": "已删除",
+    "empty": "暂无数据",
+    "offline": "离线",
+    "online": "在线",
+    "saved": "已保存",
+    "selectClients": "选择服务器",
+    "selectPlaceholder": "搜索服务器名称或 UUID",
+    "selectedCount": "已选 {{n}} 项"
   },
   "time": {
-    "second": "秒"
+    "second": "秒",
+    "day": "天"
   },
   "fields": {
     "id": "ID",
@@ -681,7 +691,12 @@
       "password": "密码",
       "twoFa": "双因素验证码",
       "twoFaRequired": "该账号已启用双因素，请输入验证码后再次登录",
-      "submit": "登录"
+      "submit": "登录",
+      "twoFaBack": "返回登录",
+      "twoFaCodeShort": "验证码",
+      "twoFaPageHint": "请输入身份验证器中的 6 位验证码",
+      "twoFaPageTitle": "两步验证",
+      "twoFaVerify": "验证"
     },
     "themes": {
       "upload": "上传主题",
@@ -1067,5 +1082,14 @@
     "disableTwoFactor": "关闭双重身份验证",
     "twoFactorDisabled": "双重身份验证已关闭",
     "qrCode": "二维码"
+  },
+  "dashboard": {
+    "uploadRate": "上传速率",
+    "downloadRate": "下载速率"
+  },
+  "nodeCard": {
+    "disk": "磁盘",
+    "ram": "内存",
+    "offline": "离线"
   }
 }

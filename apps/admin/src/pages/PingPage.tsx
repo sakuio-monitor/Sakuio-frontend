@@ -6,7 +6,6 @@ import { LoadingBlock } from "../components/LoadingBlock";
 import { addPingTask, deletePingTasks, fetchAllPingTasks } from "../api/pingTasks";
 import { PageListHeader } from "../components/PageListHeader";
 import { PingTaskView } from "../components/ping/PingTaskView";
-import { ClientMultiSelectSidebar } from "../components/ping/ClientMultiSelectSidebar";
 import { PingTaskFormFields } from "../components/ping/PingTaskFormFields";
 import { GenericSidebar } from "../components/GenericSidebar/GenericSidebar";
 import { useConfirmDialog } from "../components/ConfirmDialog/ConfirmDialog";
@@ -18,7 +17,7 @@ const defaultDraft = (): PingTaskDraft => ({
   type: "icmp",
   target: "",
   interval: 60,
-  default_on: false,
+  default_on: true,
   clients: [],
 });
 
@@ -34,7 +33,6 @@ export default function PingPage() {
   const [addOpen, setAddOpen] = useState(false);
   const [addForm, setAddForm] = useState<PingTaskDraft>(defaultDraft);
   const [addSaving, setAddSaving] = useState(false);
-  const [clientPickerOpen, setClientPickerOpen] = useState(false);
 
   const reloadTasks = useCallback(async () => {
     setTasksError(null);
@@ -162,22 +160,11 @@ export default function PingPage() {
       >
         <PingTaskFormFields
           form={addForm}
+          clients={clients}
           onChange={setAddForm}
-          onPickClients={() => setClientPickerOpen(true)}
         />
       </GenericSidebar>
 
-      <ClientMultiSelectSidebar
-        open={clientPickerOpen}
-        title={t("common.selectClients")}
-        clients={clients}
-        value={addForm.clients}
-        onClose={() => setClientPickerOpen(false)}
-        onSave={(next) => {
-          setAddForm((f) => ({ ...f, clients: next }));
-          setClientPickerOpen(false);
-        }}
-      />
     </section>
   );
 }
