@@ -256,8 +256,11 @@ export default function InstallPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          app_db_driver: form.appDbDriver,
-          app_db_dsn: dsn,
+          app_db: databasePayload(form.appDbDriver, form.dbPath, form.dbHost, form.dbPort, form.dbName, form.dbUser, form.dbPassword, form.dbSslMode),
+          metric_mode: form.metricColocation,
+          metric_db: form.metricColocation === "separate"
+            ? databasePayload(form.metricDriver, form.metricPath, form.metricHost, form.metricPort, form.metricName, form.metricUser, form.metricPassword, form.metricSslMode)
+            : null,
         }),
       });
       if (!res.ok) {
