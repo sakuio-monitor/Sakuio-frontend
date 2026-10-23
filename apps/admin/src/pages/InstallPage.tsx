@@ -267,25 +267,10 @@ export default function InstallPage() {
         const body = (await res.json().catch(() => ({}))) as { message?: string };
         throw new Error(body.message ?? t("common.error"));
       }
-      // The server restarts to open the selected database. Do not continue to
-      // the account step until the live process is connected to it.
-      for (let attempt = 0; attempt < 60; attempt += 1) {
-        await new Promise((resolve) => window.setTimeout(resolve, 500));
-        try {
-          const status = await fetch("/api/install/status", { cache: "no-store" });
-          if (status.ok) {
-            const data = (await status.json()) as { database_configured?: boolean };
-            if (data.database_configured) {
-              await refresh();
-              setStepIndex(3);
-              return;
-            }
-          }
-        } catch {
-          // still restarting
-        }
-      }
-      throw new Error(t("install.errors.databaseRestartTimeout"));
+      await refresh();
+      // Database config is now written to config.yaml. Do not restart here:
+      // keep the setup process alive for site + administrator steps.
+      setStepIndex(3);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("common.error"));
     } finally {
