@@ -16,6 +16,7 @@ type AuthContextValue = {
   refresh: () => Promise<void>;
   login: (username: string, password: string, twoFa?: string) => Promise<void>;
   logoutLocal: () => void;
+  logout: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -57,6 +58,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setMe({ username: "Guest", logged_in: false });
   }, []);
 
+  const logout = useCallback(async () => {
+    try {
+      await fetch("/api/logout", { credentials: "include" });
+    } finally {
+      setMe({ username: "Guest", logged_in: false });
+    }
+  }, []);
+
   const value = useMemo(
     () => ({
       loading,
@@ -65,8 +74,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       refresh,
       login,
       logoutLocal,
+      logout,
     }),
-    [loading, me, refresh, login, logoutLocal],
+    [loading, me, refresh, login, logoutLocal, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

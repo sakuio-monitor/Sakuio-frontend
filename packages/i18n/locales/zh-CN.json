@@ -234,7 +234,8 @@
       "assets": "资产管理",
       "authApi": "授权 API",
       "ddns": "DDNS",
-      "workbench": "工作台"
+      "workbench": "工作台",
+      "account": "账户"
     },
     "backend": {
       "unavailableTitle": "无法连接后端",
@@ -1030,5 +1031,36 @@
   },
   "loading": "加载中...",
   "just_now": "刚刚",
-  "warn_https": "当前连接不是 HTTPS。敏感数据可能被窃听，复制到终端可能不可用。生产环境请使用 HTTPS。"
+  "warn_https": "当前连接不是 HTTPS。敏感数据可能被窃听，复制到终端可能不可用。生产环境请使用 HTTPS。",
+  "account": {
+    "usernameTitle": "用户名",
+    "usernameDescription": "修改登录管理后台使用的用户名。修改后请使用新用户名登录。",
+    "usernamePlaceholder": "用户名",
+    "usernameRequired": "请输入用户名",
+    "usernameSaved": "用户名已更新",
+    "passwordTitle": "修改密码",
+    "passwordDescription": "设置新的登录密码，至少 8 个字符。",
+    "newPassword": "新密码",
+    "repeatPassword": "重复新密码",
+    "updatePassword": "更新密码",
+    "passwordTooShort": "密码至少需要 8 个字符",
+    "passwordMismatch": "两次输入的密码不一致",
+    "passwordSaved": "密码已更新，请使用新密码登录",
+    "twoFactorTitle": "双重身份验证（TOTP）",
+    "twoFactorEnabledDescription": "已启用。登录时需要输入身份验证器中的 6 位验证码。",
+    "twoFactorDisabledDescription": "未启用。启用后登录需要输入身份验证器验证码。",
+    "enableTwoFactor": "启用双重身份验证",
+    "scanOrEnterSecret": "在身份验证器中添加以下密钥，或使用 otpauth 链接。",
+    "copySecret": "复制密钥",
+    "secretCopied": "密钥已复制",
+    "copyFailed": "复制失败",
+    "authenticatorCode": "验证码",
+    "confirmEnable": "确认启用",
+    "codeInvalid": "请输入 6 位验证码",
+    "twoFactorEnabled": "双重身份验证已启用",
+    "enterCodeToDisable": "输入身份验证器中的 6 位验证码以关闭。",
+    "disableTwoFactor": "关闭双重身份验证",
+    "twoFactorDisabled": "双重身份验证已关闭",
+    "qrCode": "二维码"
+  }
 }

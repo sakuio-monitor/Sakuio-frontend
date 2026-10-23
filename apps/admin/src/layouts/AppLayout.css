@@ -51,7 +51,10 @@
 .sidebar-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
   min-height: 56px;
   padding: 0 16px;
   border-bottom: 1px solid var(--sidebar-border);
@@ -60,7 +63,7 @@
 }
 
 .sidebar-header .sidebar-collapse-btn {
-  margin-left: auto;
+  margin-left: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;

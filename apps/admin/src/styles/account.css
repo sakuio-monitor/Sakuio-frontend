@@ -1,0 +1,80 @@
+.account-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.account-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: none;
+  margin-bottom: 0;
+}
+.account-card .site-settings-card__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+.account-description {
+  margin: 0;
+  color: var(--color-gray-500);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.account-inline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.account-inline > :first-child { flex: 1; min-width: 0; }
+.account-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 380px;
+  color: var(--color-gray-600);
+  font-size: 12px;
+}
+.account-twofa-setup,
+.account-twofa-disable {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.account-qr {
+  width: 196px;
+  height: 196px;
+  padding: 8px;
+  border-radius: 8px;
+  background: #fff;
+}
+.account-qr svg {
+  display: block;
+  width: 180px;
+  height: 180px;
+}
+.account-secret {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.account-secret code {
+  padding: 7px 10px;
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
+  background: var(--glass-panel);
+  font-family: var(--font-family-number);
+  font-size: 12px;
+  user-select: all;
+}
+.account-hint {
+  margin: 0;
+  color: var(--color-gray-400);
+  font-family: var(--font-family-number);
+  font-size: 10px;
+  overflow-wrap: anywhere;
+}

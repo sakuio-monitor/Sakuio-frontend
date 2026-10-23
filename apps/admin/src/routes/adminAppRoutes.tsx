@@ -10,6 +10,7 @@ import NotificationRulesPage from "../pages/NotificationRulesPage";
 import PingPage from "../pages/PingPage";
 import ServersPage from "../pages/ServersPage";
 import SettingsSitePage from "../pages/SettingsSitePage";
+import AccountPage from "../pages/AccountPage";
 import SettingsGeneralPage from "../pages/SettingsGeneralPage";
 import DatabasePage from "../pages/DatabasePage";
 import ThemesPage from "../pages/ThemesPage";
@@ -30,6 +31,7 @@ export function adminAppRoutes() {
       <Route path="/notification" element={<Navigate to="/notification/channels" replace />} />
       <Route path="/notification/channels" element={<NotificationChannelsPage />} />
       <Route path="/notification/rules" element={<NotificationRulesPage />} />
+      <Route path="/settings/account" element={<AccountPage />} />
       <Route path="/settings/site" element={<SettingsSitePage />} />
       <Route path="/settings/general" element={<SettingsGeneralPage />} />
       <Route path="/settings/database" element={<DatabasePage />} />

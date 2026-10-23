@@ -234,7 +234,8 @@
       "assets": "Assets",
       "authApi": "Authorization API",
       "ddns": "DDNS",
-      "workbench": "Workbench"
+      "workbench": "Workbench",
+      "account": "Account"
     },
     "backend": {
       "unavailableTitle": "Cannot reach the backend",
@@ -1029,5 +1030,36 @@
   },
   "loading": "Loading...",
   "just_now": "just now",
-  "warn_https": "This connection is not HTTPS. Sensitive data may be intercepted and pasting into the terminal may not work. Use HTTPS in production."
+  "warn_https": "This connection is not HTTPS. Sensitive data may be intercepted and pasting into the terminal may not work. Use HTTPS in production.",
+  "account": {
+    "usernameTitle": "Username",
+    "usernameDescription": "Change the username used to sign in. Use the new username next time.",
+    "usernamePlaceholder": "Username",
+    "usernameRequired": "Enter a username",
+    "usernameSaved": "Username updated",
+    "passwordTitle": "Change password",
+    "passwordDescription": "Set a new password with at least 8 characters.",
+    "newPassword": "New password",
+    "repeatPassword": "Repeat new password",
+    "updatePassword": "Update password",
+    "passwordTooShort": "Password must be at least 8 characters",
+    "passwordMismatch": "Passwords do not match",
+    "passwordSaved": "Password updated. Sign in with the new password.",
+    "twoFactorTitle": "Two-factor authentication (TOTP)",
+    "twoFactorEnabledDescription": "Enabled. Sign-in requires a 6-digit code from your authenticator.",
+    "twoFactorDisabledDescription": "Disabled. When enabled, sign-in requires an authenticator code.",
+    "enableTwoFactor": "Enable two-factor authentication",
+    "scanOrEnterSecret": "Add this secret to your authenticator, or use the otpauth link.",
+    "copySecret": "Copy secret",
+    "secretCopied": "Secret copied",
+    "copyFailed": "Copy failed",
+    "authenticatorCode": "Verification code",
+    "confirmEnable": "Confirm enable",
+    "codeInvalid": "Enter the 6-digit code",
+    "twoFactorEnabled": "Two-factor authentication enabled",
+    "enterCodeToDisable": "Enter the 6-digit authenticator code to disable.",
+    "disableTwoFactor": "Disable two-factor authentication",
+    "twoFactorDisabled": "Two-factor authentication disabled",
+    "qrCode": "QR code"
+  }
 }

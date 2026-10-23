@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
-import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ChevronDown, ChevronLeft, ChevronRight, Languages, Menu, Monitor, Moon, Palette, Sun, X } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Languages, LogOut, Menu, Monitor, Moon, Palette, Sun, X } from "lucide-react";
 import {
   ADMIN_NAV_GROUPS,
   ADMIN_TOP_LINKS,
@@ -14,6 +14,7 @@ import { changeLocale, type SupportedLocale } from "@sakuio/i18n";
 import { fetchThemes } from "../api/themes";
 import { CellTooltip } from "../components/CellTooltip/CellTooltip";
 import { PageTitleContext } from "../contexts/PageTitleContext";
+import { useAuth } from "../auth/AuthProvider";
 import { applyThemeTransition, type ThemeTransitionOrigin } from "../utils/themeTransition";
 import {
   DropdownMenu,
@@ -220,9 +221,27 @@ function LanguageToggleButton({ dark }: { dark: boolean }) {
   );
 }
 
+function LogoutButton({ onLogout }: { onLogout: () => void }) {
+  const { t } = useTranslation();
+  return (
+    <CellTooltip tip={t("common.logout")}>
+      <button
+        type="button"
+        className="topbar-action-btn"
+        onClick={onLogout}
+        aria-label={t("common.logout")}
+      >
+        <LogOut size={18} />
+      </button>
+    </CellTooltip>
+  );
+}
+
 export default function AppLayout() {
   const { t, i18n } = useTranslation();
   const location = useLocation();
+  const navigate = useNavigate();
+  const { logout } = useAuth();
   const contentRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
   const [collapsed, setCollapsed] = useState(false);
@@ -456,6 +475,7 @@ export default function AppLayout() {
             <div className="mobile-topbar__actions">
               <ThemeToggleButton mode={mode} onCycle={cycleMode} />
               <LanguageToggleButton dark={dark} />
+              <LogoutButton onLogout={() => void logout().then(() => navigate("/login", { replace: true }))} />
               <CellTooltip tip={mobileMenuOpen ? t("admin.nav.collapseMenu") : t("admin.nav.expandMenu")}>
                 <button
                   type="button"
@@ -475,6 +495,7 @@ export default function AppLayout() {
             <div className="app-topbar__actions">
               <ThemeToggleButton mode={mode} onCycle={cycleMode} />
               <LanguageToggleButton dark={dark} />
+              <LogoutButton onLogout={() => void logout().then(() => navigate("/login", { replace: true }))} />
             </div>
           </header>
         )}

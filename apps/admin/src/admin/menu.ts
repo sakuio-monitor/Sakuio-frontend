@@ -19,6 +19,7 @@ import {
   Settings2,
   SquareTerminal,
   Store,
+  UserRound,
 } from "lucide-react";
 
 export type AdminNavItem = {
@@ -99,6 +100,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     labelKey: "admin.nav.system",
     icon: Bolt,
     items: [
+      { path: "/settings/account", labelKey: "admin.nav.account", icon: UserRound },
       { path: "/settings/site", labelKey: "admin.nav.settingsSite", icon: Home },
       { path: "/settings/general", labelKey: "admin.nav.settingsGeneral", icon: Ellipsis },
       { path: "/settings/sign-on", labelKey: "admin.nav.settingsSignOn", icon: CircleArrowRight },
@@ -120,6 +122,7 @@ export const ADMIN_IMPLEMENTED_PATHS = new Set<string>([
   "/exec",
   "/notification/channels",
   "/notification/rules",
+  "/settings/account",
   "/settings/site",
   "/settings/general",
   "/settings/database",
