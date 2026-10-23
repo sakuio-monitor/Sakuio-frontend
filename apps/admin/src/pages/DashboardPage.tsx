@@ -181,8 +181,6 @@ function TrafficChart({ data }: { data: DashboardData }) {
   return (
     <div className="dash-traffic">
       <div className="dash-traffic__legend">
-        <span><i className="dash-dot dash-dot--up" />上传 {formatSpeed(points.at(-1)?.up_rate ?? 0)}</span>
-        <span><i className="dash-dot dash-dot--down" />下载 {formatSpeed(points.at(-1)?.down_rate ?? 0)}</span>
         <span className="dash-traffic__total">累计 ↑ {formatBytes(data.traffic.total_up)} ↓ {formatBytes(data.traffic.total_down)}</span>
       </div>
       <svg viewBox={`0 0 ${width} ${height}`} className="dash-traffic__svg" role="img">
