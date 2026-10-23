@@ -75,7 +75,7 @@ export function ClientMultiSelectSidebar({
           />
         </label>
         <p className="admin-sidebar-form__hint">
-          {t("common.selectedCount", { count: selectedKeys.size })}
+          {t("common.selectedCount", { n: selectedKeys.size })}
         </p>
         <DataTable
           tableClassName="data-table--entity-list"

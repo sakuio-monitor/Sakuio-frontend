@@ -1,16 +1,17 @@
-import { Input, Select } from "@sakuio/ui";
+import { Button, Input, Select } from "@sakuio/ui";
 import { useTranslation } from "react-i18next";
 import type { AdminClientSummary, PingTaskDraft } from "../../types/ping";
 import { Switch } from "../ui/Switch";
-import { SearchableServerMultiSelect } from "./SearchableServerMultiSelect";
+
 
 type Props = {
   form: PingTaskDraft;
   clients: AdminClientSummary[];
   onChange: (next: PingTaskDraft) => void;
+  onPickClients: () => void;
 };
 
-export function PingTaskFormFields({ form, clients, onChange }: Props) {
+export function PingTaskFormFields({ form, onChange, onPickClients }: Props) {
   const { t } = useTranslation();
 
   return (
@@ -56,13 +57,9 @@ export function PingTaskFormFields({ form, clients, onChange }: Props) {
         />
       </div>
       <div className="admin-sidebar-form__label">
-        <span>{t("common.selectClients")}</span>
-        <SearchableServerMultiSelect
-          clients={clients}
-          values={form.clients}
-          onChange={(next) => onChange({ ...form, clients: next })}
-          placeholder={t("common.selectPlaceholder")}
-        />
+        <Button type="button" variant="secondary" size="sm" onClick={onPickClients}>
+          {t("common.selectClients")}
+        </Button>
         <p className="admin-sidebar-form__hint">
           {t("common.selectedCount", { n: form.clients.length })}
         </p>

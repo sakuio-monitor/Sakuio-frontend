@@ -322,8 +322,11 @@ export function PingTaskView({ tasks, clients, selectedIds, onSelectionChange, o
       >
         <PingTaskFormFields
           form={editForm}
-          clients={clients}
           onChange={setEditForm}
+          onPickClients={() => {
+            setClientPickerMode("edit");
+            setClientPickerOpen(true);
+          }}
         />
       </GenericSidebar>
 
