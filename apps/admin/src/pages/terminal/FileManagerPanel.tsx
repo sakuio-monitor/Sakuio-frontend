@@ -52,6 +52,7 @@ import {
   joinRemotePath,
   normalizeRemotePath,
   remoteBasename,
+  isRemoteRoot,
   remoteDirname,
   resolveSymlinkTargetPath,
   sortRemoteFiles,
@@ -65,6 +66,7 @@ import { useRemoteFileUpload } from "./useRemoteFileUpload";
 
 interface FileManagerPanelProps {
   uuid: string | null;
+  clientOs?: string;
 }
 
 type FileAction =
@@ -138,8 +140,9 @@ const fileIcon = (file: RemoteFileInfo) => {
   return <File size={17} className="text-[#a7a7a7]" />;
 };
 
-const FileManagerPanel = ({ uuid }: FileManagerPanelProps) => {
+const FileManagerPanel = ({ uuid, clientOs }: FileManagerPanelProps) => {
   const { t } = useTranslation();
+  const isWindows = /windows/i.test(clientOs ?? "");
   const fileService = useRemoteFileService(uuid ?? "");
   const [currentPath, setCurrentPath] = useState("");
   const [pathDraft, setPathDraft] = useState("");
@@ -279,7 +282,7 @@ const FileManagerPanel = ({ uuid }: FileManagerPanelProps) => {
       setLoading(true);
       let items: RemoteFileInfo[] = [];
       try {
-        items = await fileService.list(path);
+        items = await fileService.list(normalizeRemotePath(path));
         if (requestVersionRef.current !== version) return;
         const normalized = normalizeRemotePath(path);
         setFiles(sortRemoteFiles(items));
@@ -318,8 +321,15 @@ const FileManagerPanel = ({ uuid }: FileManagerPanelProps) => {
     selectedPathsRef.current = new Set();
     setSelectedPath(null);
     setSearchResult(null);
-    void loadDirectory("/");
-  }, [loadDirectory, uuid]);
+    void (async () => {
+      try {
+        const roots = await fileService.roots();
+        await loadDirectory(roots[0]?.path || "/");
+      } catch {
+        await loadDirectory("/");
+      }
+    })();
+  }, [fileService, loadDirectory, uuid]);
 
   const refresh = useCallback(async () => {
     const targetPath = normalizeRemotePath(currentPath || "/");
@@ -572,7 +582,7 @@ const FileManagerPanel = ({ uuid }: FileManagerPanelProps) => {
         }
         const ownerChanged = ownerValue.trim() !== (actionFile.owner ?? "").trim();
         const groupChanged = groupValue.trim() !== (actionFile.group ?? "").trim();
-        if (ownerChanged || groupChanged) {
+        if (!isWindows && (ownerChanged || groupChanged)) {
           await fileService.chown(actionFile.path, ownerValue.trim(), groupValue.trim());
         }
         await refresh();
@@ -727,7 +737,7 @@ const FileManagerPanel = ({ uuid }: FileManagerPanelProps) => {
           onClick={() => void loadDirectory(remoteDirname(currentPath))}
           title={t("file_manager.parent", "Parent directory")}
           className={toolbarButton}
-          disabled={!currentPath || currentPath === "/"}
+          disabled={!currentPath || isRemoteRoot(currentPath)}
         >
           <ArrowUp size={15} />
         </button>
@@ -1094,8 +1104,10 @@ const FileManagerPanel = ({ uuid }: FileManagerPanelProps) => {
         description={undefined}
         fields={action === "permissions" ? [
           { key: "mode", label: t("file_manager.mode", "Mode"), value: modeValue, onChange: setModeValue },
-          { key: "owner", label: t("file_manager.owner", "Owner"), value: ownerValue, onChange: setOwnerValue },
-          { key: "group", label: t("file_manager.group", "Group"), value: groupValue, onChange: setGroupValue },
+          ...(isWindows ? [] : [
+            { key: "owner", label: t("file_manager.owner", "Owner"), value: ownerValue, onChange: setOwnerValue },
+            { key: "group", label: t("file_manager.group", "Group"), value: groupValue, onChange: setGroupValue },
+          ]),
         ] : []}
         confirmLabel={t("common.confirm", "Confirm")}
         submitting={submitting}

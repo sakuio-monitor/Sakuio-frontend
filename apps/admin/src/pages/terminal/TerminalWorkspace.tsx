@@ -9,13 +9,14 @@ import FileManagerPanel from "./FileManagerPanel";
 import TerminalSession from "./TerminalSession";
 import { TerminalSearchBar } from "./TerminalSearchBar";
 import type { TerminalSessionApi } from "./TerminalSession";
-import type { TerminalTab } from "./terminalTypes";
+import type { TerminalClient, TerminalTab } from "./terminalTypes";
 
 export interface TerminalWorkspaceProps {
   containerRef: RefObject<HTMLDivElement | null>;
   isSidebarOpen: boolean;
   leftWidth: number;
   tabs: TerminalTab[];
+  clients: TerminalClient[];
   clientsLoading: boolean;
   activeTabId: string | null;
   sessionsReady: boolean;
@@ -59,6 +60,7 @@ const TerminalWorkspace = ({
   isSidebarOpen,
   leftWidth,
   tabs,
+  clients,
   clientsLoading,
   activeTabId,
   sessionsReady,
@@ -180,7 +182,10 @@ const TerminalWorkspace = ({
         }`}
       >
         <div className="min-h-0 flex-1 overflow-hidden">
-          <FileManagerPanel uuid={tabs.find((tab) => tab.id === activeTabId)?.uuid ?? null} />
+          <FileManagerPanel
+            uuid={tabs.find((tab) => tab.id === activeTabId)?.uuid ?? null}
+            clientOs={clients.find((client) => client.uuid === tabs.find((tab) => tab.id === activeTabId)?.uuid)?.os}
+          />
         </div>
       </aside>
     </div>

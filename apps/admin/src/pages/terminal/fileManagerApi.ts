@@ -141,6 +141,11 @@ export const remoteBasename = (value: string) => {
   return index >= 0 ? normalized.slice(index + 1) || "/" : normalized;
 };
 
+export const isRemoteRoot = (value: string) => {
+  const normalized = normalizeRemotePath(value).replace(/\/$/, "");
+  return normalized === "" || normalized === "/" || /^[A-Za-z]:$/.test(normalized);
+};
+
 export const remoteDirname = (value: string) => {
   const normalized = normalizeRemotePath(value).replace(/\/$/, "");
   if (normalized === "" || normalized === "/") {
@@ -383,8 +388,10 @@ export const encodeRemoteTextBytes = async (value: string, encoding: RemoteTextE
   }).encode(value);
 };
 
-export const encodeRemoteTextBlob = async (value: string, encoding: RemoteTextEncoding = "utf-8") =>
-  new Blob([await encodeRemoteTextBytes(value, encoding)], { type: "application/octet-stream" });
+export const encodeRemoteTextBlob = async (value: string, encoding: RemoteTextEncoding = "utf-8") => {
+  const bytes = await encodeRemoteTextBytes(value, encoding);
+  return new Blob([bytes.buffer as ArrayBuffer], { type: "application/octet-stream" });
+};
 
 export const remoteAncestors = (path: string) => {
   const normalizedPath = normalizeRemotePath(path);

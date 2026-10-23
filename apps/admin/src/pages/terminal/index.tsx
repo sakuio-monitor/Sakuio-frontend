@@ -127,6 +127,7 @@ const TerminalPage = () => {
             isSidebarOpen={isSidebarOpen}
             leftWidth={leftWidth}
             tabs={tabs}
+            clients={clients}
             clientsLoading={clientsLoading}
             activeTabId={activeTabId}
             sessionsReady={sessionsReady}
@@ -163,11 +164,7 @@ const TerminalPage = () => {
           servers={resourceMonitorServers}
           onRemove={toggleResourceMonitor}
         />
-        <TerminalGuide
-          authenticated={onboardingAuthenticated}
-          hasTabs={!clientsLoading && tabs.length > 0}
-          blocked={Boolean(editorUuid) || serverMenuOpen || workbenchMenuOpen || Boolean(editingTabId)}
-        />
+        <TerminalGuide />
 
         {editorUuid && (
           <Suspense fallback={null}>
