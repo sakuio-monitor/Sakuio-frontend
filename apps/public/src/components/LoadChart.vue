@@ -225,7 +225,7 @@ async function fetchHistoryData() {
   error.value = null
 
   try {
-    const apiBase = import.meta.env.VITE_API_BASE
+    const apiBase = (import.meta.env.VITE_API_BASE || "/api").replace(/\/$/, "")
     const response = await fetch(`${apiBase}/records/load?uuid=${props.uuid}&hours=${hours}`)
 
     if (!response.ok) {
