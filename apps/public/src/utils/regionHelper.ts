@@ -1616,9 +1616,13 @@ export function getSupportedRegions(): string[] {
  * @returns 地区代码（如：HK, CN, US）
  */
 export function getRegionCode(regionEmoji: string): string {
-  const regionInfo = emojiToRegionMap[regionEmoji]
+  const value = (regionEmoji || '').trim()
+  const regionInfo = emojiToRegionMap[value]
   if (!regionInfo) {
-    return regionEmoji
+    const upper = value.toUpperCase()
+    if (/^[A-Z]{2}$/.test(upper))
+      return upper
+    return 'UN'
   }
 
   return regionInfo.code

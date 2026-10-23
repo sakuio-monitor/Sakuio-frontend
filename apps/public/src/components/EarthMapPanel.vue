@@ -45,7 +45,7 @@ const cardSurfaceClass = computed(() => [
 ])
 
 function getFlagSrc(code: string): string {
-  return `/images/flags/${code.trim().toUpperCase()}.svg`
+  return `/images/flags/${code.trim().toUpperCase() || 'UN'}.svg`
 }
 </script>
 
