@@ -135,11 +135,13 @@ const TabButton = ({
           />
         ) : (
           <span
-            className={`relative z-[1] min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-left text-xs ${
-              active ? "font-medium text-white" : "font-normal"
+            className={`terminal-tab-name relative z-[1] min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-left text-xs ${
+              active ? "font-medium" : "font-normal"
             }`}
+            style={{ color: active ? "#ffffff" : "#d4d4d4" }}
+            title={displayTitle}
           >
-            <span title={displayTitle}>{displayTitle}</span>
+            {displayTitle}
           </span>
         )}
 

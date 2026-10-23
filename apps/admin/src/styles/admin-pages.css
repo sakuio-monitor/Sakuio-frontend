@@ -866,3 +866,12 @@
 @media (max-width: 700px) {
   .terminal-https-callout__text { max-width: calc(100vw - 88px); }
 }
+.sakuio-terminal-tab-bar .terminal-tab-name {
+  display: block;
+  min-width: 32px;
+  color: #d4d4d4;
+  opacity: 1;
+}
+.sakuio-terminal-tab-bar [aria-selected="true"] .terminal-tab-name {
+  color: #ffffff;
+}
