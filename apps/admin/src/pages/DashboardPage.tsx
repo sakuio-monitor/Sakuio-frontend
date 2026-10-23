@@ -153,6 +153,7 @@ function chartTime(ms: number, range: string, spanMs: number): string {
 
 function TrafficChart({ data }: { data: DashboardData }) {
   const points = data.traffic.points;
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const width = 620;
   const height = 230;
   const padLeft = 64;
@@ -178,12 +179,28 @@ function TrafficChart({ data }: { data: DashboardData }) {
         Math.round((index / (tickCount - 1)) * (points.length - 1)),
       ))]
     : points.length === 1 ? [0] : [];
+  const hovered = hoverIndex !== null ? points[hoverIndex] : null;
+  const hoverX = hoverIndex !== null ? x(hoverIndex) : 0;
+  const hoverRight = hoverIndex !== null && hoverIndex > (points.length - 1) * 0.62;
   return (
     <div className="dash-traffic">
       <div className="dash-traffic__legend">
         <span className="dash-traffic__total">累计 ↑ {formatBytes(data.traffic.total_up)} ↓ {formatBytes(data.traffic.total_down)}</span>
       </div>
-      <svg viewBox={`0 0 ${width} ${height}`} className="dash-traffic__svg" role="img">
+      <svg
+        viewBox={`0 0 ${width} ${height}`}
+        className="dash-traffic__svg"
+        role="img"
+        onMouseMove={(event) => {
+          if (points.length === 0) return;
+          const rect = event.currentTarget.getBoundingClientRect();
+          const svgX = ((event.clientX - rect.left) / Math.max(1, rect.width)) * width;
+          const ratio = (svgX - padLeft) / Math.max(1, plotWidth);
+          const index = Math.round(ratio * Math.max(0, points.length - 1));
+          setHoverIndex(Math.max(0, Math.min(points.length - 1, index)));
+        }}
+        onMouseLeave={() => setHoverIndex(null)}
+      >
         {yTicks.map((ratio) => {
           const yy = padTop + plotHeight - ratio * plotHeight;
           return (
@@ -242,7 +259,29 @@ function TrafficChart({ data }: { data: DashboardData }) {
             )}
           </text>
         ))}
+        {hovered ? (
+          <g className="dash-traffic__cursor">
+            <line x1={hoverX} x2={hoverX} y1={padTop} y2={padTop + plotHeight} stroke="var(--color-gray-400)" strokeDasharray="3 3" />
+            <circle cx={hoverX} cy={y(hovered.up_rate)} r="3.5" fill="#22c55e" />
+            <circle cx={hoverX} cy={y(hovered.down_rate)} r="3.5" fill="#3b82f6" />
+            <circle cx={hoverX} cy={yCum(hovered.up_cum)} r="3" fill="#22c55e" opacity=".8" />
+            <circle cx={hoverX} cy={yCum(hovered.down_cum)} r="3" fill="#3b82f6" opacity=".8" />
+          </g>
+        ) : null}
       </svg>
+      {hovered ? (
+        <div
+          className={`dash-traffic__tooltip${hoverRight ? " is-right" : ""}`}
+          style={{ left: `${(hoverX / width) * 100}%` }}
+          role="status"
+        >
+          <strong>{new Date(hovered.time).toLocaleString()}</strong>
+          <div><span><i className="dash-dot dash-dot--up" />上传速率</span><b>{formatSpeed(hovered.up_rate)}</b></div>
+          <div><span><i className="dash-dot dash-dot--down" />下载速率</span><b>{formatSpeed(hovered.down_rate)}</b></div>
+          <div><span><i className="dash-dot dash-dot--up dash-dot--dashed" />上传累计</span><b>{formatBytes(hovered.up_cum)}</b></div>
+          <div><span><i className="dash-dot dash-dot--down dash-dot--dashed" />下载累计</span><b>{formatBytes(hovered.down_cum)}</b></div>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -700,7 +739,18 @@ export default function DashboardPage() {
     return close;
   }, [endDate, load, range, startDate]);
 
-  const titles = useMemo(() => Object.fromEntries(DASHBOARD_WIDGETS.map((id) => [id, t(`admin.dashboard.widgets.${id}`)])) as Record<DashboardWidgetId, string>, [t]);
+  const trafficRangeLabel = range === "custom"
+    ? (startDate && endDate ? `${startDate} ~ ${endDate}` : "自定义")
+    : ({ "24h": "24 小时", "7d": "7 天", "30d": "30 天", "90d": "90 天", "365d": "365 天" }[range] ?? range);
+  const titles = useMemo(
+    () => Object.fromEntries(DASHBOARD_WIDGETS.map((id) => [
+      id,
+      id === "traffic"
+        ? t("admin.dashboard.widgets.trafficRange", { range: trafficRangeLabel })
+        : t(`admin.dashboard.widgets.${id}`),
+    ])) as Record<DashboardWidgetId, string>,
+    [t, trafficRangeLabel],
+  );
   const available = DASHBOARD_WIDGETS.filter((id) => !layout.some((entry) => entry.id === id));
 
   async function save() {

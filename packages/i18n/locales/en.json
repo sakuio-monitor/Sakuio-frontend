@@ -496,7 +496,8 @@
         "ping": "Network quality",
         "resources": "Capacity",
         "disk": "Disk pressure",
-        "shortcuts": "Shortcuts"
+        "shortcuts": "Shortcuts",
+        "trafficRange": "{{range}} traffic"
       }
     },
     "servers": {

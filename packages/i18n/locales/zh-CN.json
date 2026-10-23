@@ -496,7 +496,8 @@
         "ping": "网络质量",
         "resources": "资源容量",
         "disk": "磁盘压力",
-        "shortcuts": "快捷操作"
+        "shortcuts": "快捷操作",
+        "trafficRange": "{{range}}流量"
       }
     },
     "servers": {
