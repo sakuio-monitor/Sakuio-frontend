@@ -14,6 +14,10 @@ export type EntityListLayoutId =
   | 'tunnels'
   | 'plans'
   | 'certificates'
+  | 'auth_providers'
+  | 'ddns_records'
+  | 'notification_channels'
+  | 'notification_rules'
 
 export const ENTITY_LIST_PAGE_MAX_WIDTH = '1800px'
 export const ENTITY_LIST_COLUMN_GAP = '12px'
@@ -35,6 +39,13 @@ export function entityListGrowColumnKeys(listId: EntityListLayoutId): Set<string
       return new Set(['name'])
     case 'certificates':
       return new Set(['domains'])
+    case 'auth_providers':
+      return new Set(['name'])
+    case 'ddns_records':
+      return new Set(['domain'])
+    case 'notification_channels':
+    case 'notification_rules':
+      return new Set(['name'])
   }
 }
 
@@ -182,7 +193,7 @@ const COLUMN_WIDTHS_TUNNELS: Record<string, string> = {
   id: '80px',
   user_id: '96px',
   client_id: '96px',
-  status: '88px',
+  status: '68px',
   carrier: '72px',
   remote_port: '150px',
   target: 'minmax(120px, 0.5fr)',
@@ -214,6 +225,7 @@ const COLUMN_WIDTHS_PLANS: Record<string, string> = {
 
 /** 服务器列表：每列 min/max，表格随容器 100% 伸缩 */
 const COLUMN_WIDTHS_AGENT_SERVERS: Record<string, string> = {
+  status: '68px',
   name: 'minmax(120px, 220px)',
   public_ip: 'minmax(128px, 220px)',
   agent_version: 'minmax(72px, 112px)',
@@ -234,6 +246,7 @@ export const ENTITY_LIST_SELECT_PX = 40
 type AgentServerColSpec = { min: number; max: number | null; weight: number }
 
 const AGENT_SERVER_COLUMN_SPEC: Record<string, AgentServerColSpec> = {
+  status: { min: 68, max: 68, weight: 0 },
   name: { min: 120, max: 220, weight: 1.2 },
   public_ip: { min: 128, max: 220, weight: 2 },
   agent_version: { min: 72, max: 112, weight: 0.8 },
@@ -258,6 +271,43 @@ export type EntityListColumnLayout = {
   maxPxByKey: Record<string, number>
 }
 
+const COLUMN_WIDTHS_AUTH_PROVIDERS: Record<string, string> = {
+  name: 'minmax(180px, 1fr)',
+  driver: '140px',
+  auth_type: '160px',
+  created_at: '190px',
+  last_used_at: '190px',
+  actions: '168px',
+}
+
+const COLUMN_WIDTHS_NOTIFICATION_CHANNELS: Record<string, string> = {
+  name: 'minmax(180px, 1fr)',
+  type_name: '180px',
+  last_used_at: '190px',
+  updated_at: '190px',
+  actions: '168px',
+}
+
+const COLUMN_WIDTHS_NOTIFICATION_RULES: Record<string, string> = {
+  name: 'minmax(180px, 1fr)',
+  event: '160px',
+  threshold: '120px',
+  channels: 'minmax(180px, 1fr)',
+  clients: '120px',
+  actions: '120px',
+}
+
+const COLUMN_WIDTHS_DDNS_RECORDS: Record<string, string> = {
+  domain: 'minmax(180px, 1fr)',
+  name: '120px',
+  provider: '120px',
+  server: '120px',
+  type: '90px',
+  ip: '130px',
+  last_sync: '180px',
+  actions: '168px',
+}
+
 const COLUMN_WIDTHS_CLIENTS: Record<string, string> = {
   id: '80px',
   online: '68px',
@@ -280,6 +330,9 @@ function entityListGrowMinPx(listId: EntityListLayoutId, columnKey: string): num
   if (listId === 'certificates' && columnKey === 'domains') return 180
   if (listId === 'nodes' && columnKey === 'name') return 160
   if (listId === 'agent_servers' && columnKey === 'name') return 160
+  if (listId === 'auth_providers' && columnKey === 'name') return 200
+  if (listId === 'ddns_records' && columnKey === 'domain') return 180
+  if ((listId === 'notification_channels' || listId === 'notification_rules') && columnKey === 'name') return 200
   return NAME_COLUMN_MIN_PX
 }
 
@@ -298,6 +351,10 @@ export function isEntityListActionsColumn(key: string): boolean {
 export function columnWidthsForEntityList(listId: EntityListLayoutId): Record<string, string> {
   if (listId === 'nodes') return COLUMN_WIDTHS_NODES
   if (listId === 'agent_servers') return COLUMN_WIDTHS_AGENT_SERVERS
+  if (listId === 'auth_providers') return COLUMN_WIDTHS_AUTH_PROVIDERS
+  if (listId === 'ddns_records') return COLUMN_WIDTHS_DDNS_RECORDS
+  if (listId === 'notification_channels') return COLUMN_WIDTHS_NOTIFICATION_CHANNELS
+  if (listId === 'notification_rules') return COLUMN_WIDTHS_NOTIFICATION_RULES
   if (listId === 'users') return COLUMN_WIDTHS_USERS
   if (listId === 'tunnels') return COLUMN_WIDTHS_TUNNELS
   if (listId === 'plans') return COLUMN_WIDTHS_PLANS

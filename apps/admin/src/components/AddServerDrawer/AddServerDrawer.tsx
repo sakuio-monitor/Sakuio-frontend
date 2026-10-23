@@ -13,6 +13,7 @@ import {
   type InstallPlatform,
 } from "../../utils/agentInstall";
 import { InstallOptionsPanel } from "../InstallOptionsPanel/InstallOptionsPanel";
+import { Tabs } from "../Tabs/Tabs";
 import "./AddServerDrawer.css";
 
 const PLATFORM_TABS: { id: InstallPlatform; label: string }[] = [
@@ -29,7 +30,7 @@ type Props = {
 };
 
 /**
- * Komari 式「添加服务器」抽屉：命令区使用全局自动发现密钥，打开即可实时展示与复制；
+ * 管理端「添加服务器」抽屉：命令区使用全局自动发现密钥，打开即可实时展示与复制；
  * 名称填写后点击「添加」创建节点（不依赖命令区）。
  */
 export function AddServerDrawer({ open, onClose, onCreated }: Props) {
@@ -139,20 +140,12 @@ export function AddServerDrawer({ open, onClose, onCreated }: Props) {
 
         <p className="admin-sidebar-form__hint">{t("admin.servers.autoDiscoveryHint")}</p>
 
-        <div className="admin-sidebar-tabs" role="tablist">
-          {PLATFORM_TABS.map((p) => (
-            <button
-              key={p.id}
-              type="button"
-              role="tab"
-              aria-selected={platform === p.id}
-              className={`admin-sidebar-tabs__tab${platform === p.id ? " is-active" : ""}`}
-              onClick={() => setPlatform(p.id)}
-            >
-              {p.label}
-            </button>
-          ))}
-        </div>
+        <Tabs
+          items={PLATFORM_TABS.map((p) => ({ id: p.id, label: p.label }))}
+          value={platform}
+          onChange={(id) => setPlatform(id as InstallPlatform)}
+          stretch
+        />
 
         <div className="add-server-install">
           <p className="add-server-install__heading">{t("admin.servers.installOptions")}</p>

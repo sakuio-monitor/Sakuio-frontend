@@ -18,6 +18,7 @@ import { TagSelectInput } from "../components/ui/TagSelectInput";
 type ClientRow = {
   uuid: string;
   name: string;
+  online?: boolean;
   region?: string;
   region6?: string;
   ipv4: string;
@@ -37,6 +38,7 @@ type ClientRow = {
   traffic_reset_mode?: string;
   bandwidth?: number;
   bandwidth_unit?: string;
+  report_interval_ms?: number;
 };
 
 type ClientsPayload = {
@@ -243,6 +245,21 @@ export default function ServersPage() {
 
   const columns: Column<ClientRow>[] = useMemo(
     () => [
+      {
+        key: "status",
+        title: t("admin.servers.status"),
+        width: 68,
+        fixedWidth: true,
+        render: (row) => (
+          <span
+            className={`data-table-tag ${
+              row.online ? "data-table-tag--green" : "data-table-tag--red"
+            }`}
+          >
+            {row.online ? t("admin.servers.online") : t("admin.servers.offline")}
+          </span>
+        ),
+      },
       {
         key: "name",
         title: t("admin.servers.name"),
@@ -464,7 +481,7 @@ export default function ServersPage() {
           emptyText={t("admin.emptyNodes")}
           selectable
           selectedKeys={selectedUuids}
-          onSelectionChange={(keys) => setSelectedUuids(new Set([...keys] as Set<string>))}
+          onSelectionChange={(keys) => setSelectedUuids(new Set([...keys].map(String)))}
           rowDrag={{
             onReorder: (from, to) => void reorderServer(from, to),
             handleLabel: t("admin.servers.dragToSort"),

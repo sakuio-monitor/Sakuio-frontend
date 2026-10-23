@@ -1,12 +1,13 @@
 import { Button, Input, Select, toast } from "@sakuio/ui";
 import { Activity, Cpu, Download, HardDrive, Info, MemoryStick, Menu, RotateCcw, Terminal, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { CellTooltip } from "./CellTooltip/CellTooltip";
 import { useConfirmDialog } from "./ConfirmDialog/ConfirmDialog";
 import { GenericSidebar } from "./GenericSidebar/GenericSidebar";
 import { InstallSidebar } from "./InstallSidebar/InstallSidebar";
 import { IpRegionFlag } from "./RegionFlag";
+import { Tabs } from "./Tabs/Tabs";
 import { Switch } from "./ui/Switch";
 import { TagSelectInput } from "./ui/TagSelectInput";
 
@@ -35,6 +36,7 @@ export type ServerActionRow = {
   traffic_reset_mode?: string;
   bandwidth?: number;
   bandwidth_unit?: string;
+  report_interval_ms?: number;
   last_seen_at?: string | null;
   created_at?: string;
   basic_info?: {
@@ -190,6 +192,9 @@ export function ServerRowActions({ row, groupOptions, onChanged }: ServerRowActi
   const [editName, setEditName] = useState(row.name);
   const [editGroups, setEditGroups] = useState<string[]>(splitGroups(row.group_name));
   const [editRemark, setEditRemark] = useState(row.private_remark ?? "");
+  const [editReportInterval, setEditReportInterval] = useState(
+    String(row.report_interval_ms ?? 1000),
+  );
 
   const [price, setPrice] = useState(String(row.price ?? 0));
   const [billingCycle, setBillingCycle] = useState(String(row.billing_cycle ?? 0));
@@ -265,6 +270,7 @@ export function ServerRowActions({ row, groupOptions, onChanged }: ServerRowActi
         name: editName,
         group_name: editGroups.join(","),
         private_remark: editRemark,
+        report_interval_ms: Math.max(200, Math.min(3_600_000, Number(editReportInterval) || 1000)),
       });
       toast.success(t("admin.servers.saveSuccess"));
       onChanged();
@@ -438,29 +444,16 @@ export function ServerRowActions({ row, groupOptions, onChanged }: ServerRowActi
         title={`${t("common.more")} - ${row.name}`}
         onClose={() => setMoreOpen(false)}
       >
-        <div className="admin-sidebar-tabs">
-          <button
-            type="button"
-            className={`admin-sidebar-tabs__tab ${tab === "host" ? "is-active" : ""}`}
-            onClick={() => setTab("host")}
-          >
-            {t("admin.servers.tabHost")}
-          </button>
-          <button
-            type="button"
-            className={`admin-sidebar-tabs__tab ${tab === "edit" ? "is-active" : ""}`}
-            onClick={() => setTab("edit")}
-          >
-            {t("admin.servers.tabEdit")}
-          </button>
-          <button
-            type="button"
-            className={`admin-sidebar-tabs__tab ${tab === "billing" ? "is-active" : ""}`}
-            onClick={() => setTab("billing")}
-          >
-            {t("admin.servers.tabBilling")}
-          </button>
-        </div>
+        <Tabs
+          items={[
+            { id: "host", label: t("admin.servers.tabHost") },
+            { id: "edit", label: t("admin.servers.tabEdit") },
+            { id: "billing", label: t("admin.servers.tabBilling") },
+          ]}
+          value={tab}
+          onChange={(id) => setTab(id as typeof tab)}
+          stretch
+        />
 
         {tab === "host" ? (
           <div className="admin-sidebar-form">
@@ -585,6 +578,27 @@ export function ServerRowActions({ row, groupOptions, onChanged }: ServerRowActi
                 value={editRemark}
                 onChange={(e) => setEditRemark(e.target.value)}
                 aria-label={t("admin.servers.privateRemark")}
+              />
+            </label>
+            <label className="admin-sidebar-form__label">
+              <span className="admin-sidebar-form__label-text">
+                {t("admin.servers.reportInterval")}
+                <CellTooltip
+                  tip={t("admin.servers.fieldHelp.reportInterval")}
+                  className="admin-field-info"
+                >
+                  <Info size={14} aria-hidden />
+                </CellTooltip>
+              </span>
+              <Input
+                type="number"
+                min={200}
+                max={3600000}
+                value={editReportInterval}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setEditReportInterval(e.target.value)
+                }
+                aria-label={t("admin.servers.reportInterval")}
               />
             </label>
             <Button type="button" size="sm" disabled={saving} onClick={() => void saveEdit()}>
