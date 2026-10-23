@@ -147,7 +147,7 @@ const TabButton = ({
 
         <button
           type="button"
-          className="relative z-[1] ml-auto inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-[3px] text-current opacity-40 transition-opacity duration-150 hover:bg-white/20 hover:opacity-100"
+          className="terminal-tab-close relative z-[2] ml-auto inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-[3px] transition-colors duration-150"
           tabIndex={-1}
           onClick={(event) => {
             event.stopPropagation();

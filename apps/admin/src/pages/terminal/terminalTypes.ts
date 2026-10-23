@@ -38,8 +38,8 @@ export const TAB_COLORS = [
   "#a9a9a9",
 ];
 
-export const MIN_TAB_WIDTH = 120;
-export const MAX_TAB_WIDTH = 260;
+export const MIN_TAB_WIDTH = 96;
+export const MAX_TAB_WIDTH = 190;
 export const ACTIONS_RESERVED_WIDTH = 76;
 export const SCROLL_BUTTONS_WIDTH = 56;
 

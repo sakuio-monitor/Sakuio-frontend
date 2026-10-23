@@ -875,3 +875,32 @@
 .sakuio-terminal-tab-bar [aria-selected="true"] .terminal-tab-name {
   color: #ffffff;
 }
+.sakuio-terminal-tab-bar .terminal-tab-close {
+  color: #ffffff !important;
+  opacity: .62;
+}
+.sakuio-terminal-tab-bar .terminal-tab-close:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, .18);
+}
+.sakuio-terminal-tab-bar [aria-selected="true"] .terminal-tab-close {
+  opacity: .82;
+  color: #ffffff !important;
+}
+.terminal-https-callout {
+  width: max-content;
+  max-width: calc(100vw - 24px);
+  white-space: nowrap !important;
+}
+.terminal-https-callout .rt-CalloutText {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  white-space: nowrap !important;
+}
+.terminal-https-callout__text {
+  white-space: nowrap !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
