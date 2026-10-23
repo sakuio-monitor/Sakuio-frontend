@@ -1,0 +1,322 @@
+// 字体定义已移至 uno.config.ts
+
+@import './node-list-table.scss';
+
+/** 节点分类/价格等标签的紧凑样式（列表名称下、卡片内） */
+.compact-node-tags {
+  gap: 2px;
+
+  :deep(.n-tag) {
+    --n-font-size: 9px;
+    --n-padding: 0 4px;
+    --n-border-radius: 2px;
+    --n-height: auto;
+    box-sizing: border-box;
+    height: auto;
+    min-height: 13px;
+    max-width: 100%;
+    padding-block: 0;
+    line-height: 1.25;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  :deep(.n-tag__content) {
+    display: inline-flex;
+    min-width: 0;
+    max-width: 100%;
+    align-items: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.25;
+  }
+
+  :deep(.n-badge .n-badge-sup) {
+    box-sizing: border-box;
+    height: auto;
+    min-height: 13px;
+    max-width: 100%;
+    padding: 0 4px;
+    font-size: 9px;
+    line-height: 1.25;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .compact-node-tag-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    max-width: 100%;
+  }
+
+  .compact-node-tag-icon__text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /** ISP / ASN / 剩余：与 List 节点列相同，单行横向排列 */
+  &.node-network-tags {
+    --network-tag-scale: 0.9;
+    --network-tag-icon-size: 12px;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    max-width: 100%;
+    min-width: 0;
+    gap: 2px;
+
+    .network-tag-slot {
+      display: inline-flex;
+      flex: 0 0 auto;
+      max-width: 100%;
+      min-width: 0;
+      zoom: var(--network-tag-scale);
+    }
+
+    .network-tag-slot--provider {
+      flex: 0 1 auto;
+      overflow: hidden;
+    }
+
+    .network-tag-slot--asn,
+    .network-tag-slot--expire {
+      flex: 0 0 auto;
+    }
+
+    .network-tag.n-tag {
+      width: auto;
+      max-width: 100%;
+    }
+
+    .network-tag-badge {
+      max-width: 100%;
+    }
+
+    .network-tag-slot--provider .network-tag-badge .n-badge-sup {
+      display: inline-block;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      vertical-align: bottom;
+    }
+
+    .network-tag-svg-icon {
+      width: calc(var(--network-tag-icon-size) / var(--network-tag-scale));
+      height: calc(var(--network-tag-icon-size) / var(--network-tag-scale));
+      max-width: none;
+      font-size: calc(var(--network-tag-icon-size) / var(--network-tag-scale));
+    }
+
+    @supports not (zoom: 1) {
+      .network-tag-slot {
+        display: inline-block;
+        max-width: 100%;
+        transform: scale(var(--network-tag-scale));
+        transform-origin: left center;
+      }
+
+      .network-tag-slot--provider {
+        max-width: calc(100% / var(--network-tag-scale));
+      }
+    }
+  }
+}
+
+.node-list-item__name-tags {
+  max-width: 100%;
+}
+
+/** 地区列 / 卡片头部国旗（4:3） */
+.region-flag {
+  display: block;
+  flex-shrink: 0;
+  width: 28px;
+  height: 21px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.region-flag--lg {
+  width: 32px;
+  height: 24px;
+}
+
+/** 自定义滚动条（Firefox scrollbar-width + WebKit），替代原生粗滚动条 */
+.app-scrollbar {
+  --app-scrollbar-size: 6px;
+  --app-scrollbar-thumb: rgb(0 0 0 / 22%);
+  --app-scrollbar-thumb-hover: rgb(0 0 0 / 36%);
+  --app-scrollbar-track: transparent;
+  scrollbar-width: thin;
+  scrollbar-color: var(--app-scrollbar-thumb) var(--app-scrollbar-track);
+
+  &::-webkit-scrollbar {
+    width: var(--app-scrollbar-size);
+    height: var(--app-scrollbar-size);
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--app-scrollbar-track);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--app-scrollbar-thumb);
+    border-radius: 999px;
+    border: 1px solid transparent;
+    background-clip: padding-box;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: var(--app-scrollbar-thumb-hover);
+  }
+
+  &::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+}
+
+html.dark .app-scrollbar {
+  --app-scrollbar-thumb: rgb(255 255 255 / 28%);
+  --app-scrollbar-thumb-hover: rgb(255 255 255 / 42%);
+}
+
+/* Sakuio admin ambient surface — keep theme and admin backgrounds identical. */
+:root {
+  --ambient-base: #eef1f4;
+  --ambient-mesh:
+    radial-gradient(ellipse 55% 45% at 18% 22%, rgba(31, 107, 90, 0.18), transparent 70%),
+    radial-gradient(ellipse 50% 40% at 86% 78%, rgba(52, 78, 120, 0.14), transparent 68%),
+    linear-gradient(160deg, #f5f7f9 0%, #e9edf1 45%, #f4f1eb 100%);
+  --color-gray-500: #86868b;
+  --primary-color: #18a058;
+  --glass-panel: rgba(255, 255, 255, 0.78);
+  --glass-border: rgba(20, 24, 32, 0.1);
+  --glass-shadow: 0 1px 0 rgba(255, 255, 255, 0.45) inset, 0 3px 14px rgba(20, 24, 32, 0.055);
+}
+
+html.dark {
+  --ambient-base: #0b0d11;
+  --ambient-mesh:
+    radial-gradient(ellipse 55% 45% at 18% 22%, rgba(61, 155, 134, 0.18), transparent 70%),
+    radial-gradient(ellipse 50% 40% at 86% 78%, rgba(70, 100, 160, 0.14), transparent 68%),
+    linear-gradient(160deg, #0c0e12 0%, #12151b 45%, #141210 100%);
+  --color-gray-500: #8d939a;
+  --primary-color: #63e2b6;
+  --glass-panel: rgba(16, 18, 24, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 3px 16px rgba(0, 0, 0, 0.22);
+}
+
+html {
+  background: var(--ambient-base);
+}
+
+body,
+#app {
+  background: transparent !important;
+}
+
+
+/* Match the admin sidebar/tooltip glass surface for every Naive card. */
+.n-card {
+  --n-color: transparent !important;
+  --n-border-radius: 16px !important;
+  border-radius: 16px !important;
+  background: var(--glass-panel) !important;
+  background-color: var(--glass-panel) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--glass-shadow) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.n-card .n-card-header,
+.n-card .n-card__content,
+.n-card .n-card__footer {
+  background: transparent !important;
+}
+
+.n-card:hover {
+  background: var(--glass-panel) !important;
+  background-color: var(--glass-panel) !important;
+}
+
+/* The server list is an NList, not an NCard. Match the same tooltip glass. */
+.node-list-table__surface.n-list {
+  --n-color: transparent !important;
+  --n-border-radius: 16px !important;
+  overflow: hidden;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 16px !important;
+  background: var(--glass-panel) !important;
+  background-color: var(--glass-panel) !important;
+  box-shadow: var(--glass-shadow) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.node-list-table__surface .n-list__header,
+.node-list-table__surface .n-list-item,
+.node-list-table__surface .n-list-item__main {
+  background: transparent !important;
+  border-color: var(--glass-border) !important;
+}
+
+.node-list-table__surface .n-list__header,
+.node-list-table__surface .node-list-header {
+  background: transparent !important;
+}
+
+.node-list-table__surface .n-list-item:hover,
+.node-list-table__surface .n-list-item:hover .n-list-item__main {
+  background: var(--n-color-hover) !important;
+}
+
+/* Naive overlays use the same translucent glass as the admin CellTooltip. */
+.n-popover,
+.n-tooltip,
+.n-dropdown-menu,
+.n-base-select-menu,
+.n-select-menu,
+.n-modal,
+.n-dialog {
+  --n-color: transparent !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 12px !important;
+  background: var(--glass-panel) !important;
+  background-color: var(--glass-panel) !important;
+  box-shadow: var(--glass-shadow) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.n-popover .n-popover-arrow,
+.n-tooltip .n-tooltip-arrow,
+.n-popover .n-popover-arrow::before,
+.n-tooltip .n-tooltip-arrow::before {
+  background: var(--glass-panel) !important;
+  border-color: var(--glass-border) !important;
+}
+
+.n-popover__content,
+.n-tooltip__content,
+.n-dropdown-menu .n-dropdown-option,
+.n-base-select-menu .n-base-select-option {
+  background: transparent !important;
+}
+
+.n-popover .header-search-popover {
+  padding: 2px;
+}
+
+.n-dropdown-menu .n-dropdown-option:hover,
+.n-base-select-menu .n-base-select-option:hover {
+  background: var(--n-option-color-hover, rgba(128, 138, 133, .12)) !important;
+}

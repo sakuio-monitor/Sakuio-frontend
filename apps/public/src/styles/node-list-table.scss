@@ -1,0 +1,128 @@
+/** 节点 List 与资产/成本等表格共用，行高由容器 --node-list-row-height 统一控制 */
+.node-list-table {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/** 外层横向滚动；内层 NList 统一宽度，表头与行对齐 */
+.node-list-table .node-list-table__scroll {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
+.node-list-table .node-list-table__scroll .node-list-table__surface.n-list {
+  display: block;
+  width: max(100%, var(--node-list-scroll-min-width, 0px));
+  min-width: 100%;
+  max-width: none;
+  overflow: visible;
+  max-height: none;
+}
+
+.node-list-table .node-list-table__scroll .node-list-table__surface .n-list__header {
+  padding: 0 !important;
+  border-bottom: none !important;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.node-list-table .node-list-table__scroll .node-list-table__surface .n-list-item {
+  padding: 0 !important;
+  box-sizing: border-box;
+  width: 100%;
+  height: var(--node-list-row-height);
+  min-height: var(--node-list-row-height);
+  max-height: var(--node-list-row-height);
+  align-items: stretch;
+}
+
+.node-list-table .node-list-table__scroll .node-list-table__surface .n-list-item > .n-list-item__main {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: stretch;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.node-list-row {
+  position: relative;
+  overflow: hidden;
+}
+
+.node-list-header,
+.node-list-item {
+  display: grid;
+  align-items: center;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 0;
+  padding: 8px 16px;
+}
+
+.node-list-header {
+  background-color: var(--n-color-hover);
+  border-radius: var(--n-border-radius) var(--n-border-radius) 0 0;
+}
+
+.node-list-item {
+  height: 100%;
+}
+
+.node-list-header > *,
+.node-list-item > * {
+  min-width: 0;
+}
+
+.node-list-header__status,
+.node-list-item__status {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 0;
+}
+
+.node-list-header__region,
+.node-list-item__region {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 0;
+}
+
+.node-list-header__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.node-list-item__name {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.node-list-item__name-text {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.panel-list-grid__status,
+.panel-list-grid__region {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
