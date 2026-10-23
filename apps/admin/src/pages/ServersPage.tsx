@@ -155,6 +155,7 @@ export default function ServersPage() {
     nextCursor: null,
   });
   const [initialLoading, setInitialLoading] = useState(true);
+  const [pageLoading, setPageLoading] = useState(false);
   const [cursorStack, setCursorStack] = useState<(string | undefined)[]>([undefined]);
   const [cursorIndex, setCursorIndex] = useState(0);
   const [pageSize, setPageSize] = useState(20);
@@ -201,6 +202,7 @@ export default function ServersPage() {
       return { items: next, nextCursor: payload.next_cursor ?? null };
     });
     setInitialLoading(false);
+    setPageLoading(false);
   }, []);
 
   // SSE 订阅当前页；onerror 切 POST 轮询降级
@@ -209,22 +211,30 @@ export default function ServersPage() {
     let es: EventSource | null = null;
     let pollTimer: number | undefined;
 
+    const fetchSnapshot = async () => {
+      try {
+        const res = await fetch("/api/admin/clients/sync", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ cursor: activeCursor ?? null, limit: pageSize }),
+        });
+        if (res.ok && !cancelled) applyPayload(await res.json());
+      } catch {
+        // 保留上一次数据，等待下一轮
+      }
+    };
+
     const startPolling = () => {
       const poll = async () => {
-        try {
-          const res = await fetch("/api/admin/clients/sync", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ cursor: activeCursor ?? null, limit: pageSize }),
-          });
-          if (res.ok && !cancelled) applyPayload(await res.json());
-        } catch {
-          // 保留上一次数据，等待下一轮
-        }
+        await fetchSnapshot();
         if (!cancelled) pollTimer = window.setTimeout(poll, 15_000);
       };
       void poll();
     };
+
+    // Fetch the selected page immediately; SSE only delivers later updates.
+    setPageLoading(true);
+    void fetchSnapshot();
 
     try {
       const qs = new URLSearchParams({ limit: String(pageSize) });
@@ -551,14 +561,18 @@ export default function ServersPage() {
             size: pageSize,
             hasPrev,
             hasNext,
+            loading: pageLoading,
             rangeFrom: from,
             rangeTo: to,
           }}
           onCursorPrev={() => {
-            if (hasPrev) setCursorIndex((i) => i - 1);
+            if (!hasPrev || pageLoading) return;
+            setPageLoading(true);
+            setCursorIndex((i) => i - 1);
           }}
           onCursorNext={() => {
-            if (!hasNext) return;
+            if (!hasNext || pageLoading) return;
+            setPageLoading(true);
             setCursorStack((stack) => {
               const trimmed = stack.slice(0, cursorIndex + 1);
               return [...trimmed, pageData.nextCursor ?? undefined];
@@ -566,6 +580,8 @@ export default function ServersPage() {
             setCursorIndex((i) => i + 1);
           }}
           onSizeChange={(size) => {
+            if (size === pageSize) return;
+            setPageLoading(true);
             setPageSize(size);
             setCursorStack([undefined]);
             setCursorIndex(0);

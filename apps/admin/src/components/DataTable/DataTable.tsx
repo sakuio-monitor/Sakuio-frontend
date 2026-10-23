@@ -123,6 +123,7 @@ export interface PaginationState {
   mode?: 'offset' | 'cursor'
   hasPrev?: boolean
   hasNext?: boolean
+  loading?: boolean
   rangeFrom?: number
   rangeTo?: number
 }

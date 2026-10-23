@@ -22,6 +22,7 @@ function CursorPagination({
   rangeTo,
   hasPrev,
   hasNext,
+  loading,
   onSizeChange,
   onCursorPrev,
   onCursorNext,
@@ -42,7 +43,7 @@ function CursorPagination({
           <button
             type="button"
             className="pagination__btn"
-            disabled={!hasPrev}
+            disabled={!hasPrev || loading}
             onClick={() => onCursorPrev?.()}
             aria-label="上一页"
           >
@@ -51,7 +52,7 @@ function CursorPagination({
           <button
             type="button"
             className="pagination__btn"
-            disabled={!hasNext}
+            disabled={!hasNext || loading}
             onClick={() => onCursorNext?.()}
             aria-label="下一页"
           >
