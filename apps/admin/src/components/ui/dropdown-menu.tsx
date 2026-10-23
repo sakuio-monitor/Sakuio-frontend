@@ -41,14 +41,13 @@ function DropdownMenuContent({
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Content> & {
   themeAppearance?: "light" | "dark";
 }) {
-  const { appearance, color } = React.useContext(AppThemeContext);
-  const systemAppearance = useSystemTheme(appearance);
+  const { appearance } = React.useContext(AppThemeContext);
+  const systemAppearance = useSystemTheme();
   const resolvedAppearance = themeAppearance ?? systemAppearance;
   return (
     <DropdownMenuPrimitive.Portal>
       <Theme
         appearance={resolvedAppearance}
-        accentColor={color}
         hasBackground={false}
         asChild
       >
@@ -247,14 +246,13 @@ function DropdownMenuSubContent({
 }: React.ComponentProps<typeof DropdownMenuPrimitive.SubContent> & {
   themeAppearance?: "light" | "dark";
 }) {
-  const { appearance, color } = React.useContext(AppThemeContext);
-  const systemAppearance = useSystemTheme(appearance);
+  const { appearance } = React.useContext(AppThemeContext);
+  const systemAppearance = useSystemTheme();
   const resolvedAppearance = themeAppearance ?? systemAppearance;
   return (
     <DropdownMenuPrimitive.Portal>
       <Theme
         appearance={resolvedAppearance}
-        accentColor={color}
         hasBackground={false}
         asChild
       >

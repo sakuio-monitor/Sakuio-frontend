@@ -36,7 +36,9 @@
   --color-gray-800: #3a3a3c;
   --color-gray-900: #2c2c2e;
   --color-danger: #ff3b30;
+  --color-success: #34c759;
   --color-red-50: #fef2f2;
+  --color-green-50: #f0fdf4;
   --color-blue-50: #eff6ff;
   --admin-list-column-gap: 12px;
   --admin-page-max-width: 1800px;
@@ -78,6 +80,8 @@
   --color-gray-800: #cccccc;
   --color-gray-900: #e8e8e8;
   --color-danger: #ff453a;
+  --color-success: #30d158;
   --color-red-50: rgba(255, 69, 58, 0.12);
+  --color-green-50: rgba(48, 209, 88, 0.12);
   --color-blue-50: rgba(10, 132, 255, 0.12);
 }

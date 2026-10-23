@@ -28,7 +28,7 @@
 }
 
 .entity-list-cell--id {
-  font-family: var(--font-family-number, ui-monospace, monospace);
+  font-family: var(--font-family-number);
   font-size: 12px;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -80,7 +80,7 @@
 
 .entity-list-cell--ip {
   display: block;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-family: var(--font-family);
   font-size: 12px;
   overflow: hidden;
   text-overflow: ellipsis;

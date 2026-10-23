@@ -8,7 +8,8 @@ import {
   useState,
   memo,
 } from 'react'
-import { Loader2, ArrowUp, ArrowDown, ArrowUpDown, GripVertical } from 'lucide-react'
+import { ArrowUp, ArrowDown, ArrowUpDown, GripVertical, Inbox } from 'lucide-react'
+import { Spinner } from '@sakuio/ui'
 import { formatCellDisplay } from "../../utils/formatCellDisplay";
 import {
   type EntityListLayoutId,
@@ -411,7 +412,9 @@ export function DataTable<T>({
     setDragOverIndex(null)
   }, [])
 
-  const isEntityList = tableClassName === 'data-table--entity-list'
+  const isEntityList = (tableClassName ?? '')
+    .split(/\s+/)
+    .includes('data-table--entity-list')
   // 测量外层 wrapper 而非滚动容器：滚动条出现/消失不影响 wrapper 宽度，
   // 避免拖动窗口宽度时在阈值附近来回振荡导致滚动条闪烁
   const wrapperRef = useRef<HTMLDivElement>(null)
@@ -488,11 +491,13 @@ export function DataTable<T>({
             .filter(Boolean)
             .join(' ')}
           style={
-            isEntityList && listLayoutId && entityListUsesFluidTableWidth(listLayoutId)
+            isEntityList && !listLayoutId
               ? { width: '100%' }
-              : isEntityList && tableMinWidthPx > 0
-                ? { minWidth: tableMinWidthPx, width: 'max(100%, var(--entity-list-table-min-width))' }
-                : undefined
+              : isEntityList && listLayoutId && entityListUsesFluidTableWidth(listLayoutId)
+                ? { width: '100%' }
+                : isEntityList && tableMinWidthPx > 0
+                  ? { minWidth: tableMinWidthPx, width: 'max(100%, var(--entity-list-table-min-width))' }
+                  : undefined
           }
         >
           {isEntityList ? (
@@ -566,7 +571,7 @@ export function DataTable<T>({
               <tr>
                 <td colSpan={colSpan}>
                   <div className="data-table__loading">
-                    <Loader2 size={20} className="data-table__spinner" />
+                    <Spinner size={20} />
                     <span>加载中...</span>
                   </div>
                 </td>
@@ -574,7 +579,10 @@ export function DataTable<T>({
             ) : safeData.length === 0 ? (
               <tr>
                 <td colSpan={colSpan}>
-                  <div className="data-table__empty">{emptyText}</div>
+                  <div className="data-table__empty">
+                    <Inbox size={48} strokeWidth={1.5} aria-hidden />
+                    <span>{emptyText}</span>
+                  </div>
                 </td>
               </tr>
             ) : (

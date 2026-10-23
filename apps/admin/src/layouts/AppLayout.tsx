@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ChevronDown, ChevronLeft, ChevronRight, Languages, Menu, Monitor, Moon, Sun, X } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Languages, Menu, Monitor, Moon, Palette, Sun, X } from "lucide-react";
 import {
   ADMIN_NAV_GROUPS,
   ADMIN_TOP_LINKS,
@@ -11,7 +11,9 @@ import {
   type AdminNavItem,
 } from "../admin/menu";
 import { changeLocale, type SupportedLocale } from "@sakuio/i18n";
+import { fetchThemes } from "../api/themes";
 import { CellTooltip } from "../components/CellTooltip/CellTooltip";
+import { PageTitleContext } from "../contexts/PageTitleContext";
 import { applyThemeTransition, type ThemeTransitionOrigin } from "../utils/themeTransition";
 import {
   DropdownMenu,
@@ -24,6 +26,17 @@ import "../styles/admin-tokens.css";
 import "./AppLayout.css";
 
 const MOBILE_MQ = "(max-width: 800px)";
+
+function localized(value: unknown, language: string): string {
+  if (typeof value === "string") return value;
+  if (!value || typeof value !== "object" || Array.isArray(value)) return "";
+  const map = value as Record<string, unknown>;
+  for (const key of [language, "zh-CN", "en", "ja"]) {
+    const text = map[key];
+    if (typeof text === "string" && text.trim()) return text;
+  }
+  return Object.values(map).find((text): text is string => typeof text === "string" && !!text.trim()) ?? "";
+}
 
 function useIsMobile() {
   const [mobile, setMobile] = useState(() =>
@@ -130,6 +143,7 @@ function InternalNavLink({
   return (
     <NavLink
       to={item.path}
+      end
       className={({ isActive }) =>
         variant === "top"
           ? `menu-item menu-item-top ${isActive ? "active" : ""}`
@@ -207,7 +221,7 @@ function LanguageToggleButton({ dark }: { dark: boolean }) {
 }
 
 export default function AppLayout() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const location = useLocation();
   const contentRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
@@ -215,13 +229,58 @@ export default function AppLayout() {
   const [hoverExpanded, setHoverExpanded] = useState(false);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [pageTitle, setPageTitle] = useState<string | undefined>();
+  const [themeSettingsItem, setThemeSettingsItem] = useState<AdminNavItem | null>(null);
   // 主题状态上提：顶栏按钮与语言下拉共用；语言菜单跟随页面主题。
   const { dark, mode, cycleMode } = useThemeMode();
 
   const currentPageLabel = useMemo(
-    () => t(pageLabelKeyForPath(location.pathname)),
-    [location.pathname, t],
+    () => pageTitle ?? t(pageLabelKeyForPath(location.pathname)),
+    [location.pathname, pageTitle, t],
   );
+
+  useEffect(() => {
+    let ignore = false;
+    const load = () => {
+      void fetchThemes()
+        .then(({ themes }) => {
+          if (ignore) return;
+          const match = location.pathname.match(/^\/themes\/([^/]+)\/settings$/);
+          let settingsShort = "";
+          if (match) {
+            try {
+              settingsShort = decodeURIComponent(match[1]);
+            } catch {
+              settingsShort = match[1];
+            }
+          }
+          const target =
+            themes.find((theme) => settingsShort && theme.short === settingsShort) ??
+            themes.find((theme) => theme.active);
+          if (!target || target.config_items <= 0) {
+            setThemeSettingsItem(null);
+            return;
+          }
+          const language = i18n.resolvedLanguage || i18n.language || "en";
+          const label =
+            localized(target.configuration_name, language) ||
+            t("admin.themes.manageWithName", { name: target.name || target.short });
+          setThemeSettingsItem({
+            path: `/themes/${encodeURIComponent(target.short)}/settings`,
+            labelKey: "admin.nav.themeSettings",
+            rawLabel: label,
+            icon: Palette,
+          });
+        })
+        .catch(() => undefined);
+    };
+    load();
+    window.addEventListener("sakuio:themes-changed", load);
+    return () => {
+      ignore = true;
+      window.removeEventListener("sakuio:themes-changed", load);
+    };
+  }, [i18n.language, i18n.resolvedLanguage, location.pathname, t]);
 
   // 收起时鼠标悬停自动展开；移出恢复收起。
   const visuallyCollapsed = collapsed && !hoverExpanded;
@@ -271,6 +330,10 @@ export default function AppLayout() {
           ))}
         </ul>
         {ADMIN_NAV_GROUPS.map((group) => {
+          const items =
+            group.id === "personalization" && themeSettingsItem
+              ? [...group.items, themeSettingsItem]
+              : group.items;
           const Icon = group.icon;
           const isOpen = collapsedMode ? false : Boolean(expanded[group.id]);
           // 收起态下组按钮只剩图标，用通用 tooltip 提示组名
@@ -306,9 +369,14 @@ export default function AppLayout() {
                 <div className={`nav-sub-wrap ${isOpen ? "is-open" : ""}`}>
                   <div className="nav-sub-inner">
                     <ul className="nav-sub-list">
-                      {group.items.map((item) => (
+                      {items.map((item) => (
                         <li key={item.path}>
-                          <NavEntryLink item={item} label={t(item.labelKey)} variant="sub" onNavigate={onNavigate} />
+                          <NavEntryLink
+                            item={item}
+                            label={item.rawLabel ?? t(item.labelKey)}
+                            variant="sub"
+                            onNavigate={onNavigate}
+                          />
                         </li>
                       ))}
                     </ul>
@@ -411,7 +479,9 @@ export default function AppLayout() {
           </header>
         )}
         <div className="app-content" ref={contentRef}>
-          <Outlet />
+          <PageTitleContext.Provider value={setPageTitle}>
+            <Outlet />
+          </PageTitleContext.Provider>
         </div>
       </main>
     </div>

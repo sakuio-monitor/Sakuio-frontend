@@ -1,0 +1,47 @@
+.sakuio-spinner {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  box-sizing: border-box;
+}
+
+.sakuio-spinner__outer,
+.sakuio-spinner__inner {
+  position: absolute;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 2px solid transparent;
+}
+
+.sakuio-spinner__outer {
+  inset: 0;
+  border-top-color: currentColor;
+  border-right-color: currentColor;
+  animation: sakuio-spinner-rotate 0.9s linear infinite;
+}
+
+.sakuio-spinner__inner {
+  inset: 28%;
+  border-bottom-color: currentColor;
+  border-left-color: currentColor;
+  animation: sakuio-spinner-rotate-reverse 0.65s linear infinite;
+}
+
+@keyframes sakuio-spinner-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes sakuio-spinner-rotate-reverse {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sakuio-spinner__outer,
+  .sakuio-spinner__inner {
+    animation-duration: 2.4s;
+  }
+}

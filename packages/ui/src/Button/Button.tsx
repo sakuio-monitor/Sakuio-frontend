@@ -1,4 +1,4 @@
-import { Loader2 } from "lucide-react";
+import { Spinner } from "../Spinner/Spinner";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 import "./Button.css";
 
@@ -32,11 +32,7 @@ export function Button({
       disabled={disabled || loading}
       {...rest}
     >
-      {loading ? (
-        <Loader2 size={16} className="btn__spinner" aria-hidden />
-      ) : (
-        icon
-      )}
+      {loading ? <Spinner size={16} /> : icon}
       {children ? <span>{children}</span> : null}
     </button>
   );

@@ -21,11 +21,10 @@
   font: inherit;
   color: var(--ui-fg);
   resize: vertical;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: border-color 0.15s;
 }
 
 .ui-textarea__field:focus {
   outline: none;
   border-color: var(--ui-primary);
-  box-shadow: 0 0 0 3px rgba(31, 107, 90, 0.18);
 }

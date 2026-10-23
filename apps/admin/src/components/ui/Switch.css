@@ -12,7 +12,7 @@
 }
 
 .ui-switch.is-on {
-  background: var(--ui-primary, #1f6b5a);
+  background: var(--color-black, #1d1d1f);
 }
 
 .ui-switch:disabled {
@@ -27,7 +27,7 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--color-white, #ffffff);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   transition: transform 0.15s ease;
 }

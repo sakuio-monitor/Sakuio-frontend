@@ -569,23 +569,28 @@ html.theme-switching *::after {
   }
 
   .page-header {
-    align-items: center;
-    flex-wrap: nowrap;
+    align-items: flex-start;
+    flex-wrap: wrap;
     gap: 10px;
   }
 
   .page-header__title {
     font-size: 18px;
-    flex: 1 1 auto;
+    flex: 1 1 100%;
     min-width: 0;
   }
 
   .page-header__actions {
-    width: auto;
-    max-width: 70%;
-    justify-content: flex-end;
+    width: 100%;
+    max-width: 100%;
+    flex-wrap: wrap;
+    justify-content: flex-start;
     margin-left: 0;
-    overflow-x: auto;
+    overflow-x: visible;
+  }
+
+  .page-header__actions > * {
+    max-width: 100%;
   }
 
   .page-header__select {

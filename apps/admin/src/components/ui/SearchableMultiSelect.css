@@ -1,0 +1,16 @@
+.search-multi { position: relative; width: 100%; }
+.search-multi__control { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; min-height: 38px; padding: 4px 9px; border: 1px solid var(--ui-border, var(--glass-border)); border-radius: 8px; background: var(--ui-bg, var(--glass-panel)); color: var(--color-gray-500); }
+.search-multi__control input { flex: 1; min-width: 100px; height: 28px; border: 0; outline: none; background: transparent; color: var(--color-black); font-size: 13px; }
+.search-multi__chip { display: inline-flex; align-items: center; gap: 3px; padding: 3px 6px 3px 8px; border-radius: 5px; background: var(--menu-hover-bg, rgba(20,24,32,.06)); color: var(--color-gray-700); font-size: 12px; }
+.search-multi__chip button { display: grid; place-items: center; padding: 0; border: 0; background: transparent; color: var(--color-gray-400); cursor: pointer; }
+.search-multi__menu { overflow-y: auto; border: 1px solid var(--glass-border); border-radius: 9px; background: var(--glass-panel); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: var(--glass-shadow); }
+.search-multi__item { display: flex; align-items: center; gap: 8px; width: 100%; padding: 9px 10px; border: 0; background: transparent; color: var(--color-gray-700); text-align: left; cursor: pointer; }
+.search-multi__item:hover, .search-multi__item.is-selected { background: var(--menu-hover-bg, rgba(20,24,32,.06)); }
+.search-multi__item > span:first-child { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+.search-multi__item small { color: var(--color-gray-400); font-size: 10px; }
+.search-multi__check { width: 14px; color: var(--color-gray-700); font-size: 12px; }
+.search-multi__empty { padding: 16px; color: var(--color-gray-400); font-size: 12px; text-align: center; }
+.search-multi__footer { display: flex; align-items: center; justify-content: space-between; padding: 7px 10px; color: var(--color-gray-500); font-size: 11px; }
+.search-multi__footer > div { display: flex; align-items: center; gap: 5px; }
+.search-multi__footer button { display: grid; place-items: center; width: 23px; height: 23px; padding: 0; border: 1px solid var(--glass-border); border-radius: 5px; background: transparent; color: var(--color-gray-600); cursor: pointer; }
+.search-multi__footer button:disabled { opacity: .4; }
