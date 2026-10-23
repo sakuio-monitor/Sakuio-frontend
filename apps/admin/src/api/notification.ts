@@ -18,6 +18,8 @@ export type NotificationInstanceSummary = {
   channel_type: string;
   type_name: string;
   name: string;
+  enabled: boolean;
+  last_used_at: string;
   updated_at: string;
 };
 
@@ -26,11 +28,30 @@ export type NotificationInstanceDetail = NotificationInstanceSummary & {
   data: Record<string, unknown>;
 };
 
+export type NotificationEventType =
+  | "offline"
+  | "online"
+  | "ip_change"
+  | "login"
+  | "expire"
+  | "traffic"
+  | "traffic_exceeded"
+  | "cpu_high"
+  | "memory_high"
+  | "disk_high"
+  | "swap_high"
+  | "load_high"
+  | "bandwidth_high"
+  | "gpu_high"
+  | "process_high";
+
 export type NotificationRule = {
   id: string;
   name: string;
-  event_type: "offline" | "login" | "expire" | "traffic" | "traffic_exceeded";
+  event_type: NotificationEventType;
   threshold: number;
+  duration_secs: number;
+  enabled: boolean;
   channels: string[];
   clients: string[];
   template_title: string;
@@ -110,6 +131,24 @@ export async function deleteNotificationInstance(id: string): Promise<void> {
   if (!res.ok) {
     throw new Error("delete instance failed");
   }
+}
+
+export async function setNotificationInstanceEnabled(id: string, enabled: boolean): Promise<void> {
+  const res = await fetch(`/api/admin/notification/instances/${encodeURIComponent(id)}/enabled`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ enabled }),
+  });
+  if (!res.ok) throw new Error("update instance enabled failed");
+}
+
+export async function setNotificationRuleEnabled(id: string, enabled: boolean): Promise<void> {
+  const res = await fetch(`/api/admin/notification/rules/${encodeURIComponent(id)}/enabled`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ enabled }),
+  });
+  if (!res.ok) throw new Error("update rule enabled failed");
 }
 
 export async function testNotificationInstance(

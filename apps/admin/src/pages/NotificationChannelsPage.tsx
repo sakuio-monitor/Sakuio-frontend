@@ -1,6 +1,6 @@
 import { Button, Input, Select, toast } from "@sakuio/ui";
-import { Pencil, Plus, Trash2 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { Pencil, Plus, Power, PowerOff, Trash2 } from "lucide-react";
+import { type ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   createNotificationInstance,
@@ -8,6 +8,7 @@ import {
   fetchNotificationInstance,
   fetchNotificationInstances,
   fetchNotificationTypes,
+  setNotificationInstanceEnabled,
   testNotificationInstance,
   updateNotificationInstance,
   type ChannelType,
@@ -15,9 +16,12 @@ import {
   type NotificationInstanceSummary,
 } from "../api/notification";
 import { GenericSidebar } from "../components/GenericSidebar/GenericSidebar";
+import { DataTable, type Column } from "../components/DataTable/DataTable";
+import { CellTooltip } from "../components/CellTooltip/CellTooltip";
 import { useConfirmDialog } from "../components/ConfirmDialog/ConfirmDialog";
 import { PageListHeader } from "../components/PageListHeader";
 import { Switch } from "../components/ui/Switch";
+import { FieldLabel } from "../components/ui/FieldLabel";
 
 function fieldValue(data: Record<string, unknown>, field: ConfigField): string {
   const raw = data[field.key];
@@ -72,8 +76,9 @@ function InstanceFormFields({
           </div>
         ) : (
           <label key={field.key} className="admin-sidebar-form__label">
-            {field.label}
-            {field.required ? " *" : ""}
+            <FieldLabel tip={field.help || undefined}>
+              {field.label}{field.required ? " *" : ""}
+            </FieldLabel>
             <Input
               type={
                 field.type === "password"
@@ -83,11 +88,8 @@ function InstanceFormFields({
                     : "text"
               }
               value={fieldValue(values, field)}
-              onChange={(e) => onChange({ ...values, [field.key]: e.target.value })}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => onChange({ ...values, [field.key]: e.target.value })}
             />
-            {field.help ? (
-              <span className="admin-sidebar-form__hint">{field.help}</span>
-            ) : null}
           </label>
         ),
       )}
@@ -223,6 +225,15 @@ export default function NotificationChannelsPage() {
     });
   };
 
+  const toggleEnabled = async (item: NotificationInstanceSummary) => {
+    try {
+      await setNotificationInstanceEnabled(item.id, !item.enabled);
+      await reload();
+    } catch {
+      toast.error(t("common.error"));
+    }
+  };
+
   const onTest = async () => {
     if (!editId) {
       return;
@@ -240,6 +251,60 @@ export default function NotificationChannelsPage() {
     }
   };
 
+  const columns: Column<NotificationInstanceSummary>[] = useMemo(() => [
+    {
+      key: "name",
+      title: t("common.name"),
+      render: (item) => <span className={`data-table-cell${item.enabled ? "" : " is-disabled"}`}>{item.name}</span>,
+    },
+    {
+      key: "type_name",
+      title: t("common.type"),
+      render: (item) => <span className="data-table-tag data-table-tag--blue">{item.type_name}</span>,
+    },
+    {
+      key: "last_used_at",
+      title: t("admin.notification.lastUsed"),
+      render: (item) => (
+        <span className="data-table-cell admin-font-number">
+          {item.last_used_at ? new Date(item.last_used_at).toLocaleString() : "—"}
+        </span>
+      ),
+    },
+    {
+      key: "updated_at",
+      title: t("admin.notification.lastUpdated"),
+      render: (item) => (
+        <span className="data-table-cell admin-font-number">
+          {item.updated_at ? new Date(item.updated_at).toLocaleString() : "—"}
+        </span>
+      ),
+    },
+    {
+      key: "actions",
+      title: t("common.action"),
+      render: (item) => (
+        <div className="data-table-actions data-table-actions--icons">
+          <CellTooltip tip={item.enabled ? t("common.disable") : t("common.enable")}>
+            <button type="button" className="data-table-icon-btn" aria-label={item.enabled ? t("common.disable") : t("common.enable")} onClick={() => void toggleEnabled(item)}>
+              {item.enabled ? <Power size={18} aria-hidden /> : <PowerOff size={18} aria-hidden />}
+            </button>
+          </CellTooltip>
+          <CellTooltip tip={t("common.edit")}>
+            <button type="button" className="data-table-icon-btn" aria-label={t("common.edit")} onClick={() => void openEdit(item.id)}>
+              <Pencil size={18} aria-hidden />
+            </button>
+          </CellTooltip>
+          <CellTooltip tip={t("common.delete")}>
+            <button type="button" className="data-table-icon-btn data-table-icon-btn--danger" aria-label={t("common.delete")} onClick={() => void onDelete(item.id, item.name)}>
+              <Trash2 size={18} aria-hidden />
+            </button>
+          </CellTooltip>
+        </div>
+      ),
+    },
+  ], [t]);
+
   return (
     <section className="page-container page-container--entity-list">
       {confirmDialog}
@@ -253,44 +318,15 @@ export default function NotificationChannelsPage() {
         }
       />
 
-      {loading ? <p className="admin-muted">{t("common.loading")}</p> : null}
-
-      {!loading && instances.length === 0 ? (
-        <p className="admin-muted">{t("admin.notification.channelsEmpty")}</p>
-      ) : null}
-
-      {!loading && instances.length > 0 ? (
-        <ul className="notify-instance-list">
-          {instances.map((item) => (
-            <li key={item.id} className="page-card notify-instance-row">
-              <div className="notify-instance-main">
-                <span className="notify-instance-name">{item.name}</span>
-                <span className="notify-instance-type">{item.type_name}</span>
-              </div>
-              <div className="notify-instance-actions">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => void openEdit(item.id)}
-                >
-                  <Pencil size={16} aria-hidden />
-                  {t("common.edit")}
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => void onDelete(item.id, item.name)}
-                >
-                  <Trash2 size={16} aria-hidden />
-                  {t("common.delete")}
-                </Button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      ) : null}
+      <DataTable
+        tableClassName="data-table--entity-list"
+        listLayoutId="notification_channels"
+        columns={columns}
+        data={instances}
+        rowKey={(item) => item.id}
+        loading={loading}
+        emptyText={t("admin.notification.channelsEmpty")}
+      />
 
       <GenericSidebar
         open={addOpen}
@@ -309,7 +345,7 @@ export default function NotificationChannelsPage() {
       >
         <div className="admin-sidebar-form">
           <label className="admin-sidebar-form__label">
-            {t("common.type")}
+            <FieldLabel tip={t("admin.notification.channelTypeHint")}>{t("common.type")}</FieldLabel>
             <Select
               value={addType}
               onChange={(v) => {
@@ -320,10 +356,10 @@ export default function NotificationChannelsPage() {
             />
           </label>
           <label className="admin-sidebar-form__label">
-            {t("common.name")}
+            <FieldLabel tip={t("admin.notification.channelNameHint")}>{t("common.name")}</FieldLabel>
             <Input
               value={addName}
-              onChange={(e) => setAddName(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setAddName(e.target.value)}
               placeholder={addTypeMeta?.name ?? ""}
             />
           </label>
@@ -355,8 +391,8 @@ export default function NotificationChannelsPage() {
         <div className="admin-sidebar-form">
           <span className="admin-sidebar-form__hint">{editTypeName}</span>
           <label className="admin-sidebar-form__label">
-            {t("common.name")}
-            <Input value={editName} onChange={(e) => setEditName(e.target.value)} />
+            <FieldLabel tip={t("admin.notification.channelNameHint")}>{t("common.name")}</FieldLabel>
+            <Input value={editName} onChange={(e: ChangeEvent<HTMLInputElement>) => setEditName(e.target.value)} />
           </label>
           <InstanceFormFields fields={editFields} values={editValues} onChange={setEditValues} />
           {editChannelType === "smtp" ? (
@@ -364,7 +400,7 @@ export default function NotificationChannelsPage() {
               {t("admin.notification.testToEmail")}
               <Input
                 value={testToEmail}
-                onChange={(e) => setTestToEmail(e.target.value)}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setTestToEmail(e.target.value)}
                 placeholder={t("admin.notification.testToEmailPlaceholder")}
               />
             </label>
