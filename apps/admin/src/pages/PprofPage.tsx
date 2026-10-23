@@ -382,6 +382,10 @@ export default function PprofPage() {
                   label={t("admin.pprof.dbConnections")}
                   value={`${db?.active_connections ?? 0} / ${db?.idle_connections ?? 0} / ${db?.max_connections ?? 0}`}
                 />
+                <DetailRow
+                  label={t("admin.pprof.dbPeakConnections")}
+                  value={`${db?.peak_connections ?? 0} / ${db?.max_connections ?? 0}`}
+                />
                 <DetailRow label={t("admin.pprof.dbQueriesPerSec")} value={(db?.queries_per_sec ?? 0).toFixed(1)} />
                 <DetailRow label={t("admin.pprof.dbAudit")} value={formatBytes(db?.audit_logs_bytes ?? 0)} />
                 <DetailRow label={t("admin.pprof.dbClients")} value={formatBytes(db?.clients_bytes ?? 0)} />

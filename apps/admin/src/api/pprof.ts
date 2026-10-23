@@ -25,6 +25,7 @@ export type PprofRuntime = {
     disk_available: number;
     connections: number;
     active_connections: number;
+    peak_connections: number;
     idle_connections: number;
     max_connections: number;
     queries_per_sec: number;
