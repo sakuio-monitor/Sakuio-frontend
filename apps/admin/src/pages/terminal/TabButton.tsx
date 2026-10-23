@@ -21,17 +21,6 @@ interface TabButtonProps {
   onClose: () => void;
 }
 
-function osLabel(value: string | undefined): string {
-  const os = (value ?? "").toLowerCase();
-  if (os.includes("windows")) return "Windows";
-  if (os.includes("mac") || os.includes("darwin")) return "macOS";
-  if (os.includes("linux") || os.includes("debian") || os.includes("ubuntu") || os.includes("centos") || os.includes("alpine")) return "Linux";
-  if (os.includes("freebsd")) return "FreeBSD";
-  if (os.includes("openbsd")) return "OpenBSD";
-  if (os.includes("netbsd")) return "NetBSD";
-  return value?.trim() || "Unknown";
-}
-
 const TabButton = ({
   tab,
   client,
@@ -123,12 +112,6 @@ const TabButton = ({
           draggable={false}
           className="relative z-[1] h-3.5 w-3.5 shrink-0 object-contain"
         />
-        <span
-          className="relative z-[1] shrink-0 rounded bg-black/25 px-1 py-0.5 text-[9px] font-medium uppercase tracking-wide text-current opacity-70"
-          title={client?.os || undefined}
-        >
-          {osLabel(client?.os)}
-        </span>
 
         {editing ? (
           <input
