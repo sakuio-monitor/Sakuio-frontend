@@ -93,7 +93,13 @@ export async function sakuioFileMove(uuid: string, source: string, destination: 
 }
 
 export async function sakuioFileCopy(uuid: string, source: string, destination: string): Promise<void> {
-  await sakuioFileMove(uuid, source, destination);
+  const res = await fetch(`${nodeBase(uuid)}/copy`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ from: source, to: destination }),
+  });
+  await readVoid(res);
 }
 
 export async function sakuioFileChmod(uuid: string, path: string, mode: string): Promise<void> {
@@ -106,8 +112,14 @@ export async function sakuioFileChmod(uuid: string, path: string, mode: string):
   await readVoid(res);
 }
 
-export async function sakuioFileChown(_uuid: string, _path: string, _owner: string, _group: string): Promise<void> {
-  throw new Error("chown is not supported on this server");
+export async function sakuioFileChown(uuid: string, path: string, owner: string, group: string): Promise<void> {
+  const res = await fetch(`${nodeBase(uuid)}/chown`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ path, owner, group }),
+  });
+  await readVoid(res);
 }
 
 export async function sakuioFileSearch(

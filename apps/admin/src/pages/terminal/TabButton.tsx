@@ -64,8 +64,8 @@ const TabButton = ({
   const displayTitle = genericTitle ? client?.name || tab.title || "Server" : tab.title;
 
   const tooltipContent = (
-    <span className="flex flex-col items-center justify-center gap-0.5 rounded-[5px] border border-neutral-700 bg-[#202020] px-2 py-1 text-center leading-tight">
-      <span className="font-medium text-white">{serverName}</span>
+    <span style={{ color: "#ffffff" }} className="flex flex-col items-center justify-center gap-0.5 rounded-[5px] border border-neutral-700 bg-[#202020] px-2 py-1 text-center leading-tight">
+      <span className="font-medium text-white" style={{ color: "#ffffff" }}>{serverName}</span>
       {shortcutNum !== null && (
         <span className="text-[10px] italic text-neutral-300">
           Ctrl+Alt+{shortcutNum}

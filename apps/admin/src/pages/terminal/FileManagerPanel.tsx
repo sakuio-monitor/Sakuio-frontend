@@ -570,7 +570,9 @@ const FileManagerPanel = ({ uuid }: FileManagerPanelProps) => {
         if (modeValue.trim()) {
           await fileService.chmod(actionFile.path, modeValue.trim());
         }
-        if (ownerValue.trim() || groupValue.trim()) {
+        const ownerChanged = ownerValue.trim() !== (actionFile.owner ?? "").trim();
+        const groupChanged = groupValue.trim() !== (actionFile.group ?? "").trim();
+        if (ownerChanged || groupChanged) {
           await fileService.chown(actionFile.path, ownerValue.trim(), groupValue.trim());
         }
         await refresh();
