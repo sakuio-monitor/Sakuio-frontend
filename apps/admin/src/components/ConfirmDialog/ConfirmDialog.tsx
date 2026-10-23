@@ -11,7 +11,7 @@ export type ConfirmOptions = {
   cancelLabel?: string
   /** 危险操作（删除等）确认按钮显示红色 */
   danger?: boolean
-  onConfirm: () => void
+  onConfirm: () => void | Promise<void>
 }
 
 /**
@@ -41,7 +41,7 @@ export function useConfirmDialog() {
       loading={running}
       onConfirm={() => {
         setRunning(true)
-        pending.onConfirm()
+        void Promise.resolve(pending.onConfirm()).finally(close)
       }}
       onCancel={close}
     />

@@ -626,8 +626,8 @@
       "online": "Online",
       "offline": "Offline",
       "updateAgent": "Update agent",
-      "updateAgentHint": "Update to board-supported version {version}",
-      "updateAgentConfirm": "Update “{name}” from {from} to {to}? The agent will restart after updating.",
+      "updateAgentHint": "Update to board-supported version {{version}}",
+      "updateAgentConfirm": "Update “{{name}}” from {{from}} to {{to}}? The agent will restart after updating.",
       "updateAgentSent": "Update command sent; the agent is updating"
     },
     "ping": {

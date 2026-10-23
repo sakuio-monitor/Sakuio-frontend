@@ -627,8 +627,8 @@
       "online": "在线",
       "offline": "离线",
       "updateAgent": "更新 Agent",
-      "updateAgentHint": "更新到面板支持的最新版本 {version}",
-      "updateAgentConfirm": "确定将「{name}」从 {from} 更新到 {to}？更新完成后 Agent 会自动重启。",
+      "updateAgentHint": "更新到面板支持的最新版本 {{version}}",
+      "updateAgentConfirm": "确定将「{{name}}」从 {{from}} 更新到 {{to}}？更新完成后 Agent 会自动重启。",
       "updateAgentSent": "更新指令已下发，Agent 正在更新"
     },
     "ping": {

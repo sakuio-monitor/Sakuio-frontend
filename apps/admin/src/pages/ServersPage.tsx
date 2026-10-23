@@ -48,6 +48,22 @@ type ClientsPayload = {
   total?: number;
 };
 
+function versionParts(value: string): number[] {
+  return value.trim().replace(/^[vV]/, "").split(/[-+]/, 1)[0]
+    .split(".").map((part) => Number.parseInt(part, 10) || 0);
+}
+
+function isVersionOlder(current: string, latest: string): boolean {
+  const a = versionParts(current);
+  const b = versionParts(latest);
+  for (let i = 0; i < Math.max(a.length, b.length); i += 1) {
+    const left = a[i] ?? 0;
+    const right = b[i] ?? 0;
+    if (left !== right) return left < right;
+  }
+  return false;
+}
+
 function cellText(value: string | null | undefined) {
   return value?.trim() ? value : "—";
 }
@@ -286,7 +302,7 @@ export default function ServersPage() {
         title: t("admin.servers.clientVersion"),
         render: (row) => {
           const version = row.agent_version?.trim() ?? "";
-          const outdated = Boolean(version && latestAgentVersion && version !== latestAgentVersion);
+          const outdated = Boolean(version && latestAgentVersion && isVersionOlder(version, latestAgentVersion));
           return (
             <span className="data-table-cell agent-version-cell">
               {version || "—"}
@@ -305,13 +321,15 @@ export default function ServersPage() {
                         to: latestAgentVersion,
                       }),
                       confirmLabel: t("admin.servers.updateAgent"),
-                      onConfirm: async () => {
-                        try {
-                          await triggerAgentUpdate(row.uuid);
-                          toast.success(t("admin.servers.updateAgentSent"));
-                        } catch (error) {
-                          toast.error(error instanceof Error ? error.message : t("common.error"));
-                        }
+                      onConfirm: () => {
+                        void (async () => {
+                          try {
+                            await triggerAgentUpdate(row.uuid);
+                            toast.success(t("admin.servers.updateAgentSent"));
+                          } catch (error) {
+                            toast.error(error instanceof Error ? error.message : t("common.error"));
+                          }
+                        })();
                       },
                     });
                   }}
