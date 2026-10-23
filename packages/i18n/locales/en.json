@@ -136,19 +136,20 @@
       "warningBody": "Deploy Sakuio only on systems you own or are authorized to manage. Unauthorized deployment, access, persistence, remote execution or other misuse is at the user's own responsibility; the developers are not liable for unauthorized or abusive use and its consequences."
     },
     "database": {
-      "heading": "Data storage",
-      "hint": "SQLite creates the directory and database file automatically. Other drivers must pass a connection test before continuing.",
       "driver": "Config database type",
       "dsn": "Database path or connection string",
-      "test": "Test connection",
-      "testing": "Testing…",
-      "testOk": "Connection successful",
-      "testRequired": "Test the database connection first",
+      "heading": "Data storage",
+      "hint": "SQLite creates the directory and database file automatically. Other drivers must pass a connection test before continuing.",
       "metric": "Metric storage",
       "metricSame": "Same database as config",
       "metricSameHint": "Metric tables use the metric_ prefix; good for single-host and small deployments",
       "metricSeparate": "Separate metrics database",
-      "metricSeparateHint": "Only the setting is written during install; the separate connection and migration can be configured later in the admin panel"
+      "metricSeparateHint": "Only the setting is written during install; the separate connection and migration can be configured later in the admin panel",
+      "sslMode": "SSL mode",
+      "test": "Test connection",
+      "testOk": "Connection successful",
+      "testRequired": "Test the database connection first",
+      "testing": "Testing…"
     },
     "site": {
       "heading": "Site information"

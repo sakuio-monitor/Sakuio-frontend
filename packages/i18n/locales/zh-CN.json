@@ -136,19 +136,20 @@
       "warningBody": "仅可在您拥有或已获授权管理的系统上部署 Sakuio。未经授权的部署、访问、持久化、远程执行或其他滥用行为，均由使用者自行承担责任；开发者不对未经授权或滥用行为及其后果负责。"
     },
     "database": {
-      "heading": "数据存储",
-      "hint": "SQLite 会自动创建目录与数据库文件。其它类型须先测试连接成功后才能进入下一步。",
       "driver": "配置库类型",
       "dsn": "数据库路径或连接串",
-      "test": "测试连接",
-      "testing": "正在测试…",
-      "testOk": "连接成功",
-      "testRequired": "请先测试数据库连接",
+      "heading": "数据存储",
+      "hint": "SQLite 会自动创建目录与数据库文件。其它类型须先测试连接成功后才能进入下一步。",
       "metric": "指标数据存放方式",
       "metricSame": "与配置同库",
       "metricSameHint": "指标表使用 metric_ 前缀，适合单机与小规模部署",
       "metricSeparate": "独立指标库",
-      "metricSeparateHint": "安装时仅写入设置，分库连接与迁移可在管理后台后续配置"
+      "metricSeparateHint": "安装时仅写入设置，分库连接与迁移可在管理后台后续配置",
+      "sslMode": "SSL 模式",
+      "test": "测试连接",
+      "testOk": "连接成功",
+      "testRequired": "请先测试数据库连接",
+      "testing": "正在测试…"
     },
     "site": {
       "heading": "站点信息"

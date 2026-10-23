@@ -27,8 +27,21 @@ type DbDriver = "sqlite" | "postgresql" | "mysql" | "mariadb";
 
 type InstallForm = {
   appDbDriver: DbDriver;
-  appDbDsn: string;
+  dbPath: string;
+  dbHost: string;
+  dbPort: string;
+  dbName: string;
+  dbUser: string;
+  dbPassword: string;
+  dbSslMode: string;
   metricColocation: "same" | "separate";
+  metricPath: string;
+  metricHost: string;
+  metricPort: string;
+  metricName: string;
+  metricUser: string;
+  metricPassword: string;
+  metricSslMode: string;
   sitename: string;
   description: string;
   username: string;
@@ -40,14 +53,53 @@ const STEP_ORDER: StepId[] = ["welcome", "database", "site", "admin"];
 
 const initialForm: InstallForm = {
   appDbDriver: "sqlite",
-  appDbDsn: "./data/sakuio.db",
+  dbPath: "./data/sakuio.db",
+  dbHost: "127.0.0.1",
+  dbPort: "3306",
+  dbName: "sakuio",
+  dbUser: "sakuio",
+  dbPassword: "",
+  dbSslMode: "prefer",
   metricColocation: "same",
+  metricPath: "./data/sakuio-metrics.db",
+  metricHost: "127.0.0.1",
+  metricPort: "3306",
+  metricName: "sakuio_metrics",
+  metricUser: "sakuio",
+  metricPassword: "",
+  metricSslMode: "prefer",
   sitename: "Sakuio",
   description: "",
   username: "",
   password: "",
   passwordConfirm: "",
 };
+
+function databaseDsn(driver: DbDriver, path: string, host: string, port: string, name: string, user: string, password: string, sslMode: string): string {
+  if (driver === "sqlite")
+    return `sqlite://${path.trim() || "./data/sakuio.db"}?mode=rwc`
+  const scheme = driver === "postgresql" ? "postgres" : "mysql"
+  const auth = `${encodeURIComponent(user)}:${encodeURIComponent(password)}`
+  const url = `${scheme}://${auth}@${host}:${port}/${name}`
+  if (!sslMode.trim())
+    return url
+  return `${url}?${scheme === "postgres" ? "sslmode" : "ssl-mode"}=${encodeURIComponent(sslMode)}`
+}
+
+function databasePayload(driver: DbDriver, path: string, host: string, port: string, name: string, user: string, password: string, sslMode: string) {
+  return {
+    driver,
+    path: driver === "sqlite" ? path.trim() : "",
+    host: driver === "sqlite" ? "" : host.trim(),
+    port: driver === "sqlite" ? 0 : Number(port) || 0,
+    database: driver === "sqlite" ? "" : name.trim(),
+    user: driver === "sqlite" ? "" : user.trim(),
+    password: driver === "sqlite" ? "" : password,
+    ssl_mode: driver === "sqlite" ? "" : sslMode.trim(),
+    max_connections: driver === "sqlite" ? 16 : 25,
+    min_idle_connections: 0,
+  }
+}
 
 export default function InstallPage() {
   const { t } = useTranslation();
@@ -85,13 +137,14 @@ export default function InstallPage() {
 
   function patchForm<K extends keyof InstallForm>(key: K, value: InstallForm[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
-    if (key === "appDbDriver" || key === "appDbDsn") {
+    if (key === "appDbDriver" || key.startsWith("db") || key.startsWith("metric")) {
       setDbTestOk(false);
     }
   }
 
   async function testDbConnection() {
-    if (!form.appDbDsn.trim()) {
+    const dsn = databaseDsn(form.appDbDriver, form.dbPath, form.dbHost, form.dbPort, form.dbName, form.dbUser, form.dbPassword, form.dbSslMode);
+    if (!dsn) {
       toast.error(t("install.errors.dsnRequired"));
       return;
     }
@@ -103,7 +156,7 @@ export default function InstallPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           app_db_driver: form.appDbDriver,
-          app_db_dsn: form.appDbDsn,
+          app_db_dsn: dsn,
         }),
       });
       if (!res.ok) {
@@ -121,7 +174,16 @@ export default function InstallPage() {
 
   function validateCurrentStep(): string | null {
     if (step === "database") {
-      if (!form.appDbDsn.trim()) return t("install.errors.dsnRequired");
+      if (form.appDbDriver === "sqlite" && !form.dbPath.trim())
+        return t("install.errors.dsnRequired");
+      if (form.appDbDriver !== "sqlite" && (!form.dbHost.trim() || !form.dbName.trim() || !form.dbUser.trim()))
+        return t("install.errors.dsnRequired");
+      if (form.metricColocation === "separate") {
+        if (form.appDbDriver === "sqlite" && !form.metricPath.trim())
+          return t("install.errors.dsnRequired");
+        if (form.appDbDriver !== "sqlite" && (!form.metricHost.trim() || !form.metricName.trim() || !form.metricUser.trim()))
+          return t("install.errors.dsnRequired");
+      }
       if (!dbTestOk) return t("install.database.testRequired");
     }
     if (step === "site") {
@@ -152,7 +214,7 @@ export default function InstallPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           app_db_driver: form.appDbDriver,
-          app_db_dsn: form.appDbDsn,
+          app_db_dsn: dsn,
         }),
       });
       if (!res.ok) {
@@ -385,13 +447,24 @@ function DatabaseStep({
             onChange={(v) => update("appDbDriver", String(v) as DbDriver)}
           />
         </div>
-        <Input
-          label={t("install.database.dsn")}
-          value={form.appDbDsn}
-          onChange={(e) => update("appDbDsn", e.target.value)}
-          autoComplete="off"
-          required
-        />
+        {form.appDbDriver === "sqlite" ? (
+          <Input
+            label={t("admin.database.filePath")}
+            value={form.dbPath}
+            onChange={(e) => update("dbPath", e.target.value)}
+            autoComplete="off"
+            required
+          />
+        ) : (
+          <>
+            <Input label={t("admin.database.host")} value={form.dbHost} onChange={(e) => update("dbHost", e.target.value)} required />
+            <Input label={t("admin.database.port")} value={form.dbPort} onChange={(e) => update("dbPort", e.target.value)} inputMode="numeric" required />
+            <Input label={t("admin.database.dbName")} value={form.dbName} onChange={(e) => update("dbName", e.target.value)} required />
+            <Input label={t("admin.database.dbUser")} value={form.dbUser} onChange={(e) => update("dbUser", e.target.value)} autoComplete="username" required />
+            <Input label={t("admin.database.dbPassword")} type="password" value={form.dbPassword} onChange={(e) => update("dbPassword", e.target.value)} autoComplete="current-password" />
+            <Input label={t("install.database.sslMode")} value={form.dbSslMode} onChange={(e) => update("dbSslMode", e.target.value)} placeholder="require / verify-full / prefer / disable" />
+          </>
+        )}
         <div className="setup-db-test">
           <Button variant="secondary" loading={testingDb} onClick={onTestDb}>
             {testingDb ? t("install.database.testing") : t("install.database.test")}
@@ -418,6 +491,28 @@ function DatabaseStep({
             },
           ]}
         />
+        {form.metricColocation === "separate" ? (
+          <div className="setup-grid mt-4">
+            {form.appDbDriver === "sqlite" ? (
+              <Input
+                label={t("admin.database.filePath")}
+                value={form.metricPath}
+                onChange={(e) => update("metricPath", e.target.value)}
+                autoComplete="off"
+                required
+              />
+            ) : (
+              <>
+                <Input label={t("admin.database.host")} value={form.metricHost} onChange={(e) => update("metricHost", e.target.value)} required />
+                <Input label={t("admin.database.port")} value={form.metricPort} onChange={(e) => update("metricPort", e.target.value)} inputMode="numeric" required />
+                <Input label={t("admin.database.dbName")} value={form.metricName} onChange={(e) => update("metricName", e.target.value)} required />
+                <Input label={t("admin.database.dbUser")} value={form.metricUser} onChange={(e) => update("metricUser", e.target.value)} required />
+                <Input label={t("admin.database.dbPassword")} type="password" value={form.metricPassword} onChange={(e) => update("metricPassword", e.target.value)} />
+                <Input label={t("install.database.sslMode")} value={form.metricSslMode} onChange={(e) => update("metricSslMode", e.target.value)} placeholder="require / verify-full / prefer / disable" />
+              </>
+            )}
+          </div>
+        ) : null}
       </div>
     </>
   );
