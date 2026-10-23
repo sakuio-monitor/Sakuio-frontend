@@ -35,6 +35,7 @@ type InstallForm = {
   dbPassword: string;
   dbSslMode: string;
   metricColocation: "same" | "separate";
+  metricDriver: DbDriver;
   metricPath: string;
   metricHost: string;
   metricPort: string;
@@ -61,6 +62,7 @@ const initialForm: InstallForm = {
   dbPassword: "",
   dbSslMode: "prefer",
   metricColocation: "same",
+  metricDriver: "postgresql",
   metricPath: "./data/sakuio-metrics.db",
   metricHost: "127.0.0.1",
   metricPort: "3306",
@@ -181,7 +183,7 @@ export default function InstallPage() {
       if (form.metricColocation === "separate") {
         if (form.appDbDriver === "sqlite" && !form.metricPath.trim())
           return t("install.errors.dsnRequired");
-        if (form.appDbDriver !== "sqlite" && (!form.metricHost.trim() || !form.metricName.trim() || !form.metricUser.trim()))
+        if (form.metricDriver !== "sqlite" && (!form.metricHost.trim() || !form.metricName.trim() || !form.metricUser.trim()))
           return t("install.errors.dsnRequired");
       }
       if (!dbTestOk) return t("install.database.testRequired");
@@ -416,6 +418,21 @@ const DB_DRIVER_OPTIONS: { value: DbDriver; label: string }[] = [
   { value: "mariadb", label: "MariaDB" },
 ];
 
+function defaultPort(driver: DbDriver): string {
+  if (driver === "postgresql")
+    return "5432"
+  if (driver === "mysql" || driver === "mariadb")
+    return "3306"
+  return ""
+}
+
+function sslModeOptions(driver: DbDriver) {
+  if (driver === "postgresql") {
+    return ["disable", "allow", "prefer", "require", "verify-ca", "verify-full"].map(value => ({ label: value, value }));
+  }
+  return ["disable", "prefer", "require", "verify-ca", "verify-identity"].map(value => ({ label: value, value }));
+}
+
 function DatabaseStep({
   form,
   update,
@@ -444,7 +461,11 @@ function DatabaseStep({
             value={form.appDbDriver}
             placeholder={t("common.selectPlaceholder")}
             options={DB_DRIVER_OPTIONS.map((o) => ({ label: o.label, value: o.value }))}
-            onChange={(v) => update("appDbDriver", String(v) as DbDriver)}
+            onChange={(v) => {
+              const driver = String(v) as DbDriver
+              update("appDbDriver", driver)
+              update("dbPort", defaultPort(driver))
+            }}
           />
         </div>
         {form.appDbDriver === "sqlite" ? (
@@ -462,7 +483,10 @@ function DatabaseStep({
             <Input label={t("admin.database.dbName")} value={form.dbName} onChange={(e) => update("dbName", e.target.value)} required />
             <Input label={t("admin.database.dbUser")} value={form.dbUser} onChange={(e) => update("dbUser", e.target.value)} autoComplete="username" required />
             <Input label={t("admin.database.dbPassword")} type="password" value={form.dbPassword} onChange={(e) => update("dbPassword", e.target.value)} autoComplete="current-password" />
-            <Input label={t("install.database.sslMode")} value={form.dbSslMode} onChange={(e) => update("dbSslMode", e.target.value)} placeholder="require / verify-full / prefer / disable" />
+            <div className="setup-field">
+              <span>{t("install.database.sslMode")}</span>
+              <Select value={form.dbSslMode} options={sslModeOptions(form.appDbDriver)} onChange={(v) => update("dbSslMode", String(v))} />
+            </div>
           </>
         )}
         <div className="setup-db-test">
@@ -493,7 +517,19 @@ function DatabaseStep({
         />
         {form.metricColocation === "separate" ? (
           <div className="setup-grid setup-grid--2 mt-4">
-            {form.appDbDriver === "sqlite" ? (
+            <div className="setup-field">
+              <span>{t("install.database.driver")}</span>
+              <Select
+                value={form.metricDriver}
+                options={DB_DRIVER_OPTIONS.map(o => ({ label: o.label, value: o.value }))}
+                onChange={(v) => {
+                  const driver = String(v) as DbDriver
+                  update("metricDriver", driver)
+                  update("metricPort", defaultPort(driver))
+                }}
+              />
+            </div>
+            {form.metricDriver === "sqlite" ? (
               <Input
                 label={t("admin.database.filePath")}
                 value={form.metricPath}
@@ -508,7 +544,10 @@ function DatabaseStep({
                 <Input label={t("admin.database.dbName")} value={form.metricName} onChange={(e) => update("metricName", e.target.value)} required />
                 <Input label={t("admin.database.dbUser")} value={form.metricUser} onChange={(e) => update("metricUser", e.target.value)} required />
                 <Input label={t("admin.database.dbPassword")} type="password" value={form.metricPassword} onChange={(e) => update("metricPassword", e.target.value)} />
-                <Input label={t("install.database.sslMode")} value={form.metricSslMode} onChange={(e) => update("metricSslMode", e.target.value)} placeholder="require / verify-full / prefer / disable" />
+                <div className="setup-field">
+                  <span>{t("install.database.sslMode")}</span>
+                  <Select value={form.metricSslMode} options={sslModeOptions(form.metricDriver)} onChange={(v) => update("metricSslMode", String(v))} />
+                </div>
               </>
             )}
           </div>
