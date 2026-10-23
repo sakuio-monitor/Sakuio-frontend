@@ -2,6 +2,7 @@ import { Button, toast } from "@sakuio/ui";
 import { Plus, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { LoadingBlock } from "../components/LoadingBlock";
 import { addPingTask, deletePingTasks, fetchAllPingTasks } from "../api/pingTasks";
 import { PageListHeader } from "../components/PageListHeader";
 import { PingTaskView } from "../components/ping/PingTaskView";
@@ -127,7 +128,7 @@ export default function PingPage() {
         }
       />
 
-      {loading ? <p className="admin-muted">{t("common.loading")}</p> : null}
+      {loading ? <LoadingBlock label={t("common.loading")} /> : null}
       {error ? (
         <p className="page-card p-5 text-sm text-apple-red" role="alert">
           {error}

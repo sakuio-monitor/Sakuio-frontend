@@ -82,7 +82,7 @@ const UploadProgressRow = memo(function UploadProgressRow({ progress, onCancel }
                       <div className={`h-full transition-[width] ${chunk.status === "retrying" ? "bg-[#d7ba7d]" : "bg-[#4daafc]"}`} style={{ width: `${percent}%` }} />
                     </div>
                     <div className="mt-0.5 flex justify-between gap-1 whitespace-nowrap text-[#777]">
-                      <span>{formatFileSize(chunk.sent)}/{formatFileSize(chunk.size)} · {percent}%</span>
+                      <span>{formatFileSize(chunk.sent)}/{formatFileSize(chunk.size)} / {percent}%</span>
                       <span>{statusLabel(chunk)}</span>
                     </div>
                   </div>

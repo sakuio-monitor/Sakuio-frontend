@@ -14,6 +14,7 @@ export type SiteSettings = {
   custom_head: string;
   custom_body: string;
   favicon: string;
+  audit_retention_days: number;
 };
 
 export async function fetchSiteSettings(): Promise<SiteSettings> {

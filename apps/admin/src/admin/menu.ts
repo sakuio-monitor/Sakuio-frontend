@@ -3,12 +3,15 @@ import {
   Activity,
   Bell,
   Bolt,
+  Boxes,
   CircleArrowRight,
   Code,
   Database,
   Ellipsis,
   FileText,
+  Globe2,
   Home,
+  KeyRound,
   LayoutDashboard,
   MessageCircleMore,
   Palette,
@@ -21,6 +24,8 @@ export type AdminNavItem = {
   path: string;
   labelKey: string;
   icon: LucideIcon;
+  /** Dynamic label used by injected theme settings entries. */
+  rawLabel?: string;
 };
 
 export type AdminNavGroup = {
@@ -33,10 +38,18 @@ export type AdminNavGroup = {
 /** Admin sidebar hierarchy; paths are relative to the `/admin` basename. */
 export const ADMIN_TOP_LINKS: AdminNavItem[] = [
   { path: "/dashboard", labelKey: "admin.nav.dashboard", icon: LayoutDashboard },
-  { path: "/servers", labelKey: "admin.nav.serverList", icon: Server },
 ];
 
 export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
+  {
+    id: "assets",
+    labelKey: "admin.nav.assets",
+    icon: Boxes,
+    items: [
+      { path: "/servers", labelKey: "admin.nav.serverList", icon: Server },
+      { path: "/assets/auth", labelKey: "admin.nav.authApi", icon: KeyRound },
+    ],
+  },
   {
     id: "operations",
     labelKey: "admin.nav.operations",
@@ -44,6 +57,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     items: [
       { path: "/ping", labelKey: "admin.nav.ping", icon: Activity },
       { path: "/exec", labelKey: "admin.nav.exec", icon: Code },
+      { path: "/ddns", labelKey: "admin.nav.ddns", icon: Globe2 },
     ],
   },
   {
@@ -80,7 +94,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
       { path: "/settings/site", labelKey: "admin.nav.settingsSite", icon: Home },
       { path: "/settings/general", labelKey: "admin.nav.settingsGeneral", icon: Ellipsis },
       { path: "/settings/sign-on", labelKey: "admin.nav.settingsSignOn", icon: CircleArrowRight },
-      { path: "/settings/metrics", labelKey: "admin.nav.settingsMetrics", icon: Database },
+      { path: "/settings/database", labelKey: "admin.nav.settingsDatabase", icon: Database },
       { path: "/logs", labelKey: "admin.nav.logs", icon: FileText },
       { path: "/pprof", labelKey: "admin.nav.pprof", icon: Activity },
     ],
@@ -91,12 +105,19 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
 export const ADMIN_IMPLEMENTED_PATHS = new Set<string>([
   "/dashboard",
   "/servers",
+  "/assets/auth",
   "/ping",
+  "/ddns",
   "/exec",
   "/notification/channels",
   "/notification/rules",
   "/settings/site",
   "/settings/general",
+  "/settings/database",
+  "/logs",
+  "/pprof",
+  "/themes",
+  "/market/themes",
 ]);
 
 export const PLACEHOLDER_PATHS: string[] = [
@@ -113,11 +134,13 @@ function allItems(): AdminNavItem[] {
 }
 
 export function labelKeyForPath(pathname: string): string | undefined {
+  if (/^\/themes\/[^/]+\/settings$/.test(pathname)) return "admin.nav.themeSettings";
   const hit = allItems().find((item) => item.path === pathname);
   return hit?.labelKey;
 }
 
 export function groupIdForPath(pathname: string): string | undefined {
+  if (/^\/themes\/[^/]+\/settings$/.test(pathname)) return "personalization";
   return ADMIN_NAV_GROUPS.find((group) => group.items.some((item) => item.path === pathname))?.id;
 }
 

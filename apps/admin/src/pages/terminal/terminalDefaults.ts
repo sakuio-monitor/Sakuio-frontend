@@ -1,6 +1,6 @@
 import type { ITerminalOptions } from "@xterm/xterm";
 
-export const DEFAULT_TERMINAL_FONT_FAMILY = "'Cascadia Mono', 'Noto Sans SC', monospace";
+export const DEFAULT_TERMINAL_FONT_FAMILY = "'MiSans VF', 'Cascadia Mono', 'Noto Sans SC', monospace";
 export const DEFAULT_TERMINAL_FONT_SIZE = 16;
 export const DEFAULT_TERMINAL_PADDING = 16;
 

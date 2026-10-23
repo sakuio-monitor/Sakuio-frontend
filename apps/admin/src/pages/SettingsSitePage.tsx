@@ -1,7 +1,8 @@
-import { Button, Input, Textarea, toast } from "@sakuio/ui";
+import { Button, Input, Select, Textarea, toast } from "@sakuio/ui";
 import { Download, RotateCcw, Upload } from "lucide-react";
-import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
+import { type ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { LoadingBlock } from "../components/LoadingBlock";
 import {
   downloadBackup,
   fetchSiteSettings,
@@ -55,7 +56,7 @@ export default function SettingsSitePage() {
     return (
       <section className="page-container">
         <PageListHeader titleKey="admin.nav.settingsSite" />
-        <p className="admin-muted">{t("common.loading")}</p>
+        <LoadingBlock label={t("common.loading")} />
       </section>
     );
   }
@@ -80,6 +81,7 @@ export default function SettingsSitePage() {
         custom_head: settings.custom_head,
         custom_body: settings.custom_body,
         favicon: settings.favicon,
+        audit_retention_days: settings.audit_retention_days,
       });
       setSettings(saved);
       toast.success(t("common.success"));
@@ -177,7 +179,7 @@ export default function SettingsSitePage() {
           {t("admin.siteSettings.siteName")}
           <Input
             value={settings.site_name}
-            onChange={(e) => patch({ site_name: e.target.value })}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => patch({ site_name: e.target.value })}
             placeholder={t("admin.siteSettings.siteNamePlaceholder")}
           />
         </label>
@@ -185,7 +187,7 @@ export default function SettingsSitePage() {
           {t("admin.siteSettings.siteDescription")}
           <Input
             value={settings.site_description}
-            onChange={(e) => patch({ site_description: e.target.value })}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => patch({ site_description: e.target.value })}
             placeholder={t("admin.siteSettings.siteDescriptionPlaceholder")}
           />
           <span className="admin-sidebar-form__hint">
@@ -215,7 +217,7 @@ export default function SettingsSitePage() {
             {t("admin.siteSettings.corsList")}
             <Textarea
               value={corsOrigins}
-              onChange={(e) => setCorsOrigins(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setCorsOrigins(e.target.value)}
               placeholder={t("admin.siteSettings.originsPlaceholder")}
               rows={3}
             />
@@ -240,7 +242,7 @@ export default function SettingsSitePage() {
             {t("admin.siteSettings.wsOriginList")}
             <Textarea
               value={wsOrigins}
-              onChange={(e) => setWsOrigins(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setWsOrigins(e.target.value)}
               placeholder={t("admin.siteSettings.originsPlaceholder")}
               rows={3}
             />
@@ -279,7 +281,7 @@ export default function SettingsSitePage() {
           {t("admin.siteSettings.agentAddress")}
           <Input
             value={settings.agent_connect_address}
-            onChange={(e) => patch({ agent_connect_address: e.target.value })}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => patch({ agent_connect_address: e.target.value })}
             placeholder={t("admin.siteSettings.agentAddressPlaceholder")}
           />
           <span className="admin-sidebar-form__hint">
@@ -331,6 +333,32 @@ export default function SettingsSitePage() {
       </section>
 
       <section className="page-card site-settings-card">
+        <h3 className="site-settings-card__title">{t("admin.siteSettings.sectionAudit")}</h3>
+        <div className="site-settings-row">
+          <div className="site-settings-row__text">
+            <span>{t("admin.siteSettings.auditRetention")}</span>
+            <span className="admin-sidebar-form__hint">
+              {t("admin.siteSettings.auditRetentionHint")}
+            </span>
+          </div>
+          <div className="site-settings-row__actions">
+            <Select
+              value={String(settings.audit_retention_days)}
+              options={[
+                { value: "7", label: t("admin.siteSettings.retention7") },
+                { value: "14", label: t("admin.siteSettings.retention14") },
+                { value: "30", label: t("admin.siteSettings.retention30") },
+                { value: "180", label: t("admin.siteSettings.retention180") },
+                { value: "365", label: t("admin.siteSettings.retention365") },
+                { value: "0", label: t("admin.siteSettings.retentionForever") },
+              ]}
+              onChange={(value) => patch({ audit_retention_days: Number(value) })}
+            />
+          </div>
+        </div>
+      </section>
+
+      <section className="page-card site-settings-card">
         <h3 className="site-settings-card__title">{t("admin.siteSettings.sectionCustom")}</h3>
         <p className="admin-sidebar-form__hint">
           {t("admin.siteSettings.customWarning")}
@@ -340,7 +368,7 @@ export default function SettingsSitePage() {
           {t("admin.siteSettings.customHead")}
           <Textarea
             value={settings.custom_head}
-            onChange={(e) => patch({ custom_head: e.target.value })}
+            onChange={(e: ChangeEvent<HTMLTextAreaElement>) => patch({ custom_head: e.target.value })}
             placeholder={t("admin.siteSettings.customHeadPlaceholder")}
             rows={4}
           />
@@ -350,7 +378,7 @@ export default function SettingsSitePage() {
           {t("admin.siteSettings.customBody")}
           <Textarea
             value={settings.custom_body}
-            onChange={(e) => patch({ custom_body: e.target.value })}
+            onChange={(e: ChangeEvent<HTMLTextAreaElement>) => patch({ custom_body: e.target.value })}
             placeholder={t("admin.siteSettings.customBodyPlaceholder")}
             rows={4}
           />

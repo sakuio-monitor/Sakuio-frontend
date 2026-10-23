@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { LoadingBlock } from "../components/LoadingBlock";
 import { Navigate, Outlet } from "react-router-dom";
 import { useInstall } from "./InstallProvider";
 
@@ -9,7 +10,7 @@ export function InstallBootScreen() {
   return (
     <main className="setup-page">
       <div className="setup-shell setup-header">
-        <p className="setup-subtitle">{t("common.loading")}</p>
+        <LoadingBlock label={t("common.loading")} />
       </div>
     </main>
   );

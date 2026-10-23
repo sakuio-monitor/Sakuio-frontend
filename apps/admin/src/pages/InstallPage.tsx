@@ -171,6 +171,23 @@ export default function InstallPage() {
         const body = (await res.json().catch(() => ({}))) as { message?: string };
         throw new Error(body.message ?? t("common.error"));
       }
+      const body = (await res.json().catch(() => ({}))) as { restart?: boolean };
+      if (body.restart) {
+        // The server re-execs to open the selected database; wait until it answers.
+        // 服务会重启以打开所选数据库，等待其恢复响应。
+        for (let attempt = 0; attempt < 40; attempt += 1) {
+          await new Promise((resolve) => window.setTimeout(resolve, 500));
+          try {
+            const status = await fetch("/api/install/status", { cache: "no-store" });
+            if (status.ok) {
+              const data = (await status.json()) as { required?: boolean };
+              if (!data.required) break;
+            }
+          } catch {
+            // still restarting
+          }
+        }
+      }
       await refresh();
       toast.success(t("install.successTitle"));
       setFinished(true);

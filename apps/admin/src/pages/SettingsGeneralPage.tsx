@@ -2,6 +2,7 @@ import { Button, Input, Select, toast } from "@sakuio/ui";
 import { Download, FlaskConical, RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { LoadingBlock } from "../components/LoadingBlock";
 import {
   fetchSiteSettings,
   updateSiteSettings,
@@ -75,7 +76,7 @@ export default function SettingsGeneralPage() {
     return (
       <section className="page-container">
         <PageListHeader titleKey="admin.nav.settingsGeneral" />
-        <p className="admin-muted">{t("common.loading")}</p>
+        <LoadingBlock label={t("common.loading")} />
       </section>
     );
   }
@@ -156,15 +157,6 @@ export default function SettingsGeneralPage() {
             {t("admin.generalSettings.discoveryKeyHint")}
           </span>
         </label>
-        {settings.auto_discovery_key ? (
-          <p className="admin-sidebar-form__hint">
-            {t("admin.generalSettings.discoveryUsage")}
-            <code className="site-settings-code">
-              sakuio-agent -e &lt;endpoint&gt; -t {settings.auto_discovery_key} --state
-              ./sakuio-agent-token
-            </code>
-          </p>
-        ) : null}
       </section>
 
       <section className="page-card site-settings-card">

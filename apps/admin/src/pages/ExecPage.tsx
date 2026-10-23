@@ -2,6 +2,7 @@ import { Button, toast } from "@sakuio/ui";
 import { CheckCircle2, Clock, Copy, Play, XCircle } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { LoadingBlock } from "../components/LoadingBlock";
 import { PageListHeader } from "../components/PageListHeader";
 import { CellTooltip } from "../components/CellTooltip/CellTooltip";
 import { ClientMultiSelectSidebar } from "../components/ping/ClientMultiSelectSidebar";
@@ -14,6 +15,7 @@ type TaskResult = {
   result: string;
   exit_code: number | null;
   finished_at: string | null;
+  offline?: boolean;
 };
 
 function wsBase() {
@@ -150,13 +152,16 @@ export default function ExecPage() {
         success?: boolean;
         task_id?: string;
         clients?: string[];
+        undispatched?: string[];
       };
       if (!data.success || !data.task_id) {
         throw new Error("exec failed");
       }
       const id = data.task_id;
       const dispatched = data.clients ?? selected;
+      const undisp = data.undispatched ?? [];
       setTaskId(id);
+      const now = new Date().toISOString();
       const initial: Record<string, TaskResult> = {};
       for (const uuid of dispatched) {
         initial[uuid] = {
@@ -166,6 +171,20 @@ export default function ExecPage() {
           result: "",
           exit_code: null,
           finished_at: null,
+        };
+      }
+      for (const uuid of undisp) {
+        if (initial[uuid]) {
+          continue;
+        }
+        initial[uuid] = {
+          task_id: id,
+          client: uuid,
+          client_info: { uuid, name: clientName(uuid) },
+          result: "",
+          exit_code: -1,
+          finished_at: now,
+          offline: true,
         };
       }
       setResults(initial);
@@ -227,7 +246,7 @@ export default function ExecPage() {
         ) : null}
       </div>
 
-      {clientsLoading ? <p className="admin-muted">{t("common.loading")}</p> : null}
+      {clientsLoading ? <LoadingBlock label={t("common.loading")} /> : null}
 
       {resultRows.length > 0 ? (
         <div className="page-card exec-page-card exec-results-block">
@@ -236,12 +255,27 @@ export default function ExecPage() {
             {resultRows.map((row) => {
               const running = row.finished_at === null;
               const ok = row.exit_code === 0;
+              const statusClass = row.offline
+                ? "exec-result-status--error"
+                : running
+                  ? ""
+                  : ok
+                    ? "exec-result-status--success"
+                    : "exec-result-status--error";
               return (
                 <article key={row.client} className="exec-result-panel">
                   <header className="exec-result-header">
                     <strong>{row.client_info.name}</strong>
-                    <span className="exec-result-status">
-                      {running ? (
+                    <span
+                      className={
+                        statusClass ? `exec-result-status ${statusClass}` : "exec-result-status"
+                      }
+                    >
+                      {row.offline ? (
+                        <>
+                          <XCircle size={14} aria-hidden /> {t("exec.status.offline")}
+                        </>
+                      ) : running ? (
                         <>
                           <Clock size={14} aria-hidden /> {t("exec.status.running")}
                         </>
@@ -255,21 +289,25 @@ export default function ExecPage() {
                         </>
                       )}
                     </span>
-                    <CellTooltip tip={t("common.copy")}>
-                      <button
-                        type="button"
-                        className="exec-copy"
-                        onClick={() => {
-                          void navigator.clipboard.writeText(row.result);
-                          toast.success(t("common.success"));
-                        }}
-                        aria-label={t("common.copy")}
-                      >
-                        <Copy size={14} aria-hidden />
-                      </button>
-                    </CellTooltip>
+                    {!row.offline ? (
+                      <CellTooltip tip={t("common.copy")}>
+                        <button
+                          type="button"
+                          className="exec-copy"
+                          onClick={() => {
+                            void navigator.clipboard.writeText(row.result);
+                            toast.success(t("common.success"));
+                          }}
+                          aria-label={t("common.copy")}
+                        >
+                          <Copy size={14} aria-hidden />
+                        </button>
+                      </CellTooltip>
+                    ) : null}
                   </header>
-                  <pre className="exec-output">{row.result || (running ? "…" : "")}</pre>
+                  <pre className="exec-output">
+                    {row.offline ? t("exec.offlineOutput") : row.result || (running ? "…" : "")}
+                  </pre>
                 </article>
               );
             })}

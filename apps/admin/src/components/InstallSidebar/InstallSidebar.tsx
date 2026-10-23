@@ -13,6 +13,7 @@ import {
   type InstallPlatform,
 } from "../../utils/agentInstall";
 import { InstallOptionsPanel } from "../InstallOptionsPanel/InstallOptionsPanel";
+import { Tabs } from "../Tabs/Tabs";
 import "./InstallSidebar.css";
 
 type Props = {
@@ -88,20 +89,12 @@ export function InstallSidebar({ open, onClose, token, name }: Props) {
       footer={null}
     >
       <div className="admin-sidebar-form">
-        <div className="admin-sidebar-tabs" role="tablist">
-          {PLATFORM_TABS.map((p) => (
-            <button
-              key={p.id}
-              type="button"
-              role="tab"
-              aria-selected={platform === p.id}
-              className={`admin-sidebar-tabs__tab${platform === p.id ? " is-active" : ""}`}
-              onClick={() => setPlatform(p.id)}
-            >
-              {p.label}
-            </button>
-          ))}
-        </div>
+        <Tabs
+          items={PLATFORM_TABS.map((p) => ({ id: p.id, label: p.label }))}
+          value={platform}
+          onChange={(id) => setPlatform(id as typeof platform)}
+          stretch
+        />
 
         <div className="add-server-install">
           <p className="add-server-install__heading">{t("admin.servers.installOptions")}</p>
