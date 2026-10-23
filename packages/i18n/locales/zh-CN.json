@@ -233,7 +233,8 @@
       "themeSettings": "主题设置",
       "assets": "资产管理",
       "authApi": "授权 API",
-      "ddns": "DDNS"
+      "ddns": "DDNS",
+      "workbench": "工作台"
     },
     "backend": {
       "unavailableTitle": "无法连接后端",

@@ -233,7 +233,8 @@
       "themeSettings": "Theme settings",
       "assets": "Assets",
       "authApi": "Authorization API",
-      "ddns": "DDNS"
+      "ddns": "DDNS",
+      "workbench": "Workbench"
     },
     "backend": {
       "unavailableTitle": "Cannot reach the backend",

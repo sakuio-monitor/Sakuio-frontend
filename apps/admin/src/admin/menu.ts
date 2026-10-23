@@ -17,6 +17,7 @@ import {
   Palette,
   Server,
   Settings2,
+  SquareTerminal,
   Store,
 } from "lucide-react";
 
@@ -36,11 +37,18 @@ export type AdminNavGroup = {
 };
 
 /** Admin sidebar hierarchy; paths are relative to the `/admin` basename. */
-export const ADMIN_TOP_LINKS: AdminNavItem[] = [
-  { path: "/dashboard", labelKey: "admin.nav.dashboard", icon: LayoutDashboard },
-];
+export const ADMIN_TOP_LINKS: AdminNavItem[] = [];
 
 export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
+  {
+    id: "dashboard",
+    labelKey: "admin.nav.dashboard",
+    icon: LayoutDashboard,
+    items: [
+      { path: "/dashboard", labelKey: "admin.nav.dashboard", icon: LayoutDashboard },
+      { path: "/workbench", labelKey: "admin.nav.workbench", icon: SquareTerminal },
+    ],
+  },
   {
     id: "assets",
     labelKey: "admin.nav.assets",
@@ -104,6 +112,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
 /** Routes with real pages (excluded from placeholder routing). */
 export const ADMIN_IMPLEMENTED_PATHS = new Set<string>([
   "/dashboard",
+  "/workbench",
   "/servers",
   "/assets/auth",
   "/ping",
