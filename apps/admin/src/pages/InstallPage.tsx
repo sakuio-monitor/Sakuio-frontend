@@ -437,7 +437,7 @@ function DatabaseStep({
         {t("install.database.heading")}
       </h2>
       <p className="setup-hint">{t("install.database.hint")}</p>
-      <div className="setup-grid mt-4">
+      <div className="setup-grid setup-grid--2 mt-4">
         <div className="setup-field">
           <span>{t("install.database.driver")}</span>
           <Select
@@ -492,7 +492,7 @@ function DatabaseStep({
           ]}
         />
         {form.metricColocation === "separate" ? (
-          <div className="setup-grid mt-4">
+          <div className="setup-grid setup-grid--2 mt-4">
             {form.appDbDriver === "sqlite" ? (
               <Input
                 label={t("admin.database.filePath")}

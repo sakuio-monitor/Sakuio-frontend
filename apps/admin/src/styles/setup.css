@@ -20,16 +20,14 @@
   isolation: isolate;
   box-sizing: border-box;
   width: 100%;
-  height: 100dvh;
-  height: 100vh;
-  max-height: 100dvh;
-  max-height: 100vh;
-  overflow: hidden;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: clamp(1.25rem, 3vw, 2rem) 1.25rem;
+  justify-content: flex-start;
+  padding: clamp(1.25rem, 5vh, 3rem) 1.25rem;
   background: var(--setup-base);
   color: var(--setup-ink);
 }
@@ -62,15 +60,11 @@
 
 .setup-shell {
   width: 100%;
-  max-width: 520px;
-  max-height: 100%;
+  max-width: 620px;
   margin-left: auto;
   margin-right: auto;
-  flex-shrink: 1;
+  flex-shrink: 0;
   min-height: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
-  overscroll-behavior: contain;
 }
 
 .setup-header {
@@ -177,9 +171,9 @@
   gap: 1rem;
 }
 
-@media (min-width: 480px) {
+@media (min-width: 560px) {
   .setup-grid--2 {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 }
 
