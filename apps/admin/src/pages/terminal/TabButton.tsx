@@ -21,6 +21,17 @@ interface TabButtonProps {
   onClose: () => void;
 }
 
+function osLabel(value: string | undefined): string {
+  const os = (value ?? "").toLowerCase();
+  if (os.includes("windows")) return "Windows";
+  if (os.includes("mac") || os.includes("darwin")) return "macOS";
+  if (os.includes("linux") || os.includes("debian") || os.includes("ubuntu") || os.includes("centos") || os.includes("alpine")) return "Linux";
+  if (os.includes("freebsd")) return "FreeBSD";
+  if (os.includes("openbsd")) return "OpenBSD";
+  if (os.includes("netbsd")) return "NetBSD";
+  return value?.trim() || "Unknown";
+}
+
 const TabButton = ({
   tab,
   client,
@@ -60,6 +71,8 @@ const TabButton = ({
   };
   const shortcutNum = index < 10 ? (index === 9 ? 0 : index + 1) : null;
   const serverName = client?.name || tab.title;
+  const genericTitle = !tab.title || tab.title === "Server" || tab.title === "Terminal";
+  const displayTitle = genericTitle ? client?.name || tab.title || "Server" : tab.title;
 
   const tooltipContent = (
     <span className="flex flex-col items-center justify-center gap-0.5 rounded-[5px] border border-neutral-700 bg-[#202020] px-2 py-1 text-center leading-tight">
@@ -110,6 +123,12 @@ const TabButton = ({
           draggable={false}
           className="relative z-[1] h-3.5 w-3.5 shrink-0 object-contain"
         />
+        <span
+          className="relative z-[1] shrink-0 rounded bg-black/25 px-1 py-0.5 text-[9px] font-medium uppercase tracking-wide text-current opacity-70"
+          title={client?.os || undefined}
+        >
+          {osLabel(client?.os)}
+        </span>
 
         {editing ? (
           <input
@@ -137,7 +156,7 @@ const TabButton = ({
               active ? "font-medium text-white" : "font-normal"
             }`}
           >
-            {tab.title}
+            <span title={displayTitle}>{displayTitle}</span>
           </span>
         )}
 

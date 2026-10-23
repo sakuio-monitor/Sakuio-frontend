@@ -105,55 +105,62 @@ export const useTerminalPage = () => {
   useEffect(() => {
     let mounted = true;
     setClientsLoading(true);
-    fetch("/api/admin/clients?limit=500", { credentials: "include" })
-      .then((response) => {
+    const loadClients = async () => {
+      const list: TerminalClient[] = [];
+      let cursor: string | undefined;
+      do {
+        const query = new URLSearchParams({ limit: "100" });
+        if (cursor) query.set("cursor", cursor);
+        const response = await fetch(`/api/admin/clients?${query.toString()}`, {
+          credentials: "include",
+        });
         if (!response.ok) {
           throw new Error(`Failed to load clients (${response.status})`);
         }
-        return response.json();
-      })
-      .then((data: unknown) => {
-        if (!mounted) {
-          return;
+        const data = (await response.json()) as {
+          items?: Array<{
+            uuid: string;
+            name: string;
+            os?: string;
+            weight?: number;
+            basic_info?: { os?: string | null } | null;
+          }>;
+          next_cursor?: string | null;
+        };
+        for (const item of data.items ?? []) {
+          list.push({
+            uuid: item.uuid,
+            name: item.name,
+            os: item.basic_info?.os?.trim() || item.os?.trim() || "Unknown",
+            weight: item.weight,
+          });
         }
-        const raw = data as { items?: TerminalClient[] };
-        const list = Array.isArray(raw?.items)
-          ? raw.items.map((item) => ({
-              uuid: item.uuid,
-              name: item.name,
-              os: (item as { os?: string }).os ?? "Linux",
-              weight: item.weight,
-            }))
-          : [];
-        setClients(list);
-        setClientsLoading(false);
-        const initialUuid = initialUuidRef.current;
-        if (!initialUuid) {
-          return;
-        }
-        const client = list.find((item) => item.uuid === initialUuid);
-        if (!client) {
-          if (list.length === 0) {
-            toast.error(t("terminal.no_active_connection"));
-          }
-          return;
-        }
-        if (tabsRef.current.length === 0) {
-          const tab = createTab(client, undefined, t("terminal.server"));
-          updateTabs([tab]);
-          setActiveTabId(tab.id);
-        }
-      })
-      .catch((error) => {
-        if (mounted) {
-          console.error("Failed to load clients:", error);
-          toast.error(t("terminal.clients_load_failed", "Failed to load servers"));
-        }
-      })
-      .finally(() => {
-        if (mounted) setClientsLoading(false);
-      });
-
+        cursor = data.next_cursor?.trim() || undefined;
+      } while (cursor);
+      if (!mounted) return;
+      setClients(list);
+      setClientsLoading(false);
+      const initialUuid = initialUuidRef.current;
+      if (!initialUuid) return;
+      const client = list.find((item) => item.uuid === initialUuid);
+      if (!client) {
+        if (list.length === 0) toast.error(t("terminal.no_active_connection"));
+        return;
+      }
+      if (tabsRef.current.length === 0) {
+        const tab = createTab(client, undefined, t("terminal.server"));
+        updateTabs([tab]);
+        setActiveTabId(tab.id);
+      }
+    };
+    void loadClients().catch((error) => {
+      if (mounted) {
+        console.error("Failed to load clients:", error);
+        toast.error(t("terminal.clients_load_failed", "Failed to load servers"));
+      }
+    }).finally(() => {
+      if (mounted) setClientsLoading(false);
+    });
     return () => {
       mounted = false;
     };
