@@ -55,7 +55,18 @@ export const TAB_ACTION_CLASS_NAME =
 export const TERMINAL_CALLOUT_CLASS_NAME =
   "rounded-lg border border-red-800/60 bg-red-950/80 text-red-300 backdrop-blur-md";
 
-export const createTabId = () => `terminal-tab-${crypto.randomUUID()}`;
+function randomId(): string {
+  if (typeof globalThis.crypto?.randomUUID === 'function')
+    return globalThis.crypto.randomUUID()
+  const bytes = new Uint8Array(16)
+  if (typeof globalThis.crypto?.getRandomValues === 'function')
+    globalThis.crypto.getRandomValues(bytes)
+  else
+    for (let i = 0; i < bytes.length; i += 1) bytes[i] = Math.floor(Math.random() * 256)
+  return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('')
+}
+
+export const createTabId = () => `terminal-tab-${randomId()}`;
 
 export const createTab = (
   client: TerminalClient,

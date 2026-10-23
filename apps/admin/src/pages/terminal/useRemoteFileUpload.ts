@@ -22,7 +22,18 @@ export interface RemoteUploadOptions {
   silent?: boolean;
 }
 
-const createUploadTaskID = () => `upload-${crypto.randomUUID()}`;
+function randomId(): string {
+  if (typeof globalThis.crypto?.randomUUID === 'function')
+    return globalThis.crypto.randomUUID()
+  const bytes = new Uint8Array(16)
+  if (typeof globalThis.crypto?.getRandomValues === 'function')
+    globalThis.crypto.getRandomValues(bytes)
+  else
+    for (let i = 0; i < bytes.length; i += 1) bytes[i] = Math.floor(Math.random() * 256)
+  return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('')
+}
+
+const createUploadTaskID = () => `upload-${randomId()}`;
 
 export const useRemoteFileUpload = (
   uuid: string | null,
