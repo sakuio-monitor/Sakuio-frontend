@@ -124,10 +124,11 @@
     "subtitle": "Complete the initial setup to get started",
     "stepNav": "Steps",
     "steps": {
-      "welcome": "Welcome",
+      "admin": "Admin",
       "database": "Storage",
+      "metric": "Metrics",
       "site": "Site",
-      "admin": "Admin"
+      "welcome": "Welcome"
     },
     "welcome": {
       "heading": "Welcome to Sakuio",
@@ -141,6 +142,7 @@
       "heading": "Data storage",
       "hint": "SQLite creates the directory and database file automatically. Other drivers must pass a connection test before continuing.",
       "metric": "Metric storage",
+      "metricHint": "Metrics can share the main database or use a separate database.",
       "metricSame": "Same database as config",
       "metricSameHint": "Metric tables use the metric_ prefix; good for single-host and small deployments",
       "metricSeparate": "Separate metrics database",

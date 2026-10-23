@@ -124,10 +124,11 @@
     "subtitle": "首次使用请按步骤完成初始化",
     "stepNav": "安装步骤",
     "steps": {
-      "welcome": "欢迎",
+      "admin": "管理员",
       "database": "存储",
+      "metric": "指标库",
       "site": "站点",
-      "admin": "管理员"
+      "welcome": "欢迎"
     },
     "welcome": {
       "heading": "欢迎使用 Sakuio",
@@ -141,6 +142,7 @@
       "heading": "数据存储",
       "hint": "SQLite 会自动创建目录与数据库文件。其它类型须先测试连接成功后才能进入下一步。",
       "metric": "指标数据存放方式",
+      "metricHint": "指标数据可以与主库共用，也可以单独配置一个数据库。",
       "metricSame": "与配置同库",
       "metricSameHint": "指标表使用 metric_ 前缀，适合单机与小规模部署",
       "metricSeparate": "独立指标库",

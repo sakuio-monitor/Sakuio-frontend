@@ -21,7 +21,7 @@ import { useNavigate } from "react-router-dom";
 import { useInstall } from "../install/InstallProvider";
 import "../styles/setup.css";
 
-type StepId = "welcome" | "database" | "site" | "admin";
+type StepId = "welcome" | "database" | "metric" | "site" | "admin";
 
 type DbDriver = "sqlite" | "postgresql" | "mysql" | "mariadb";
 
@@ -50,7 +50,7 @@ type InstallForm = {
   passwordConfirm: string;
 };
 
-const STEP_ORDER: StepId[] = ["welcome", "database", "site", "admin"];
+const STEP_ORDER: StepId[] = ["welcome", "database", "metric", "site", "admin"];
 
 const initialForm: InstallForm = {
   appDbDriver: "sqlite",
@@ -111,6 +111,8 @@ export default function InstallPage() {
   const [loading, setLoading] = useState(false);
   const [testingDb, setTestingDb] = useState(false);
   const [dbTestOk, setDbTestOk] = useState(false);
+  const [testingMetricDb, setTestingMetricDb] = useState(false);
+  const [metricDbTestOk, setMetricDbTestOk] = useState(false);
   const [finished, setFinished] = useState(false);
   const { refresh, status } = useInstall();
 
@@ -118,7 +120,7 @@ export default function InstallPage() {
 
   useEffect(() => {
     if (status?.database_configured) {
-      setStepIndex((current) => Math.max(current, 2));
+      setStepIndex((current) => Math.max(current, 3));
     }
   }, [status?.database_configured]);
 
@@ -139,8 +141,11 @@ export default function InstallPage() {
 
   function patchForm<K extends keyof InstallForm>(key: K, value: InstallForm[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
-    if (key === "appDbDriver" || key.startsWith("db") || key.startsWith("metric")) {
+    if (key === "appDbDriver" || key.startsWith("db")) {
       setDbTestOk(false);
+    }
+    if (key.startsWith("metric")) {
+      setMetricDbTestOk(false);
     }
   }
 
@@ -174,19 +179,55 @@ export default function InstallPage() {
     }
   }
 
+  async function testMetricDbConnection() {
+    if (form.metricColocation === "same") {
+      setMetricDbTestOk(true);
+      return;
+    }
+    const dsn = databaseDsn(form.metricDriver, form.metricPath, form.metricHost, form.metricPort, form.metricName, form.metricUser, form.metricPassword, form.metricSslMode);
+    if (!dsn) {
+      toast.error(t("install.errors.dsnRequired"));
+      return;
+    }
+    setTestingMetricDb(true);
+    setMetricDbTestOk(false);
+    try {
+      const res = await fetch("/api/install/test-db", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ app_db_driver: form.metricDriver, app_db_dsn: dsn }),
+      });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { message?: string };
+        throw new Error(body.message ?? t("common.error"));
+      }
+      setMetricDbTestOk(true);
+      toast.success(t("install.database.testOk"));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("common.error"));
+    } finally {
+      setTestingMetricDb(false);
+    }
+  }
+
   function validateCurrentStep(): string | null {
     if (step === "database") {
       if (form.appDbDriver === "sqlite" && !form.dbPath.trim())
         return t("install.errors.dsnRequired");
       if (form.appDbDriver !== "sqlite" && (!form.dbHost.trim() || !form.dbName.trim() || !form.dbUser.trim()))
         return t("install.errors.dsnRequired");
+      if (!dbTestOk)
+        return t("install.database.testRequired");
+    }
+    if (step === "metric") {
       if (form.metricColocation === "separate") {
-        if (form.appDbDriver === "sqlite" && !form.metricPath.trim())
+        if (form.metricDriver === "sqlite" && !form.metricPath.trim())
           return t("install.errors.dsnRequired");
         if (form.metricDriver !== "sqlite" && (!form.metricHost.trim() || !form.metricName.trim() || !form.metricUser.trim()))
           return t("install.errors.dsnRequired");
+        if (!metricDbTestOk)
+          return t("install.database.testRequired");
       }
-      if (!dbTestOk) return t("install.database.testRequired");
     }
     if (step === "site") {
       if (!form.sitename.trim()) return t("install.errors.sitenameRequired");
@@ -233,7 +274,7 @@ export default function InstallPage() {
             const data = (await status.json()) as { database_configured?: boolean };
             if (data.database_configured) {
               await refresh();
-              setStepIndex(2);
+              setStepIndex(3);
               return;
             }
           }
@@ -255,7 +296,7 @@ export default function InstallPage() {
       fail(msg);
       return;
     }
-    if (step === "database") {
+    if (step === "metric") {
       void configureDatabase();
       return;
     }
@@ -354,6 +395,16 @@ export default function InstallPage() {
                   dbTestOk={dbTestOk}
                   testingDb={testingDb}
                   onTestDb={() => void testDbConnection()}
+                />
+              )}
+              {step === "metric" && (
+                <MetricDatabaseStep
+                  form={form}
+                  update={patchForm}
+                  t={t}
+                  testOk={metricDbTestOk}
+                  testing={testingMetricDb}
+                  onTest={() => void testMetricDbConnection()}
                 />
               )}
               {step === "site" && <SiteStep form={form} update={patchForm} t={t} />}
@@ -496,62 +547,90 @@ function DatabaseStep({
           {dbTestOk ? <span className="setup-db-test__ok">{t("install.database.testOk")}</span> : null}
         </div>
       </div>
-      <div className="mt-4">
-        <p className="setup-hint setup-field-label">{t("install.database.metric")}</p>
-        <ChoiceGroup
-          ariaLabel={t("install.database.metric")}
-          value={form.metricColocation}
-          onChange={(v) => update("metricColocation", v)}
-          options={[
-            {
-              value: "same",
-              title: t("install.database.metricSame"),
-              hint: t("install.database.metricSameHint"),
-            },
-            {
-              value: "separate",
-              title: t("install.database.metricSeparate"),
-              hint: t("install.database.metricSeparateHint"),
-            },
-          ]}
-        />
-        {form.metricColocation === "separate" ? (
-          <div className="setup-grid setup-grid--2 mt-4">
-            <div className="setup-field">
-              <span>{t("install.database.driver")}</span>
-              <Select
-                value={form.metricDriver}
-                options={DB_DRIVER_OPTIONS.map(o => ({ label: o.label, value: o.value }))}
-                onChange={(v) => {
-                  const driver = String(v) as DbDriver
-                  update("metricDriver", driver)
-                  update("metricPort", defaultPort(driver))
-                }}
-              />
-            </div>
-            {form.metricDriver === "sqlite" ? (
-              <Input
-                label={t("admin.database.filePath")}
-                value={form.metricPath}
-                onChange={(e) => update("metricPath", e.target.value)}
-                autoComplete="off"
-                required
-              />
-            ) : (
-              <>
-                <Input label={t("admin.database.host")} value={form.metricHost} onChange={(e) => update("metricHost", e.target.value)} required />
-                <Input label={t("admin.database.port")} value={form.metricPort} onChange={(e) => update("metricPort", e.target.value)} inputMode="numeric" required />
-                <Input label={t("admin.database.dbName")} value={form.metricName} onChange={(e) => update("metricName", e.target.value)} required />
-                <Input label={t("admin.database.dbUser")} value={form.metricUser} onChange={(e) => update("metricUser", e.target.value)} required />
-                <Input label={t("admin.database.dbPassword")} type="password" value={form.metricPassword} onChange={(e) => update("metricPassword", e.target.value)} />
-                <div className="setup-field">
-                  <span>{t("install.database.sslMode")}</span>
-                  <Select value={form.metricSslMode} options={sslModeOptions(form.metricDriver)} onChange={(v) => update("metricSslMode", String(v))} />
-                </div>
-              </>
-            )}
+    </>
+  );
+}
+
+function MetricDatabaseStep({
+  form,
+  update,
+  t,
+  testOk,
+  testing,
+  onTest,
+}: StepProps & {
+  form: InstallForm;
+  update: <K extends keyof InstallForm>(key: K, value: InstallForm[K]) => void;
+  testOk: boolean;
+  testing: boolean;
+  onTest: () => void;
+}) {
+  return (
+    <>
+      <h2 className="setup-section-title">
+        <Database size={18} aria-hidden />
+        {t("install.database.metric")}
+      </h2>
+      <p className="setup-hint">{t("install.database.metricHint")}</p>
+      <ChoiceGroup
+        ariaLabel={t("install.database.metric")}
+        value={form.metricColocation}
+        onChange={(v) => update("metricColocation", v)}
+        options={[
+          {
+            value: "same",
+            title: t("install.database.metricSame"),
+            hint: t("install.database.metricSameHint"),
+          },
+          {
+            value: "separate",
+            title: t("install.database.metricSeparate"),
+            hint: t("install.database.metricSeparateHint"),
+          },
+        ]}
+      />
+      {form.metricColocation === "separate" ? (
+        <div className="setup-grid setup-grid--2 mt-4">
+          <div className="setup-field">
+            <span>{t("install.database.driver")}</span>
+            <Select
+              value={form.metricDriver}
+              options={DB_DRIVER_OPTIONS.map(o => ({ label: o.label, value: o.value }))}
+              onChange={(v) => {
+                const driver = String(v) as DbDriver
+                update("metricDriver", driver)
+                update("metricPort", defaultPort(driver))
+              }}
+            />
           </div>
-        ) : null}
+          {form.metricDriver === "sqlite" ? (
+            <Input
+              label={t("admin.database.filePath")}
+              value={form.metricPath}
+              onChange={(e) => update("metricPath", e.target.value)}
+              autoComplete="off"
+              required
+            />
+          ) : (
+            <>
+              <Input label={t("admin.database.host")} value={form.metricHost} onChange={(e) => update("metricHost", e.target.value)} required />
+              <Input label={t("admin.database.port")} value={form.metricPort} onChange={(e) => update("metricPort", e.target.value)} inputMode="numeric" required />
+              <Input label={t("admin.database.dbName")} value={form.metricName} onChange={(e) => update("metricName", e.target.value)} required />
+              <Input label={t("admin.database.dbUser")} value={form.metricUser} onChange={(e) => update("metricUser", e.target.value)} required />
+              <Input label={t("admin.database.dbPassword")} type="password" value={form.metricPassword} onChange={(e) => update("metricPassword", e.target.value)} />
+              <div className="setup-field">
+                <span>{t("install.database.sslMode")}</span>
+                <Select value={form.metricSslMode} options={sslModeOptions(form.metricDriver)} onChange={(v) => update("metricSslMode", String(v))} />
+              </div>
+            </>
+          )}
+        </div>
+      ) : null}
+      <div className="setup-db-test mt-4">
+        <Button variant="secondary" loading={testing} onClick={onTest}>
+          {testing ? t("install.database.testing") : t("install.database.test")}
+        </Button>
+        {testOk ? <span className="setup-db-test__ok">{t("install.database.testOk")}</span> : null}
       </div>
     </>
   );
