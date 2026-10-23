@@ -8,5 +8,6 @@
     "build": "bun run --filter @sakuio/admin build && bun run --filter @sakuio/public build",
     "build:admin": "bun run --filter @sakuio/admin build",
     "build:public": "bun run --filter @sakuio/public build"
-  }
+  },
+  "license": "MIT"
 }
