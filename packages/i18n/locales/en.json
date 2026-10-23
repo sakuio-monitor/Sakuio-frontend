@@ -168,11 +168,12 @@
     "successTitle": "Installation complete",
     "success": "Opening the admin panel…",
     "errors": {
+      "databaseRestartTimeout": "Database is configured but the service did not restart in time; refresh and try again",
       "dsnRequired": "Please enter the database path or connection string",
-      "sitenameRequired": "Please enter the site name",
-      "usernameRequired": "Please enter the admin username",
+      "passwordMismatch": "Passwords do not match",
       "passwordShort": "Password must be at least 8 characters",
-      "passwordMismatch": "Passwords do not match"
+      "sitenameRequired": "Please enter the site name",
+      "usernameRequired": "Please enter the admin username"
     }
   },
   "exec": {

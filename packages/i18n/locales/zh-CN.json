@@ -168,11 +168,12 @@
     "successTitle": "安装完成",
     "success": "正在进入管理后台…",
     "errors": {
+      "databaseRestartTimeout": "数据库已配置，但服务重启超时，请稍后刷新页面",
       "dsnRequired": "请填写数据库路径或连接串",
-      "sitenameRequired": "请填写站点名称",
-      "usernameRequired": "请填写管理员用户名",
+      "passwordMismatch": "两次输入的密码不一致",
       "passwordShort": "密码至少需要 8 个字符",
-      "passwordMismatch": "两次输入的密码不一致"
+      "sitenameRequired": "请填写站点名称",
+      "usernameRequired": "请填写管理员用户名"
     }
   },
   "exec": {

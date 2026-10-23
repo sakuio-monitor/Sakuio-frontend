@@ -58,9 +58,15 @@ export default function InstallPage() {
   const [testingDb, setTestingDb] = useState(false);
   const [dbTestOk, setDbTestOk] = useState(false);
   const [finished, setFinished] = useState(false);
-  const { refresh } = useInstall();
+  const { refresh, status } = useInstall();
 
   const step = STEP_ORDER[stepIndex] ?? "welcome";
+
+  useEffect(() => {
+    if (status?.database_configured) {
+      setStepIndex((current) => Math.max(current, 2));
+    }
+  }, [status?.database_configured]);
 
   useEffect(() => {
     if (!finished) return;
@@ -133,10 +139,60 @@ export default function InstallPage() {
     toast.error(msg);
   }
 
+  async function configureDatabase() {
+    const msg = validateCurrentStep();
+    if (msg) {
+      fail(msg);
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch("/api/install/database", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          app_db_driver: form.appDbDriver,
+          app_db_dsn: form.appDbDsn,
+        }),
+      });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { message?: string };
+        throw new Error(body.message ?? t("common.error"));
+      }
+      // The server restarts to open the selected database. Do not continue to
+      // the account step until the live process is connected to it.
+      for (let attempt = 0; attempt < 60; attempt += 1) {
+        await new Promise((resolve) => window.setTimeout(resolve, 500));
+        try {
+          const status = await fetch("/api/install/status", { cache: "no-store" });
+          if (status.ok) {
+            const data = (await status.json()) as { database_configured?: boolean };
+            if (data.database_configured) {
+              await refresh();
+              setStepIndex(2);
+              return;
+            }
+          }
+        } catch {
+          // still restarting
+        }
+      }
+      throw new Error(t("install.errors.databaseRestartTimeout"));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("common.error"));
+    } finally {
+      setLoading(false);
+    }
+  }
+
   function goNext() {
     const msg = validateCurrentStep();
     if (msg) {
       fail(msg);
+      return;
+    }
+    if (step === "database") {
+      void configureDatabase();
       return;
     }
     if (stepIndex < STEP_ORDER.length - 1) setStepIndex((i) => i + 1);
@@ -162,8 +218,6 @@ export default function InstallPage() {
           password: form.password,
           sitename: form.sitename,
           description: form.description,
-          app_db_driver: form.appDbDriver,
-          app_db_dsn: form.appDbDsn,
           metric_colocation: form.metricColocation,
         }),
       });
@@ -254,7 +308,7 @@ export default function InstallPage() {
                     {t("install.complete")}
                   </Button>
                 ) : (
-                  <Button onClick={goNext} icon={<ChevronRight size={16} aria-hidden />}>
+                  <Button loading={loading} onClick={goNext} icon={<ChevronRight size={16} aria-hidden />}>
                     {t("install.next")}
                   </Button>
                 )}
