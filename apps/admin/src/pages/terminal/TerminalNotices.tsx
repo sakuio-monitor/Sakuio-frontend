@@ -29,13 +29,13 @@ const TerminalNotices = ({
           <Callout.Root
             color="red"
             size="2"
-            className={TERMINAL_CALLOUT_CLASS_NAME}
+            className={`${TERMINAL_CALLOUT_CLASS_NAME} terminal-https-callout`}
           >
             <Callout.Icon>
               <TablerAlertTriangleFilled className="text-red-400" />
             </Callout.Icon>
             <div className="rt-CalloutText flex flex-1 items-center justify-between gap-3 font-medium">
-              <span>{t("warn_https")}</span>
+              <span className="terminal-https-callout__text">{t("warn_https")}</span>
               <IconButton
                 variant="soft"
                 color="red"

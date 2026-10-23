@@ -844,3 +844,25 @@
 .data-table-cell.is-disabled { color: var(--color-gray-400); }
 .agent-version-cell { display: inline-flex; align-items: center; gap: 6px; }
 .agent-version-cell .data-table-icon-btn { width: 24px; height: 24px; color: var(--color-gray-500); }
+.terminal-https-callout {
+  max-width: calc(100vw - 24px);
+  padding: 8px 10px;
+  border: 1px solid rgba(248, 113, 113, .45);
+  border-radius: 9px;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, .28);
+}
+.terminal-https-callout__text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.terminal-https-callout .rt-CalloutText {
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+.terminal-https-callout .rt-CalloutIcon { flex: none; }
+@media (max-width: 700px) {
+  .terminal-https-callout__text { max-width: calc(100vw - 88px); }
+}
