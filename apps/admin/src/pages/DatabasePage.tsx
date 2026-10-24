@@ -283,7 +283,9 @@ export default function DatabasePage() {
                 </Button>
               </h3>
               <p className="db-card__meta">{t(`admin.database.kind.${info.metrics.kind}`)}</p>
-              <p className="db-card__size">{formatBytes(info.metrics.size_bytes)}</p>
+              <p className="db-card__size">
+                {info.metrics.shared ? t("admin.database.sharedMain") : formatBytes(info.metrics.size_bytes)}
+              </p>
             </section>
           </div>
 
@@ -354,8 +356,16 @@ export default function DatabasePage() {
           </section>
 
           <section className="page-card site-settings-card">
-            <h3 className="site-settings-card__title">{t("admin.database.retentionDays")}</h3>
-            <span className="admin-sidebar-form__hint">{t("admin.database.retentionHint")}</span>
+            <div className="db-retention-heading">
+              <div>
+                <h3 className="site-settings-card__title">{t("admin.database.retentionDays")}</h3>
+                <span className="admin-sidebar-form__hint">{t("admin.database.retentionHint")}</span>
+              </div>
+              <Button type="button" size="sm" disabled={saving} onClick={() => void save()}>
+                <Save size={16} aria-hidden />
+                {saving ? t("common.saving") : t("admin.database.saveRetention")}
+              </Button>
+            </div>
             <table className="db-retention-table">
               <thead>
                 <tr>

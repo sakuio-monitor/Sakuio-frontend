@@ -141,6 +141,21 @@ function InternalNavLink({
   onNavigate?: () => void;
 }) {
   const ItemIcon = item.icon;
+  if (item.newTab) {
+    const href = `${import.meta.env.BASE_URL}${item.path.replace(/^\//, "")}`;
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={variant === "top" ? "menu-item menu-item-top" : "nav-sub-item menu-item"}
+        onClick={onNavigate}
+      >
+        <ItemIcon size={20} className="menu-item-icon" />
+        <span className="menu-item-label">{label}</span>
+      </a>
+    );
+  }
   return (
     <NavLink
       to={item.path}

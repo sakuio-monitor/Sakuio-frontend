@@ -7,6 +7,7 @@ export type DatabaseInfo = {
     kind: string;
     dsn: string;
     size_bytes: number;
+    shared?: boolean;
     table_prefix: string;
     max_connections: number;
     min_idle_connections: number;

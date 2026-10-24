@@ -467,7 +467,9 @@
         "traffic.down": "Download delta",
         "traffic.up": "Upload delta"
       },
-      "restartRequired": "Pool limit saved; restart the service to apply"
+      "restartRequired": "Pool limit saved; restart the service to apply",
+      "saveRetention": "Save retention",
+      "sharedMain": "Shared with main database"
     },
     "generalSettings": {
       "loadFailed": "Failed to load general settings",

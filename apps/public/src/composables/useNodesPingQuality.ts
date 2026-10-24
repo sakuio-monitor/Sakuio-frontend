@@ -25,11 +25,11 @@ const PING_QUALITY_PER_TASK_MAX_COUNT_MIN = 600
 /** 单任务配额上限，避免极端规模一次拉爆 */
 const PING_QUALITY_PER_TASK_MAX_COUNT_CAP = 16_000
 /** 按节点回退时，单节点 1h 窗口足够覆盖条形图 */
-const PING_QUALITY_PER_NODE_MAX_COUNT = 400
+const PING_QUALITY_PER_NODE_MAX_COUNT = 4000
 /** 估算最密探测间隔（秒），用于推算避免降采样所需配额 */
 const PING_QUALITY_DENSE_INTERVAL_SEC = 30
 const PING_FETCH_TIMEOUT_MS = 45_000
-const PER_NODE_FALLBACK_CONCURRENCY = 6
+const PER_NODE_FALLBACK_CONCURRENCY = 32
 export const NETWORK_QUALITY_MAX_TASK_COLUMNS = 6
 
 /** 按节点数与窗口小时数放大单任务 maxCount，尽量让服务端不做整池降采样 */
@@ -502,18 +502,12 @@ export function useNodesPingQuality(nodes: MaybeRefOrGetter<NodeData[]>) {
 
       let payload: FetchPayload
       if (columns.length > 0) {
-        try {
-          payload = await fetchRecordsForTasks(
-            columns.map(column => column.id),
-            hours,
-            uuids.length,
-          )
-          payload.tasks = mergeTaskMetadata(catalogTasks, payload.tasks)
-        }
-        catch {
-          payload = await fetchPerNodeFallback(uuids, hours)
-          payload.tasks = mergeTaskMetadata(catalogTasks, payload.tasks)
-        }
+        // Query per node. A task-wide query applies one global LIMIT across all
+        // nodes, so with many nodes each cell receives only a handful of
+        // samples and the 20 history bars stay mostly empty. Per-node queries
+        // guarantee every node/task gets its own history window.
+        payload = await fetchPerNodeFallback(uuids, hours)
+        payload.tasks = mergeTaskMetadata(catalogTasks, payload.tasks)
       }
       else {
         payload = { records: [], tasks: catalogTasks }

@@ -467,7 +467,9 @@
         "traffic.down": "下载流量增量",
         "traffic.up": "上传流量增量"
       },
-      "restartRequired": "连接池上限已保存，重启服务后生效"
+      "restartRequired": "连接池上限已保存，重启服务后生效",
+      "saveRetention": "保存保留设置",
+      "sharedMain": "与主数据库共用"
     },
     "generalSettings": {
       "loadFailed": "通用设置加载失败",

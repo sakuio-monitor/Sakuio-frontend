@@ -28,6 +28,8 @@ export type AdminNavItem = {
   icon: LucideIcon;
   /** Dynamic label used by injected theme settings entries. */
   rawLabel?: string;
+  /** Open outside the SPA (workbench is a standalone tab). */
+  newTab?: boolean;
 };
 
 export type AdminNavGroup = {
@@ -47,7 +49,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     icon: LayoutDashboard,
     items: [
       { path: "/dashboard", labelKey: "admin.nav.dashboard", icon: LayoutDashboard },
-      { path: "/workbench", labelKey: "admin.nav.workbench", icon: SquareTerminal },
+      { path: "/workbench", labelKey: "admin.nav.workbench", icon: SquareTerminal, newTab: true },
     ],
   },
   {

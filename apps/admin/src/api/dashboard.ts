@@ -41,7 +41,7 @@ export type DashboardData = {
   generated_at: number;
   status: "ready" | "warming" | "stale";
   overview: { online: number; offline: number; total: number; online_percent: number };
-  database: { main_bytes: number; metrics_bytes: number; total_bytes: number };
+  database: { main_bytes: number; metrics_bytes: number; total_bytes: number; shared?: boolean };
   expiry: Array<{ uuid: string; name: string; expired_at: string; days_left: number }>;
   traffic: {
     points: DashboardTrafficPoint[];

@@ -591,7 +591,7 @@ function WidgetContentInner({
       return (
         <div className="dash-kv-list">
           <div><span>主数据库</span><strong>{formatBytes(data.database.main_bytes)}</strong></div>
-          <div><span>监控数据库</span><strong>{formatBytes(data.database.metrics_bytes)}</strong></div>
+          <div><span>监控数据库</span><strong>{data.database.shared ? "共用主库" : formatBytes(data.database.metrics_bytes)}</strong></div>
           <div className="dash-kv-total"><span>合计</span><strong>{formatBytes(data.database.total_bytes)}</strong></div>
         </div>
       );
@@ -687,7 +687,7 @@ function WidgetContentInner({
       return (
         <div className="dash-shortcuts">
           <Link to="/servers"><Server size={16} />服务器管理<ArrowUpRight size={14} /></Link>
-          <Link to="/workbench"><Terminal size={16} />远程工作台<ArrowUpRight size={14} /></Link>
+          <a href={`${import.meta.env.BASE_URL}workbench`} target="_blank" rel="noopener noreferrer"><Terminal size={16} />远程工作台<ArrowUpRight size={14} /></a>
           <Link to="/settings/notification"><Bell size={16} />通知配置<ArrowUpRight size={14} /></Link>
         </div>
       );

@@ -1,0 +1,10 @@
+
+.db-retention-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.db-retention-heading .site-settings-card__title { margin-bottom: 4px; }
