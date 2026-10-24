@@ -102,19 +102,20 @@ function formatDate(value: string): string {
   return `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, "0")}/${String(date.getDate()).padStart(2, "0")}`;
 }
 
-function formatPeakTime(ms: number): string {
+function formatPeakTime(ms: number, t: (key: string) => string): string {
   if (!ms) return "-";
   const date = new Date(ms);
   if (Number.isNaN(date.getTime())) return "-";
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
   const time = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
-  if (ms >= today) return `今天 ${time}`;
-  if (ms >= today - DAY_MS) return `昨天 ${time}`;
+  if (ms >= today) return `${t("admin.dashboard.today")} ${time}`;
+  if (ms >= today - DAY_MS) return `${t("admin.dashboard.yesterday")} ${time}`;
   return `${formatDate(date.toISOString())} ${time}`;
 }
 
 function OverviewRing({ percent }: { percent: number }) {
+  const { t } = useTranslation();
   const radius = 44;
   const circumference = 2 * Math.PI * radius;
   const value = Math.max(0, Math.min(100, percent));
@@ -133,7 +134,7 @@ function OverviewRing({ percent }: { percent: number }) {
         transform="rotate(-90 56 56)"
       />
       <text x="56" y="57" textAnchor="middle" className="dash-ring__value">{value.toFixed(0)}%</text>
-      <text x="56" y="73" textAnchor="middle" className="dash-ring__label">在线</text>
+      <text x="56" y="73" textAnchor="middle" className="dash-ring__label">{t("common.online")}</text>
     </svg>
   );
 }
@@ -152,6 +153,7 @@ function chartTime(ms: number, range: string, spanMs: number): string {
 }
 
 function TrafficChart({ data }: { data: DashboardData }) {
+  const { t } = useTranslation();
   const points = data.traffic.points;
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const plotRef = useRef<HTMLDivElement>(null);
@@ -210,7 +212,7 @@ function TrafficChart({ data }: { data: DashboardData }) {
   return (
     <div className="dash-traffic">
       <div className="dash-traffic__legend">
-        <span className="dash-traffic__total">累计 ↑ {formatBytes(data.traffic.total_up)} ↓ {formatBytes(data.traffic.total_down)}</span>
+        <span className="dash-traffic__total">{t("admin.dashboard.cumulative")} ↑ {formatBytes(data.traffic.total_up)} ↓ {formatBytes(data.traffic.total_down)}</span>
       </div>
       <div className="dash-traffic__plot" ref={plotRef}>
       <svg
@@ -303,10 +305,10 @@ function TrafficChart({ data }: { data: DashboardData }) {
           role="status"
         >
           <strong>{new Date(hovered.time).toLocaleString()}</strong>
-          <div><span><i className="dash-dot dash-dot--up" />上传速率</span><b>{formatSpeed(hovered.up_rate)}</b></div>
-          <div><span><i className="dash-dot dash-dot--down" />下载速率</span><b>{formatSpeed(hovered.down_rate)}</b></div>
-          <div><span><i className="dash-dot dash-dot--up dash-dot--dashed" />上传累计</span><b>{formatBytes(hovered.up_cum)}</b></div>
-          <div><span><i className="dash-dot dash-dot--down dash-dot--dashed" />下载累计</span><b>{formatBytes(hovered.down_cum)}</b></div>
+          <div><span><i className="dash-dot dash-dot--up" />{t("admin.dashboard.uploadRate")}</span><b>{formatSpeed(hovered.up_rate)}</b></div>
+          <div><span><i className="dash-dot dash-dot--down" />{t("admin.dashboard.downloadRate")}</span><b>{formatSpeed(hovered.down_rate)}</b></div>
+          <div><span><i className="dash-dot dash-dot--up dash-dot--dashed" />{t("admin.dashboard.uploadTotal")}</span><b>{formatBytes(hovered.up_cum)}</b></div>
+          <div><span><i className="dash-dot dash-dot--down dash-dot--dashed" />{t("admin.dashboard.downloadTotal")}</span><b>{formatBytes(hovered.down_cum)}</b></div>
         </div>
       ) : null}
     </div>
@@ -314,15 +316,16 @@ function TrafficChart({ data }: { data: DashboardData }) {
 }
 
 function TrafficTop({ data, limit, onMore }: { data: DashboardData; limit: number; onMore?: () => void }) {
+  const { t } = useTranslation();
   const items = data.traffic.top.slice(0, limit);
   const max = Math.max(1, ...items.map((item) => item.total));
-  if (items.length === 0) return <p className="dash-empty">暂无流量数据</p>;
+  if (items.length === 0) return <p className="dash-empty">{t("admin.dashboard.emptyTraffic")}</p>;
   return (
     <div className="dash-traffic-top">
       <div className="dash-section-head">
-        <strong>流量消耗 Top {limit}</strong>
+        <strong>{t("admin.dashboard.trafficTop", { limit })}</strong>
         {data.traffic.top.length > limit && onMore ? (
-          <button type="button" className="dash-more-btn" onClick={onMore}>全部</button>
+          <button type="button" className="dash-more-btn" onClick={onMore}>{t("admin.dashboard.all")}</button>
         ) : null}
       </div>
       {items.map((item, index) => (
@@ -339,8 +342,8 @@ function TrafficTop({ data, limit, onMore }: { data: DashboardData; limit: numbe
             <i style={{ width: `${(item.total / max) * 100}%` }} />
           </div>
           <small>
-            峰值 {formatSpeed(item.peak_rate)}
-            {item.peak_time ? ` at ${formatPeakTime(item.peak_time)}` : ""}
+            {t("admin.dashboard.peak")} {formatSpeed(item.peak_rate)}
+            {item.peak_time ? ` · ${formatPeakTime(item.peak_time, t)}` : ""}
           </small>
         </div>
       ))}
@@ -359,7 +362,8 @@ function RankList({
   kind: "cpu" | "memory" | "traffic" | "disk" | "ping";
   onMore?: () => void;
 }) {
-  if (items.length === 0) return <p className="dash-empty">暂无数据</p>;
+  const { t } = useTranslation();
+  if (items.length === 0) return <p className="dash-empty">{t("admin.dashboard.empty")}</p>;
   const visible = items.slice(0, limit);
   const maxValue = Math.max(
     1,
@@ -394,13 +398,13 @@ function RankList({
             ) : null}
             {kind !== "ping" && item.peak !== undefined ? (
               <small className="dash-rank-peak">
-                峰值{" "}
+                {t("admin.dashboard.peak")}{" "}
                 {kind === "cpu" || kind === "memory"
                   ? `${item.peak.toFixed(1)}%`
                   : kind === "traffic"
                     ? formatSpeed(item.peak)
                     : item.sub ?? formatBytes(item.peak)}
-                {item.peakTime ? ` at ${formatPeakTime(item.peakTime)}` : ""}
+                {item.peakTime ? ` · ${formatPeakTime(item.peakTime, t)}` : ""}
               </small>
             ) : null}
           </div>
@@ -431,10 +435,11 @@ function PingColumn({
   mode: "latency" | "loss";
   onSelect: (item: DashboardQualityItem) => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="dash-ping-column">
       <strong>{title}</strong>
-      {items.length === 0 ? <p className="dash-empty">暂无数据</p> : items.slice(0, limit).map((item) => (
+      {items.length === 0 ? <p className="dash-empty">{t("admin.dashboard.empty")}</p> : items.slice(0, limit).map((item) => (
         <button
           type="button"
           className="dash-ping-row"
@@ -451,7 +456,7 @@ function PingColumn({
                 {item.p95 > 0 ? `${Math.round(item.p95)} ms` : "-"}
               </strong>
               <small className={`dash-tone-${volatilityTone(item.volatility)}`}>
-                波动 {item.volatility.toFixed(2)}
+                {t("admin.dashboard.volatility")} {item.volatility.toFixed(2)}
               </small>
             </span>
           ) : (
@@ -459,7 +464,7 @@ function PingColumn({
               <strong className={`dash-tone-${item.loss >= 100 ? "red" : item.loss > 0 ? "amber" : "green"}`}>
                 {item.loss.toFixed(1)}%
               </strong>
-              <small>{item.valid ?? 0} 有效样本</small>
+              <small>{t("admin.dashboard.validSamples", { count: item.valid ?? 0 })}</small>
             </span>
           )}
           <ChevronRight size={14} />
@@ -484,6 +489,7 @@ function SortableWidget({
   onPatch: (patch: Partial<DashboardWidgetLayout>) => void;
   children: ReactNode;
 }) {
+  const { t } = useTranslation();
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
     id: item.id,
     disabled: !editing,
@@ -496,7 +502,7 @@ function SortableWidget({
     >
       {editing ? (
         <div className="dash-widget__tools">
-          <button ref={setActivatorNodeRef} type="button" className="dash-icon-btn" aria-label="拖动" {...attributes} {...listeners}>
+          <button ref={setActivatorNodeRef} type="button" className="dash-icon-btn" aria-label={t("admin.dashboard.drag")} {...attributes} {...listeners}>
             <GripVertical size={15} />
           </button>
           <span>{title}</span>
@@ -509,7 +515,7 @@ function SortableWidget({
           <select value={item.limit} onChange={(event) => onPatch({ limit: Number(event.target.value) })}>
             {LIMITS.map((limit) => <option key={limit} value={limit}>{limit}</option>)}
           </select>
-          <button type="button" className="dash-icon-btn" aria-label="隐藏" onClick={onRemove}><X size={15} /></button>
+          <button type="button" className="dash-icon-btn" aria-label={t("admin.dashboard.hide")} onClick={onRemove}><X size={15} /></button>
         </div>
       ) : (
         <div className="dash-widget__header">
@@ -607,9 +613,9 @@ function WidgetContentInner({
         <div className="dash-overview">
           <OverviewRing percent={percent} />
           <div>
-            <strong>{percent >= 100 ? "全部在线" : percent >= 75 ? "部分服务器离线" : "集群异常"}</strong>
-            <p>在线 {online}/{total} 台</p>
-            <p className={total - online ? "dash-danger" : "dash-muted"}>离线 {Math.max(0, total - online)} 台</p>
+            <strong>{percent >= 100 ? t("admin.dashboard.allOnline") : percent >= 75 ? t("admin.dashboard.someOffline") : t("admin.dashboard.clusterError")}</strong>
+            <p>{t("admin.dashboard.onlineCount", { online, total })}</p>
+            <p className={total - online ? "dash-danger" : "dash-muted"}>{t("admin.dashboard.offlineCount", { count: Math.max(0, total - online) })}</p>
           </div>
         </div>
       );
@@ -617,18 +623,18 @@ function WidgetContentInner({
     case "database":
       return (
         <div className="dash-kv-list">
-          <div><span>主数据库</span><strong>{formatBytes(data.database.main_bytes)}</strong></div>
-          <div><span>监控数据库</span><strong>{data.database.shared ? "共用主库" : formatBytes(data.database.metrics_bytes)}</strong></div>
-          <div className="dash-kv-total"><span>合计</span><strong>{formatBytes(data.database.total_bytes)}</strong></div>
+          <div><span>{t("admin.dashboard.mainDb")}</span><strong>{formatBytes(data.database.main_bytes)}</strong></div>
+          <div><span>{t("admin.dashboard.metricsDb")}</span><strong>{data.database.shared ? t("admin.dashboard.sharedDb") : formatBytes(data.database.metrics_bytes)}</strong></div>
+          <div className="dash-kv-total"><span>{t("admin.dashboard.total")}</span><strong>{formatBytes(data.database.total_bytes)}</strong></div>
         </div>
       );
     case "expiry":
-      return data.expiry.length === 0 ? <p className="dash-empty">暂无即将到期服务器</p> : (
+      return data.expiry.length === 0 ? <p className="dash-empty">{t("admin.dashboard.noExpiry")}</p> : (
         <div className="dash-rank-list">
           {data.expiry.slice(0, limit).map((item) => (
             <div className="dash-rank-row" key={item.uuid}>
               <span className="dash-rank-name">{item.name}</span>
-              <strong>{formatDate(item.expired_at)} <em>{item.days_left} 天</em></strong>
+              <strong>{formatDate(item.expired_at)} <em>{t("admin.dashboard.days", { count: item.days_left })}</em></strong>
             </div>
           ))}
         </div>
@@ -641,7 +647,7 @@ function WidgetContentInner({
             data={data}
             limit={limit}
             onMore={() => onRankMore({
-              title: "流量消耗排行",
+              title: t("admin.dashboard.rankTraffic"),
               kind: "traffic",
               items: data.traffic.top.map((item) => ({
                 name: item.name,
@@ -662,7 +668,7 @@ function WidgetContentInner({
           limit={limit}
           items={data.rankings.cpu.map((item) => ({ name: item.name, value: item.value, peak: item.peak, peakTime: item.peak_time }))}
           onMore={() => onRankMore({
-            title: "CPU 使用排行",
+            title: t("admin.dashboard.rankCpu"),
             kind: "cpu",
             items: data.rankings.cpu.map((item) => ({ name: item.name, value: item.value, peak: item.peak, peakTime: item.peak_time })),
           })}
@@ -675,7 +681,7 @@ function WidgetContentInner({
           limit={limit}
           items={data.rankings.memory.map((item) => ({ name: item.name, value: item.value, peak: item.peak, peakTime: item.peak_time }))}
           onMore={() => onRankMore({
-            title: "内存使用排行",
+            title: t("admin.dashboard.rankMemory"),
             kind: "memory",
             items: data.rankings.memory.map((item) => ({ name: item.name, value: item.value, peak: item.peak, peakTime: item.peak_time })),
           })}
@@ -684,22 +690,22 @@ function WidgetContentInner({
     case "ping":
       return (
         <div className="dash-ping-grid">
-          <PingColumn title="延迟最稳定" items={data.ping_quality.stable} limit={limit} mode="latency" onSelect={onPingSelect} />
-          <PingColumn title="延迟最不稳定" items={data.ping_quality.unstable} limit={limit} mode="latency" onSelect={onPingSelect} />
-          <PingColumn title="丢包最高" items={data.ping_quality.loss} limit={limit} mode="loss" onSelect={onPingSelect} />
+          <PingColumn title={t("admin.dashboard.pingStable")} items={data.ping_quality.stable} limit={limit} mode="latency" onSelect={onPingSelect} />
+          <PingColumn title={t("admin.dashboard.pingUnstable")} items={data.ping_quality.unstable} limit={limit} mode="latency" onSelect={onPingSelect} />
+          <PingColumn title={t("admin.dashboard.pingLoss")} items={data.ping_quality.loss} limit={limit} mode="loss" onSelect={onPingSelect} />
         </div>
       );
     case "resources":
       return (
         <div className="dash-kv-list">
-          <div><span>CPU 核心</span><strong>{data.capacity.cpu_cores.toLocaleString()}</strong></div>
-          <div><span>总内存</span><strong>{formatBytes(data.capacity.memory_total)}</strong></div>
-          <div><span>总磁盘</span><strong>{formatBytes(data.capacity.disk_total)}</strong></div>
-          <p className="dash-muted">{data.capacity.nodes} 台节点的配置容量</p>
+          <div><span>{t("admin.dashboard.cpuCores")}</span><strong>{data.capacity.cpu_cores.toLocaleString()}</strong></div>
+          <div><span>{t("admin.dashboard.totalMemory")}</span><strong>{formatBytes(data.capacity.memory_total)}</strong></div>
+          <div><span>{t("admin.dashboard.totalDisk")}</span><strong>{formatBytes(data.capacity.disk_total)}</strong></div>
+          <p className="dash-muted">{t("admin.dashboard.capacityNodes", { count: data.capacity.nodes })}</p>
         </div>
       );
     case "disk":
-      return data.disk_pressure.length === 0 ? <p className="dash-empty">暂无数据</p> : (
+      return data.disk_pressure.length === 0 ? <p className="dash-empty">{t("admin.dashboard.empty")}</p> : (
         <div className="dash-disk-list">
           {data.disk_pressure.slice(0, limit).map((item) => (
             <div key={item.uuid}>
@@ -713,9 +719,9 @@ function WidgetContentInner({
     case "shortcuts":
       return (
         <div className="dash-shortcuts">
-          <Link to="/servers"><Server size={16} />服务器管理<ArrowUpRight size={14} /></Link>
-          <a href={`${import.meta.env.BASE_URL}workbench`} target="_blank" rel="noopener noreferrer"><Terminal size={16} />远程工作台<ArrowUpRight size={14} /></a>
-          <Link to="/settings/notification"><Bell size={16} />通知配置<ArrowUpRight size={14} /></Link>
+          <Link to="/servers"><Server size={16} />{t("admin.dashboard.serverManage")}<ArrowUpRight size={14} /></Link>
+          <a href={`${import.meta.env.BASE_URL}workbench`} target="_blank" rel="noopener noreferrer"><Terminal size={16} />{t("admin.dashboard.workbench")}<ArrowUpRight size={14} /></a>
+          <Link to="/settings/notification"><Bell size={16} />{t("admin.dashboard.notificationConfig")}<ArrowUpRight size={14} /></Link>
         </div>
       );
     default:
@@ -781,13 +787,13 @@ export default function DashboardPage() {
   }, [endDate, load, range, startDate]);
 
   const trafficRangeLabel = range === "custom"
-    ? (startDate && endDate ? `${startDate} ~ ${endDate}` : "自定义")
-    : ({ "24h": "24 小时", "7d": "7 天", "30d": "30 天", "90d": "90 天", "365d": "365 天" }[range] ?? range);
+    ? (startDate && endDate ? `${startDate} ~ ${endDate}` : t("admin.dashboard.custom"))
+    : ({ "24h": t("admin.dashboard.h24"), "7d": t("admin.dashboard.d7"), "30d": t("admin.dashboard.d30"), "90d": t("admin.dashboard.d90"), "365d": t("admin.dashboard.d365") }[range] ?? range);
   const titles = useMemo(
     () => Object.fromEntries(DASHBOARD_WIDGETS.map((id) => [
       id,
       id === "traffic"
-        ? t("admin.dashboard.widgets.trafficRange", { range: trafficRangeLabel })
+        ? t("admin.dashboard.trafficRange", { range: trafficRangeLabel })
         : t(`admin.dashboard.widgets.${id}`),
     ])) as Record<DashboardWidgetId, string>,
     [t, trafficRangeLabel],
@@ -800,7 +806,7 @@ export default function DashboardPage() {
       await saveDashboardLayout(layout);
       setEditing(false);
     } catch {
-      setError("保存布局失败");
+      setError(t("admin.dashboard.saveLayoutFailed"));
     } finally {
       setSaving(false);
     }
@@ -812,16 +818,16 @@ export default function DashboardPage() {
         titleKey="admin.nav.dashboard"
         actions={
           <div className="dash-toolbar">
-            <span className="dash-range-label">时间范围</span>
+            <span className="dash-range-label">{t("admin.dashboard.rangeLabel")}</span>
             <Select
               value={range}
               options={[
-                { value: "24h", label: "最近 24 小时" },
-                { value: "7d", label: "最近 7 天" },
-                { value: "30d", label: "最近 30 天" },
-                { value: "90d", label: "最近 90 天" },
-                { value: "365d", label: "最近 365 天" },
-                { value: "custom", label: "自定义" },
+                { value: "24h", label: t("admin.dashboard.recent24h") },
+                { value: "7d", label: t("admin.dashboard.recent7d") },
+                { value: "30d", label: t("admin.dashboard.recent30d") },
+                { value: "90d", label: t("admin.dashboard.recent90d") },
+                { value: "365d", label: t("admin.dashboard.recent365d") },
+                { value: "custom", label: t("admin.dashboard.custom") },
               ]}
               onChange={(value) => {
                 const next = String(value);
@@ -840,7 +846,7 @@ export default function DashboardPage() {
                 setStartDate(value);
                 if (value && endDate) {
                   if (value > endDate) {
-                    setError("开始时间不能晚于结束时间");
+                    setError(t("admin.dashboard.startAfterEnd"));
                     return;
                   }
                   setError(null);
@@ -848,9 +854,9 @@ export default function DashboardPage() {
                   void load("custom", new Date(`${value}T00:00:00`).toISOString(), new Date(`${endDate}T23:59:59.999`).toISOString());
                 }
               }}
-              aria-label="开始日期"
+              aria-label={t("admin.dashboard.startDate")}
             />
-            <span className="dash-range-separator">至</span>
+            <span className="dash-range-separator">{t("admin.dashboard.to")}</span>
             <input
               className="dash-date-input"
               type="date"
@@ -860,7 +866,7 @@ export default function DashboardPage() {
                 setEndDate(value);
                 if (value && startDate) {
                   if (startDate > value) {
-                    setError("结束时间不能早于开始时间");
+                    setError(t("admin.dashboard.endBeforeStart"));
                     return;
                   }
                   setError(null);
@@ -868,27 +874,27 @@ export default function DashboardPage() {
                   void load("custom", new Date(`${startDate}T00:00:00`).toISOString(), new Date(`${value}T23:59:59.999`).toISOString());
                 }
               }}
-              aria-label="结束日期"
+              aria-label={t("admin.dashboard.endDate")}
             />
             {editing ? (
               <>
                 <Button type="button" size="sm" variant="secondary" onClick={() => { setLayout(defaultDashboardLayout()); }}>
-                  <RotateCcw size={14} />重置
+                  <RotateCcw size={14} />{t("admin.dashboard.reset")}
                 </Button>
                 <Button type="button" size="sm" variant="secondary" onClick={() => setChoosing(true)}>
-                  <Plus size={14} />组件
+                  <Plus size={14} />{t("admin.dashboard.widgetsLabel")}
                 </Button>
-                <Button type="button" size="sm" variant="secondary" onClick={() => setEditing(false)}>取消</Button>
-                <Button type="button" size="sm" disabled={saving} onClick={() => void save()}><Check size={14} />保存</Button>
+                <Button type="button" size="sm" variant="secondary" onClick={() => setEditing(false)}> {t("common.cancel")}</Button>
+                <Button type="button" size="sm" disabled={saving} onClick={() => void save()}><Check size={14} />{t("common.save")}</Button>
               </>
             ) : (
-              <Button type="button" size="sm" onClick={() => setEditing(true)}><Settings2 size={14} />编辑布局</Button>
+              <Button type="button" size="sm" onClick={() => setEditing(true)}><Settings2 size={14} />{t("admin.dashboard.editLayout")}</Button>
             )}
           </div>
         }
       />
       {error ? <p className="dash-error"><AlertTriangle size={15} />{error}</p> : null}
-      {loading && !data ? <LoadingBlock label="加载仪表盘" /> : null}
+      {loading && !data ? <LoadingBlock label={t("admin.dashboard.loading")} /> : null}
       {data ? (
         <>
           <DashboardBoard
@@ -906,7 +912,7 @@ export default function DashboardPage() {
 
       <GenericSidebar
         open={pingDetail !== null}
-        title="网络质量详情"
+        title={t("admin.dashboard.networkQuality")}
         onClose={() => setPingDetail(null)}
         initialWidth={500}
       >
@@ -920,16 +926,16 @@ export default function DashboardPage() {
               <div><span>P50</span><strong>{pingDetail.p50 ? `${Math.round(pingDetail.p50)} ms` : "-"}</strong></div>
               <div><span>P95</span><strong>{pingDetail.p95 ? `${Math.round(pingDetail.p95)} ms` : "-"}</strong></div>
               <div><span>P99</span><strong>{pingDetail.p99 ? `${Math.round(pingDetail.p99)} ms` : "-"}</strong></div>
-              <div><span>丢包率</span><strong>{pingDetail.loss.toFixed(2)}%</strong></div>
-              <div><span>波动率</span><strong>{pingDetail.volatility.toFixed(2)}</strong></div>
-              <div><span>有效样本</span><strong>{pingDetail.valid ?? 0} / {pingDetail.samples ?? 0}</strong></div>
+              <div><span>{t("admin.dashboard.lossRate")}</span><strong>{pingDetail.loss.toFixed(2)}%</strong></div>
+              <div><span>{t("admin.dashboard.volatilityRate")}</span><strong>{pingDetail.volatility.toFixed(2)}</strong></div>
+              <div><span>{t("admin.dashboard.validSamplesLabel")}</span><strong>{pingDetail.valid ?? 0} / {pingDetail.samples ?? 0}</strong></div>
             </div>
             <div className="dash-ping-detail__bar">
-              <span>丢包率</span>
+              <span>{t("admin.dashboard.lossRate")}</span>
               <div className="dash-meter"><i style={{ width: `${Math.min(100, pingDetail.loss)}%`, background: "#ef4444" }} /></div>
             </div>
             <Link className="dash-ping-detail__link" to={`/servers/${pingDetail.uuid}`}>
-              查看服务器监控 <ArrowUpRight size={14} />
+              {t("admin.dashboard.viewMonitor")} <ArrowUpRight size={14} />
             </Link>
           </div>
         ) : null}
@@ -937,7 +943,7 @@ export default function DashboardPage() {
 
       <GenericSidebar
         open={rankDetail !== null}
-        title={rankDetail?.title ?? "排行详情"}
+        title={rankDetail?.title ?? t("admin.dashboard.rankDetail")}
         onClose={() => setRankDetail(null)}
         initialWidth={520}
       >
@@ -953,13 +959,13 @@ export default function DashboardPage() {
       {choosing ? (
         <div className="dash-modal" role="dialog">
           <div className="dash-modal__card">
-            <h3>添加组件</h3>
+            <h3>{t("admin.dashboard.addWidget")}</h3>
             <select value={adding} onChange={(event) => setAdding(event.target.value as DashboardWidgetId)}>
-              <option value="">选择组件</option>
+              <option value="">{t("admin.dashboard.selectWidget")}</option>
               {available.map((id) => <option key={id} value={id}>{titles[id]}</option>)}
             </select>
             <div className="dash-modal__actions">
-              <Button type="button" size="sm" variant="secondary" onClick={() => setChoosing(false)}>取消</Button>
+              <Button type="button" size="sm" variant="secondary" onClick={() => setChoosing(false)}> {t("common.cancel")}</Button>
               <Button
                 type="button"
                 size="sm"
@@ -971,7 +977,7 @@ export default function DashboardPage() {
                   setAdding("");
                   setChoosing(false);
                 }}
-              >添加</Button>
+              > {t("admin.dashboard.add")}</Button>
             </div>
           </div>
         </div>

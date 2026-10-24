@@ -17,6 +17,7 @@ import { DataTable, type Column } from "../components/DataTable/DataTable";
 import { GenericSidebar } from "../components/GenericSidebar/GenericSidebar";
 import { PageListHeader } from "../components/PageListHeader";
 import { useConfirmDialog } from "../components/ConfirmDialog/ConfirmDialog";
+import { useTranslation } from "react-i18next";
 import "../styles/ddns.css";
 
 type Form = { id?: number; name: string; driver: string; config: Record<string, string>; originalAuthType?: string };
@@ -33,6 +34,7 @@ function defaultConfig(driver?: AuthDriver): Record<string, string> {
 }
 
 export default function AuthApiPage() {
+  const { t } = useTranslation();
   const { confirm, confirmDialog } = useConfirmDialog();
   const [drivers, setDrivers] = useState<AuthDriver[]>([]);
   const [providers, setProviders] = useState<AuthProvider[]>([]);
@@ -48,7 +50,7 @@ export default function AuthApiPage() {
       setDrivers(nextDrivers);
       setProviders(nextProviders);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "加载授权失败");
+      toast.error(error instanceof Error ? error.message : t("admin.authApi.loadFailed"));
     } finally {
       setLoading(false);
     }
@@ -60,12 +62,12 @@ export default function AuthApiPage() {
   const columns: Column<AuthProvider>[] = useMemo(() => [
     {
       key: "name",
-      title: "名称",
+      title: t("admin.authApi.name"),
       render: (provider) => <span className="data-table-cell">{provider.name}</span>,
     },
     {
       key: "driver",
-      title: "驱动",
+      title: t("admin.authApi.driver"),
       render: (provider) => (
         <span className="data-table-tag data-table-tag--blue driver-tag">
           <DriverIcon driver={provider.driver} size={14} />
@@ -75,7 +77,7 @@ export default function AuthApiPage() {
     },
     {
       key: "auth_type",
-      title: "授权方式",
+      title: t("admin.authApi.authType"),
       render: (provider) => (
         <span className="data-table-cell">
           {provider.auth_type === "global" ? "Global API Key" : "API Token"}
@@ -84,7 +86,7 @@ export default function AuthApiPage() {
     },
     {
       key: "created_at",
-      title: "创建时间",
+      title: t("admin.authApi.createdAt"),
       render: (provider) => (
         <span className="data-table-cell admin-font-number">
           {provider.created_at ? new Date(provider.created_at).toLocaleString() : "—"}
@@ -93,7 +95,7 @@ export default function AuthApiPage() {
     },
     {
       key: "last_used_at",
-      title: "最后使用",
+      title: t("admin.authApi.lastUsed"),
       render: (provider) => (
         <span className="data-table-cell admin-font-number">
           {provider.last_used_at ? new Date(provider.last_used_at).toLocaleString() : "—"}
@@ -102,24 +104,24 @@ export default function AuthApiPage() {
     },
     {
       key: "actions",
-      title: "操作",
+      title: t("common.action"),
       render: (provider) => (
         <div className="data-table-actions data-table-actions--icons">
-          <CellTooltip tip="编辑">
+          <CellTooltip tip={t("common.edit")}>
             <button
               type="button"
               className="data-table-icon-btn"
-              aria-label="编辑"
+              aria-label={t("common.edit")}
               onClick={() => openEdit(provider)}
             >
               <Pencil size={18} aria-hidden />
             </button>
           </CellTooltip>
-          <CellTooltip tip="删除">
+          <CellTooltip tip={t("common.delete")}>
             <button
               type="button"
               className="data-table-icon-btn data-table-icon-btn--danger"
-              aria-label="删除"
+              aria-label={t("common.delete")}
               onClick={() => remove(provider)}
             >
               <Trash2 size={18} aria-hidden />
@@ -128,7 +130,7 @@ export default function AuthApiPage() {
         </div>
       ),
     },
-  ], [driverMap]);
+  ], [driverMap, t]);
 
   function openCreate() {
     const first = drivers[0];
@@ -148,18 +150,18 @@ export default function AuthApiPage() {
   }
 
   async function save() {
-    if (!form.name.trim()) { toast.error("请输入授权名称"); return; }
-    if (!form.driver) { toast.error("请选择驱动"); return; }
+    if (!form.name.trim()) { toast.error(t("admin.authApi.nameRequired")); return; }
+    if (!form.driver) { toast.error(t("admin.authApi.driverRequired")); return; }
     const missing = (driver?.fields ?? []).find((field) => field.required && !form.config[field.key]?.trim());
-    if (missing) { toast.error(`${missing.label} 不能为空`); return; }
+    if (missing) { toast.error(t("admin.authApi.fieldRequired", { field: missing.label })); return; }
     if (form.driver === "cloudflare") {
       const mode = form.config.auth_type || "token";
       const hasSecret = ["token", "email", "api_key"].some((key) => form.config[key]?.trim());
       const modeChanged = Boolean(form.originalAuthType && mode !== form.originalAuthType);
       if (!form.id || hasSecret || modeChanged) {
-        if (mode === "token" && !form.config.token?.trim()) { toast.error("API Token 不能为空"); return; }
+        if (mode === "token" && !form.config.token?.trim()) { toast.error(t("admin.authApi.tokenRequired")); return; }
         if (mode === "global" && (!form.config.email?.trim() || !form.config.api_key?.trim())) {
-          toast.error("Global API Key 方式需要填写账户邮箱和 API Key");
+          toast.error(t("admin.authApi.globalRequired"));
           return;
         }
       }
@@ -174,11 +176,11 @@ export default function AuthApiPage() {
       } else {
         await createAuthProvider({ name: form.name.trim(), driver: form.driver, config: form.config });
       }
-      toast.success("授权已保存");
+      toast.success(t("admin.authApi.saved"));
       setOpen(false);
       await load();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "保存授权失败");
+      toast.error(error instanceof Error ? error.message : t("admin.authApi.saveFailed"));
     } finally {
       setSaving(false);
     }
@@ -186,18 +188,18 @@ export default function AuthApiPage() {
 
   function remove(provider: AuthProvider) {
     confirm({
-      title: "删除授权",
-      description: `确定删除「${provider.name}」？`,
-      confirmLabel: "删除",
+      title: t("admin.authApi.deleteTitle"),
+      description: t("admin.authApi.deleteDesc", { name: provider.name }),
+      confirmLabel: t("common.delete"),
       danger: true,
       onConfirm: () => {
         void (async () => {
           try {
             await deleteAuthProvider(provider.id);
-            toast.success("授权已删除");
+            toast.success(t("admin.authApi.deleted"));
             await load();
           } catch (error) {
-            toast.error(error instanceof Error ? error.message : "删除授权失败");
+            toast.error(error instanceof Error ? error.message : t("admin.authApi.deleteFailed"));
           }
         })();
       },
@@ -209,7 +211,7 @@ export default function AuthApiPage() {
       {confirmDialog}
       <PageListHeader
         titleKey="admin.nav.authApi"
-        actions={<Button type="button" size="sm" onClick={openCreate} disabled={drivers.length === 0}><Plus size={15} />添加授权</Button>}
+        actions={<Button type="button" size="sm" onClick={openCreate} disabled={drivers.length === 0}><Plus size={15} />{t("admin.authApi.add")}</Button>}
       />
       <DataTable
         tableClassName="data-table--entity-list"
@@ -218,22 +220,22 @@ export default function AuthApiPage() {
         data={providers}
         rowKey={(provider) => String(provider.id)}
         loading={loading}
-        emptyText="还没有授权 API，点击右上角添加"
+        emptyText={t("admin.authApi.empty")}
       />
 
       <GenericSidebar
         open={open}
-        title={form.id ? "编辑授权 API" : "添加授权 API"}
+        title={form.id ? t("admin.authApi.editTitle") : t("admin.authApi.addTitle")}
         onClose={() => setOpen(false)}
         initialWidth={520}
       >
         <div className="ddns-form">
           <label className="admin-sidebar-form__label">
-            <FieldLabel tip="仅用于识别该授权，不参与 DNS 解析。">授权名称</FieldLabel>
-            <Input value={form.name} onChange={(event: ChangeEvent<HTMLInputElement>) => setForm({ ...form, name: event.target.value })} placeholder="例如 Cloudflare 主账号" />
+            <FieldLabel tip={t("admin.authApi.nameHelp")}>{t("admin.authApi.nameLabel")}</FieldLabel>
+            <Input value={form.name} onChange={(event: ChangeEvent<HTMLInputElement>) => setForm({ ...form, name: event.target.value })} placeholder={t("admin.authApi.namePlaceholder")} />
           </label>
           <label className="admin-sidebar-form__label">
-            <FieldLabel tip={driver?.description ?? "选择要接入的外部系统驱动。"}>驱动</FieldLabel>
+            <FieldLabel tip={driver?.description ?? t("admin.authApi.driverHelp")}> {t("admin.authApi.driver")}</FieldLabel>
             <Select
               value={form.driver}
               disabled={Boolean(form.id)}
@@ -274,14 +276,14 @@ export default function AuthApiPage() {
                   type={field.kind === "password" ? "password" : field.kind === "email" ? "email" : "text"}
                   value={form.config[field.key] ?? ""}
                   onChange={(event: ChangeEvent<HTMLInputElement>) => setForm({ ...form, config: { ...form.config, [field.key]: event.target.value } })}
-                  placeholder={form.id ? "留空则保持原值" : field.placeholder}
+                  placeholder={form.id ? t("admin.authApi.keepOriginal") : field.placeholder}
                   autoComplete="new-password"
                 />
               )}
             </label>
           ))}
           <div className="ddns-form__actions">
-            <Button type="button" size="sm" disabled={saving} onClick={() => void save()}>{saving ? "保存中..." : "保存"}</Button>
+            <Button type="button" size="sm" disabled={saving} onClick={() => void save()}>{saving ? t("common.saving") : t("common.save")}</Button>
           </div>
         </div>
       </GenericSidebar>

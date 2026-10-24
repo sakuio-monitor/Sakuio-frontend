@@ -1,6 +1,7 @@
 import { Button, Input, Select, toast } from "@sakuio/ui";
 import { Globe2, Pencil, Plus, RefreshCw, Trash2 } from "lucide-react";
 import { type ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { CellTooltip } from "../components/CellTooltip/CellTooltip";
 import { DataTable, type Column } from "../components/DataTable/DataTable";
 import {
@@ -59,6 +60,7 @@ const EMPTY: DdnsInput & { ids?: number[] } = {
 };
 
 export default function DdnsPage() {
+  const { t } = useTranslation();
   const { confirm, confirmDialog } = useConfirmDialog();
   const [records, setRecords] = useState<DdnsRecord[]>([]);
   const [providers, setProviders] = useState<AuthProvider[]>([]);
@@ -78,7 +80,7 @@ export default function DdnsPage() {
       setRecords(nextRecords);
       setProviders(nextProviders);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "加载 DDNS 失败");
+      toast.error(error instanceof Error ? error.message : t("admin.ddns.loadFailed"));
     } finally {
       if (!silent) setLoading(false);
     }
@@ -119,9 +121,9 @@ export default function DdnsPage() {
   }
 
   async function save() {
-    if (!form.provider_id) { toast.error("请选择授权 API"); return; }
-    if (!form.client_uuid) { toast.error("请选择服务器"); return; }
-    if (!form.fqdn.trim()) { toast.error("请输入域名"); return; }
+    if (!form.provider_id) { toast.error(t("admin.ddns.selectProvider")); return; }
+    if (!form.client_uuid) { toast.error(t("admin.ddns.selectServer")); return; }
+    if (!form.fqdn.trim()) { toast.error(t("admin.ddns.enterDomain")); return; }
     setSaving(true);
     try {
       const base = {
@@ -153,11 +155,11 @@ export default function DdnsPage() {
           if (!desired.includes(current.record_type)) await deleteDdnsRecord(current.id);
         }
       }
-      toast.success("DDNS 记录已保存，正在后台同步");
+      toast.success(t("admin.ddns.saved"));
       setOpen(false);
       await load();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "保存 DDNS 失败");
+      toast.error(error instanceof Error ? error.message : t("admin.ddns.saveFailed"));
     } finally {
       setSaving(false);
     }
@@ -166,18 +168,18 @@ export default function DdnsPage() {
   function remove(group: DdnsGroup) {
     const record = group.records[0];
     confirm({
-      title: "删除 DDNS 记录",
-      description: `确定删除「${record.name || groupFqdn(group)}」？服务商上已有解析不会自动删除。`,
-      confirmLabel: "删除",
+      title: t("admin.ddns.deleteTitle"),
+      description: `t("admin.ddns.deleteDesc", { name: record.name || groupFqdn(group) })`,
+      confirmLabel: t("common.delete"),
       danger: true,
       onConfirm: () => {
         void (async () => {
           try {
             await Promise.all(group.records.map((item) => deleteDdnsRecord(item.id)));
-            toast.success("DDNS 记录已删除");
+            toast.success(t("admin.ddns.deleted"));
             await load();
           } catch (error) {
-            toast.error(error instanceof Error ? error.message : "删除失败");
+            toast.error(error instanceof Error ? error.message : t("admin.ddns.deleteFailed"));
           }
         })();
       },
@@ -188,27 +190,27 @@ export default function DdnsPage() {
   const columns: Column<DdnsGroup>[] = useMemo(() => [
     {
       key: "domain",
-      title: "域名",
+      title: t("admin.ddns.domain"),
       render: (group) => <span className="data-table-cell">{groupFqdn(group)}</span>,
     },
     {
       key: "name",
-      title: "备注",
+      title: t("admin.ddns.remark"),
       render: (group) => <span className="data-table-cell">{group.records[0].name || "—"}</span>,
     },
     {
       key: "provider",
-      title: "授权 API",
+      title: t("admin.ddns.provider"),
       render: (group) => <span className="data-table-cell">{group.records[0].provider_name}</span>,
     },
     {
       key: "server",
-      title: "服务器",
+      title: t("admin.ddns.server"),
       render: (group) => <span className="data-table-cell">{group.records[0].client_name}</span>,
     },
     {
       key: "type",
-      title: "类型",
+      title: t("admin.ddns.type"),
       render: (group) => {
         const types = groupTypes(group);
         const both = types.has("A") && types.has("AAAA");
@@ -223,7 +225,7 @@ export default function DdnsPage() {
     },
     {
       key: "ip",
-      title: "当前 IP",
+      title: t("admin.ddns.currentIp"),
       render: (group) => {
         const v4 = group.records.find((record) => record.record_type === "A")?.last_ip;
         const v6 = group.records.find((record) => record.record_type === "AAAA")?.last_ip;
@@ -233,7 +235,7 @@ export default function DdnsPage() {
     },
     {
       key: "last_sync",
-      title: "上次同步",
+      title: t("admin.ddns.lastSync"),
       render: (group) => {
         const times = group.records.map((record) => record.last_synced_at).filter((value): value is string => Boolean(value));
         const error = group.records.find((record) => record.last_error)?.last_error;
@@ -247,37 +249,37 @@ export default function DdnsPage() {
     },
     {
       key: "actions",
-      title: "操作",
+      title: t("common.action"),
       render: (group) => (
         <div className="data-table-actions data-table-actions--icons">
-          <CellTooltip tip="立即同步">
-            <button type="button" className="data-table-icon-btn" aria-label="立即同步" disabled={syncing === group.key} onClick={() => void sync(group)}>
+          <CellTooltip tip={t("admin.ddns.syncNow")}>
+            <button type="button" className="data-table-icon-btn" aria-label={t("admin.ddns.syncNow")} disabled={syncing === group.key} onClick={() => void sync(group)}>
               <RefreshCw size={18} aria-hidden />
             </button>
           </CellTooltip>
-          <CellTooltip tip="编辑">
-            <button type="button" className="data-table-icon-btn" aria-label="编辑" onClick={() => openEdit(group)}>
+          <CellTooltip tip={t("common.edit")}>
+            <button type="button" className="data-table-icon-btn" aria-label={t("common.edit")} onClick={() => openEdit(group)}>
               <Pencil size={18} aria-hidden />
             </button>
           </CellTooltip>
-          <CellTooltip tip="删除">
-            <button type="button" className="data-table-icon-btn data-table-icon-btn--danger" aria-label="删除" onClick={() => remove(group)}>
+          <CellTooltip tip={t("common.delete")}>
+            <button type="button" className="data-table-icon-btn data-table-icon-btn--danger" aria-label={t("common.delete")} onClick={() => remove(group)}>
               <Trash2 size={18} aria-hidden />
             </button>
           </CellTooltip>
         </div>
       ),
     },
-  ], [syncing]);
+  ], [syncing, t]);
 
   async function sync(group: DdnsGroup) {
     setSyncing(group.key);
     try {
       for (const record of group.records) await syncDdnsRecord(record.id);
-      toast.success("DNS 记录已同步");
+      toast.success(t("admin.ddns.synced"));
       await load(true);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "同步失败");
+      toast.error(error instanceof Error ? error.message : t("admin.ddns.syncFailed"));
     } finally {
       setSyncing(null);
     }
@@ -288,13 +290,13 @@ export default function DdnsPage() {
       {confirmDialog}
       <PageListHeader
         titleKey="admin.nav.ddns"
-        actions={<Button type="button" size="sm" onClick={openCreate} disabled={providers.length === 0}><Plus size={15} />添加解析</Button>}
+        actions={<Button type="button" size="sm" onClick={openCreate} disabled={providers.length === 0}><Plus size={15} />{t("admin.ddns.addRecord")}</Button>}
       />
       {!loading && providers.length === 0 ? (
         <section className="page-card ddns-empty">
           <Globe2 size={28} />
-          <strong>还没有可用的授权 API</strong>
-          <span>请先在资产管理 → 授权 API 中添加授权。</span>
+          <strong>{t("admin.ddns.noProvider")}</strong>
+          <span>{t("admin.ddns.noProviderHint")}</span>
         </section>
       ) : (
         <DataTable
@@ -304,23 +306,23 @@ export default function DdnsPage() {
           data={groups}
           rowKey={(group) => group.key}
           loading={loading}
-          emptyText="还没有 DDNS 记录，点击右上角添加"
+          emptyText={t("admin.ddns.empty")}
         />
       )}
 
       <GenericSidebar
         open={open}
-        title={form.ids?.length ? "编辑 DDNS 解析" : "添加 DDNS 解析"}
+        title={form.ids?.length ? t("admin.ddns.editTitle") : t("admin.ddns.addTitle")}
         onClose={() => setOpen(false)}
         initialWidth={560}
       >
         <div className="ddns-form">
           <label className="admin-sidebar-form__label">
-            <FieldLabel tip="仅用于列表识别，不参与 DNS 解析。">备注名称</FieldLabel>
-            <Input value={form.name} onChange={(event: ChangeEvent<HTMLInputElement>) => setForm({ ...form, name: event.target.value })} placeholder="例如 主站 A 记录" />
+            <FieldLabel tip={t("admin.ddns.nameHelp")}>{t("admin.ddns.nameLabel")}</FieldLabel>
+            <Input value={form.name} onChange={(event: ChangeEvent<HTMLInputElement>) => setForm({ ...form, name: event.target.value })} placeholder={t("admin.ddns.namePlaceholder")} />
           </label>
           <label className="admin-sidebar-form__label">
-            <FieldLabel tip="选择用于更新该域名解析的授权 API。">授权 API</FieldLabel>
+            <FieldLabel tip={t("admin.ddns.providerHelp")}>{t("admin.ddns.provider")}</FieldLabel>
             <Select
               value={form.provider_id || ""}
               options={providers.map((provider) => ({ value: provider.id, label: `${provider.name}（${provider.driver_name}）` }))}
@@ -328,7 +330,7 @@ export default function DdnsPage() {
             />
           </label>
           <label className="admin-sidebar-form__label">
-            <FieldLabel tip="选择要跟随 IP 变化的 Agent 服务器，可直接输入名称搜索。">服务器</FieldLabel>
+            <FieldLabel tip={t("admin.ddns.serverHelp")}>{t("admin.ddns.server")}</FieldLabel>
             <SearchableServerSelect
               value={form.client_uuid}
               selectedLabel={form.clientLabel}
@@ -336,35 +338,35 @@ export default function DdnsPage() {
             />
           </label>
           <label className="admin-sidebar-form__label">
-            <FieldLabel tip="只需填写最终域名，系统会自动识别 xxx.com、com.cn、co.uk 等根域名。">域名</FieldLabel>
+            <FieldLabel tip={t("admin.ddns.domainHelp")}>{t("admin.ddns.domain")}</FieldLabel>
             <Input
               value={form.fqdn}
               onChange={(event: ChangeEvent<HTMLInputElement>) => setForm({ ...form, fqdn: event.target.value })}
-              placeholder="例如 x.xx.xxx.com"
+              placeholder={t("admin.ddns.domainPlaceholder")}
             />
           </label>
           <label className="admin-sidebar-form__label">
-            <FieldLabel tip="A 仅解析 IPv4；AAAA 仅解析 IPv6；A + AAAA 会创建两条记录。">类型</FieldLabel>
+            <FieldLabel tip={t("admin.ddns.typeHelp")}>{t("admin.ddns.type")}</FieldLabel>
             <Select
               value={form.record_type}
               options={[
                 { value: "A", label: "A（IPv4）" },
                 { value: "AAAA", label: "AAAA（IPv6）" },
-                { value: "BOTH", label: "A + AAAA（同时解析）" },
+                { value: "BOTH", label: t("admin.ddns.both") },
               ]}
               onChange={(value) => setForm({ ...form, record_type: value === "AAAA" ? "AAAA" : value === "BOTH" ? "BOTH" : "A" })}
             />
           </label>
           <label className="admin-sidebar-form__label">
-            <FieldLabel tip="1 表示由 DNS 服务商自动决定；其他值为缓存秒数。">TTL</FieldLabel>
+            <FieldLabel tip={t("admin.ddns.ttlHelp")}>TTL</FieldLabel>
             <Input type="number" min={1} max={86400} value={form.ttl} onChange={(event: ChangeEvent<HTMLInputElement>) => setForm({ ...form, ttl: Number(event.target.value) || 1 })} />
           </label>
           <div className="ddns-form__switch">
-            <span><strong>Cloudflare 代理</strong><small>A/AAAA 记录可开启橙色云</small></span>
-            <Switch checked={form.proxied} label="Cloudflare 代理" onChange={(checked: boolean) => setForm({ ...form, proxied: checked })} />
+            <span><strong>{t("admin.ddns.cfProxy")}</strong><small>{t("admin.ddns.cfProxyHint")}</small></span>
+            <Switch checked={form.proxied} label={t("admin.ddns.cfProxy")} onChange={(checked: boolean) => setForm({ ...form, proxied: checked })} />
           </div>
           <div className="ddns-form__actions">
-            <Button type="button" size="sm" disabled={saving} onClick={() => void save()}>{saving ? "保存中..." : "保存并同步"}</Button>
+            <Button type="button" size="sm" disabled={saving} onClick={() => void save()}>{saving ? t("common.saving") : t("admin.ddns.save")}</Button>
           </div>
         </div>
       </GenericSidebar>
