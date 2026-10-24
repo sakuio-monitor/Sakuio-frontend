@@ -302,3 +302,13 @@
 .theme-source-row.is-active .theme-source-select svg { position: static; color: #16a34a; opacity: 1; align-self: flex-end; margin-top: -18px; }
 .theme-source-add { display: flex; flex-direction: column; gap: 8px; padding: 12px; border: 1px solid var(--glass-border); border-radius: 8px; }
 .theme-source-add strong { font-size: 13px; }
+
+.theme-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 20px;
+  color: var(--color-gray-500);
+  font-size: 12px;
+}

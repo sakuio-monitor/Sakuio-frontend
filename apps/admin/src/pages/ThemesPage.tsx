@@ -1,6 +1,6 @@
 import { Button, Input, Spinner, toast } from "@sakuio/ui";
 import { Check, Download, Palette, Plus, RefreshCw, Settings2, Trash2, Upload } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { LoadingBlock } from "../components/LoadingBlock";
@@ -22,6 +22,8 @@ import { GenericSidebar } from "../components/GenericSidebar/GenericSidebar";
 import "../styles/themes.css";
 
 type Props = { mode: "installed" | "market" };
+
+const MARKET_ROWS_PER_PAGE = 4;
 
 function formatBytes(bytes: number): string {
   if (!Number.isFinite(bytes) || bytes <= 0) return "0 B";
@@ -157,6 +159,12 @@ export default function ThemesPage({ mode }: Props) {
   const navigate = useNavigate();
   const [themes, setThemes] = useState<ThemeRow[]>([]);
   const [market, setMarket] = useState<MarketRow[]>([]);
+  const [marketPage, setMarketPage] = useState(0);
+  const [marketColumns, setMarketColumns] = useState(3);
+  const [installedPage, setInstalledPage] = useState(0);
+  const [installedColumns, setInstalledColumns] = useState(3);
+  const marketGridRef = useRef<HTMLDivElement>(null);
+  const installedGridRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState("default");
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
@@ -204,6 +212,8 @@ export default function ThemesPage({ mode }: Props) {
   }, [mode, t, activeSource.url, githubProxy]);
 
   useEffect(() => {
+    setMarketPage(0);
+    setInstalledPage(0);
     void reload(true);
   }, [reload]);
 
@@ -335,6 +345,88 @@ export default function ThemesPage({ mode }: Props) {
     if (activeSource.url === url) setActiveSource(next[0] ?? DEFAULT_SOURCE);
   };
 
+  const installedThemes = useMemo(
+    () => [...themes].sort((left, right) => {
+      const official = (theme: ThemeRow) =>
+        theme.short === "SakuioTheme" || theme.short === "default" || theme.short.toLowerCase() === "sakuio";
+      if (official(left) && !official(right)) return -1;
+      if (!official(left) && official(right)) return 1;
+      return left.name.localeCompare(right.name);
+    }),
+    [themes],
+  );
+  const installedPageSize = Math.max(installedColumns, installedColumns * MARKET_ROWS_PER_PAGE);
+  const installedPageCount = Math.max(1, Math.ceil(installedThemes.length / installedPageSize));
+  const safeInstalledPage = Math.min(installedPage, installedPageCount - 1);
+  const visibleInstalled = installedThemes.slice(
+    safeInstalledPage * installedPageSize,
+    safeInstalledPage * installedPageSize + installedPageSize,
+  );
+
+  // A catalog can contain duplicate short names (mirrors/multiple sources).
+  // Deduplicate before paging so a page cannot render only 10 of 12 cards.
+  const marketItems = useMemo(() => {
+    const seen = new Set<string>();
+    return market.filter((entry) => {
+      if (!entry.short || seen.has(entry.short)) return false;
+      seen.add(entry.short);
+      return true;
+    });
+  }, [market]);
+  const marketPageSize = Math.max(marketColumns, marketColumns * MARKET_ROWS_PER_PAGE);
+  const marketPageCount = Math.max(1, Math.ceil(marketItems.length / marketPageSize));
+  const safeMarketPage = Math.min(marketPage, marketPageCount - 1);
+  const visibleMarket = marketItems.slice(
+    safeMarketPage * marketPageSize,
+    safeMarketPage * marketPageSize + marketPageSize,
+  );
+
+  // Match pagination to the real responsive column count instead of hard-coding
+  // a 3-column layout. Every page is then exactly 4 full rows.
+  useLayoutEffect(() => {
+    const grid = marketGridRef.current;
+    if (!grid || mode !== "market") return;
+    const update = () => {
+      const columns = getComputedStyle(grid)
+        .gridTemplateColumns
+        .split(" ")
+        .filter(Boolean)
+        .length;
+      setMarketColumns(Math.max(1, columns || 1));
+    };
+    update();
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(update);
+    observer.observe(grid);
+    return () => observer.disconnect();
+  }, [mode, loading, marketItems.length]);
+
+  useEffect(() => {
+    setInstalledPage((page) => Math.min(page, installedPageCount - 1));
+  }, [installedPageCount]);
+
+  useLayoutEffect(() => {
+    const grid = installedGridRef.current;
+    if (!grid || mode !== "installed") return;
+    const update = () => {
+      const columns = getComputedStyle(grid)
+        .gridTemplateColumns
+        .split(" ")
+        .filter(Boolean)
+        .length;
+      setInstalledColumns(Math.max(1, columns || 1));
+    };
+    update();
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(update);
+    observer.observe(grid);
+    return () => observer.disconnect();
+  }, [mode, loading, installedThemes.length]);
+
+  useEffect(() => {
+    setMarketPage((page) => Math.min(page, marketPageCount - 1));
+  }, [marketPageCount]);
+
   const installedByShort = new Map(themes.map((theme) => [theme.short, theme]));
 
   return (
@@ -379,8 +471,8 @@ export default function ThemesPage({ mode }: Props) {
       {loading ? <LoadingBlock label={t("common.loading")} /> : null}
 
       {!loading && mode === "installed" ? (
-        <div className="themes-grid">
-          {themes.map((theme) => (
+        <div className="themes-grid" ref={installedGridRef}>
+          {visibleInstalled.map((theme, index) => (
             <article className="page-card theme-card" key={theme.short}>
               <div className="theme-card__media">
                 <ThemePreview src={theme.preview_url} alt={theme.name} proxy={githubProxy} />
@@ -457,14 +549,40 @@ export default function ThemesPage({ mode }: Props) {
         </div>
       ) : null}
 
+      {!loading && mode === "installed" && installedThemes.length > installedPageSize ? (
+        <div className="theme-pagination">
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            disabled={safeInstalledPage <= 0}
+            onClick={() => setInstalledPage((page) => Math.max(0, page - 1))}
+          >
+            {t("common.previous_page")}
+          </Button>
+          <span>
+            {safeInstalledPage + 1} / {installedPageCount}
+          </span>
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            disabled={safeInstalledPage >= installedPageCount - 1}
+            onClick={() => setInstalledPage((page) => Math.min(installedPageCount - 1, page + 1))}
+          >
+            {t("common.next_page")}
+          </Button>
+        </div>
+      ) : null}
+
       {!loading && mode === "market" ? (
-        <div className="themes-grid">
-          {market.map((entry) => {
+        <div className="themes-grid" ref={marketGridRef}>
+          {visibleMarket.map((entry, index) => {
             const installed = installedByShort.get(entry.short);
             const isActive = installed?.active ?? false;
             const upToDate = installed?.version === entry.version || entry.installed_version === entry.version;
             return (
-              <article className="page-card theme-card" key={entry.short}>
+              <article className="page-card theme-card" key={`${entry.short}-${index}`}>
                 <div className="theme-card__media">
                   <ThemePreview src={entry.preview || null} alt={entry.name} proxy={githubProxy} />
                   <ThemeCardStatus event={jobs[entry.short]} />
@@ -542,6 +660,32 @@ export default function ThemesPage({ mode }: Props) {
               </article>
             );
           })}
+        </div>
+      ) : null}
+
+      {!loading && mode === "market" && marketItems.length > marketPageSize ? (
+        <div className="theme-pagination">
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            disabled={safeMarketPage <= 0}
+            onClick={() => setMarketPage((page) => Math.max(0, page - 1))}
+          >
+            {t("common.previous_page")}
+          </Button>
+          <span>
+            {safeMarketPage + 1} / {marketPageCount}
+          </span>
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            disabled={safeMarketPage >= marketPageCount - 1}
+            onClick={() => setMarketPage((page) => Math.min(marketPageCount - 1, page + 1))}
+          >
+            {t("common.next_page")}
+          </Button>
         </div>
       ) : null}
 
