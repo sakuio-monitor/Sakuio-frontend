@@ -227,7 +227,8 @@ const COLUMN_WIDTHS_PLANS: Record<string, string> = {
 const COLUMN_WIDTHS_AGENT_SERVERS: Record<string, string> = {
   status: '68px',
   name: 'minmax(120px, 220px)',
-  public_ip: 'minmax(128px, 220px)',
+  public_ip: 'minmax(80px, 110px)',
+  tags: 'minmax(100px, 220px)',
   agent_version: 'minmax(72px, 112px)',
   group_name: 'minmax(72px, 150px)',
   private_remark: 'minmax(72px, 150px)',
@@ -248,7 +249,8 @@ type AgentServerColSpec = { min: number; max: number | null; weight: number }
 const AGENT_SERVER_COLUMN_SPEC: Record<string, AgentServerColSpec> = {
   status: { min: 68, max: 68, weight: 0 },
   name: { min: 120, max: 220, weight: 1.2 },
-  public_ip: { min: 128, max: 220, weight: 2 },
+  public_ip: { min: 80, max: 110, weight: 0.8 },
+  tags: { min: 100, max: 220, weight: 2.5 },
   agent_version: { min: 72, max: 112, weight: 0.8 },
   group_name: { min: 72, max: 150, weight: 1.3 },
   private_remark: { min: 72, max: 150, weight: 1.5 },
