@@ -202,7 +202,7 @@ function udpConnectionCount(record: RecordFormat): number {
 }
 
 async function fetchRecentData() {
-  if (!props.uuid)
+  if (!props.uuid || transportMode.value !== 'http')
     return
 
   // 只在首次加载时显示 loading
@@ -912,7 +912,7 @@ watch(
       rows.push(point)
     remoteData.value = rows.slice(-150)
   },
-  { deep: false },
+  { deep: false, immediate: true },
 )
 
 // ==================== 实时更新 ====================
@@ -929,6 +929,7 @@ const { pause: pauseRealtimeUpdate, resume: resumeRealtimeUpdate } = useInterval
 watch([isRealtime, () => appStore.rpcTransportMode], ([realtime, mode]) => {
   if (realtime && mode === 'http') {
     resumeRealtimeUpdate()
+    if (!hasLoaded.value) fetchData()
   }
   else {
     pauseRealtimeUpdate()
@@ -957,18 +958,21 @@ const blurClass = computed(() => {
 // ==================== 生命周期 ====================
 
 watch(selectedView, () => {
-  fetchData()
+  if (selectedView.value !== '实时' || transportMode.value === 'http')
+    fetchData()
 })
 
 watch(() => props.uuid, () => {
   remoteData.value = []
   hasLoaded.value = false
   isInitialLoad.value = true
-  fetchData()
+  if (selectedView.value !== '实时' || transportMode.value === 'http')
+    fetchData()
 })
 
 onMounted(() => {
-  fetchData()
+  if (selectedView.value !== '实时' || transportMode.value === 'http')
+    fetchData()
 })
 </script>
 
