@@ -308,8 +308,11 @@ class InitManager {
       this.nodesStore.updateWsState('disconnected', this.config.wsMaxReconnectAttempts)
     }
 
-    // 开始轮询（作为 WebSocket 的补充或备选方案）
-    this.startPolling()
+    // WebSocket mode is push-based. Polling here caused the ui to keep
+    // POSTing to /api/rpc2 even while the WebSocket was healthy.
+    if (!this.useWebSocket) {
+      this.startPolling()
+    }
 
     // 监听页面可见性变化，切回前台时检查 WebSocket 状态
     this.bindVisibilityListener()
@@ -491,6 +494,7 @@ class InitManager {
 
     // 显示提示
     window.$message?.warning('WebSocket 无法连接，尝试回落 POST 模式。')
+    this.startPolling()
   }
 
   /**
