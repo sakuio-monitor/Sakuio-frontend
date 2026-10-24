@@ -11,6 +11,7 @@ import {
   FileText,
   Globe2,
   Home,
+  Info,
   KeyRound,
   LayoutDashboard,
   MessageCircleMore,
@@ -109,6 +110,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
       { path: "/settings/database", labelKey: "admin.nav.settingsDatabase", icon: Database },
       { path: "/logs", labelKey: "admin.nav.logs", icon: FileText },
       { path: "/pprof", labelKey: "admin.nav.pprof", icon: Activity },
+      { path: "/about", labelKey: "admin.nav.about", icon: Info },
     ],
   },
 ];
@@ -132,6 +134,7 @@ export const ADMIN_IMPLEMENTED_PATHS = new Set<string>([
   "/pprof",
   "/themes",
   "/market/themes",
+  "/about",
 ]);
 
 export const PLACEHOLDER_PATHS: string[] = [

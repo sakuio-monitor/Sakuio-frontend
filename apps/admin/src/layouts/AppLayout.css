@@ -632,3 +632,13 @@ html.theme-switching *::after {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
+
+.sidebar-footer {
+  padding: 0 0 8px;
+}
+
+.sidebar-footer-link {
+  color: var(--menu-text);
+  font-size: 15px;
+  font-weight: 600;
+}

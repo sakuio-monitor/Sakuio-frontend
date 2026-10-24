@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ChevronDown, ChevronLeft, ChevronRight, Languages, LogOut, Menu, Monitor, Moon, Palette, Sun, X } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, ExternalLink, Languages, LogOut, Menu, Monitor, Moon, Palette, Sun, X } from "lucide-react";
 import {
   ADMIN_NAV_GROUPS,
   ADMIN_TOP_LINKS,
@@ -455,6 +455,14 @@ export default function AppLayout() {
         <nav className="sidebar-nav" aria-label={t("admin.title")}>
           {renderNav({ collapsedMode: visuallyCollapsed })}
         </nav>
+        <div className="sidebar-footer">
+          <CellTooltip tip={t("admin.nav.backToSite")}>
+            <a className="sidebar-footer-link menu-item" href="/" target="_blank" rel="noreferrer">
+              <ExternalLink size={20} aria-hidden />
+              {!visuallyCollapsed ? <span>{t("admin.nav.backToSite")}</span> : null}
+            </a>
+          </CellTooltip>
+        </div>
       </aside>
 
       <div
@@ -481,6 +489,12 @@ export default function AppLayout() {
           </CellTooltip>
         </div>
         <nav className="sidebar-nav">{renderNav({ collapsedMode: false, onNavigate: () => setMobileMenuOpen(false) })}</nav>
+        <div className="sidebar-footer">
+          <a className="sidebar-footer-link menu-item" href="/" target="_blank" rel="noreferrer">
+            <ExternalLink size={20} aria-hidden />
+            <span>{t("admin.nav.backToSite")}</span>
+          </a>
+        </div>
       </aside>
 
       <main className="app-main">

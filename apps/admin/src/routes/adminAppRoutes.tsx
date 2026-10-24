@@ -17,6 +17,7 @@ import ThemesPage from "../pages/ThemesPage";
 import ThemeSettingsPage from "../pages/ThemeSettingsPage";
 import LogsPage from "../pages/LogsPage";
 import PprofPage from "../pages/PprofPage";
+import AboutPage from "../pages/AboutPage";
 const PLACEHOLDER_ROUTE_PATHS = PLACEHOLDER_PATHS.map((p) => p.replace(/^\//, ""));
 
 export function adminAppRoutes() {
@@ -37,6 +38,7 @@ export function adminAppRoutes() {
       <Route path="/settings/database" element={<DatabasePage />} />
       <Route path="/logs" element={<LogsPage />} />
       <Route path="/pprof" element={<PprofPage />} />
+      <Route path="/about" element={<AboutPage />} />
       <Route path="/themes" element={<ThemesPage mode="installed" />} />
       <Route path="/themes/:short/settings" element={<ThemeSettingsPage />} />
       <Route path="/market/themes" element={<ThemesPage mode="market" />} />
