@@ -648,7 +648,8 @@
       "updateAgent": "Update agent",
       "updateAgentHint": "Update to board-supported version {{version}}",
       "updateAgentConfirm": "Update “{{name}}” from {{from}} to {{to}}? The agent will restart after updating.",
-      "updateAgentSent": "Update command sent; the agent is updating"
+      "updateAgentSent": "Update command sent; the agent is updating",
+      "searchPlaceholder": "Search servers (name, UUID, IP, group, remark)"
     },
     "ping": {
       "title": "Latency monitoring",

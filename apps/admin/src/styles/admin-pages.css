@@ -916,3 +916,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.server-search-input {
+  width: min(300px, 42vw);
+}

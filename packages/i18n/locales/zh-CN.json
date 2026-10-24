@@ -649,7 +649,8 @@
       "updateAgent": "更新 Agent",
       "updateAgentHint": "更新到面板支持的最新版本 {{version}}",
       "updateAgentConfirm": "确定将「{{name}}」从 {{from}} 更新到 {{to}}？更新完成后 Agent 会自动重启。",
-      "updateAgentSent": "更新指令已下发，Agent 正在更新"
+      "updateAgentSent": "更新指令已下发，Agent 正在更新",
+      "searchPlaceholder": "搜索服务器（名称、UUID、IP、分组、备注）"
     },
     "ping": {
       "title": "延迟监测",

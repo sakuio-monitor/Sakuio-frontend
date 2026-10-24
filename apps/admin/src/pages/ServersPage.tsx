@@ -1,5 +1,5 @@
-import { Button, toast } from "@sakuio/ui";
-import { Plus, RefreshCw, Trash2 } from "lucide-react";
+import { Button, Input, toast } from "@sakuio/ui";
+import { Plus, RefreshCw, Search, Trash2 } from "lucide-react";
 import { Fragment, useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import type { Column } from "../components/DataTable/DataTable";
@@ -148,6 +148,8 @@ export default function ServersPage() {
   const [addOpen, setAddOpen] = useState(false);
   const [listEpoch, setListEpoch] = useState(0);
   const [latestAgentVersion, setLatestAgentVersion] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
   // SSE/降级轮询共用的页面数据；items 按行复用对象，行内容不变不重渲染
   const [pageData, setPageData] = useState<{ items: ClientRow[]; nextCursor: string | null }>({
@@ -171,6 +173,18 @@ export default function ServersPage() {
   useEffect(() => {
     void fetchAgentVersion().then(setLatestAgentVersion).catch(() => {});
   }, []);
+
+  // 后端搜索：输入停顿后再发请求，避免每个按键打一次数据库。
+  useEffect(() => {
+    const timer = window.setTimeout(() => setSearchTerm(searchInput.trim()), 300);
+    return () => window.clearTimeout(timer);
+  }, [searchInput]);
+
+  // 搜索条件变化后回到第一页。
+  useEffect(() => {
+    setCursorStack([undefined]);
+    setCursorIndex(0);
+  }, [searchTerm]);
 
   // 增删改后回到第一页，并触发 SSE 重连即时拿最新快照
   useEffect(() => {
@@ -216,7 +230,11 @@ export default function ServersPage() {
         const res = await fetch("/api/admin/clients/sync", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ cursor: activeCursor ?? null, limit: pageSize }),
+          body: JSON.stringify({
+            cursor: activeCursor ?? null,
+            limit: pageSize,
+            search: searchTerm || null,
+          }),
         });
         if (res.ok && !cancelled) applyPayload(await res.json());
       } catch {
@@ -239,6 +257,7 @@ export default function ServersPage() {
     try {
       const qs = new URLSearchParams({ limit: String(pageSize) });
       if (activeCursor) qs.set("cursor", activeCursor);
+      if (searchTerm) qs.set("search", searchTerm);
       es = new EventSource(`/api/admin/clients/stream?${qs.toString()}`);
       es.addEventListener("clients", (event) => {
         if (cancelled) return;
@@ -262,7 +281,7 @@ export default function ServersPage() {
       es?.close();
       if (pollTimer !== undefined) window.clearTimeout(pollTimer);
     };
-  }, [activeCursor, pageSize, listEpoch, applyPayload]);
+  }, [activeCursor, pageSize, listEpoch, searchTerm, applyPayload]);
 
   const groupOptions = useMemo(() => {
     const set = new Set<string>();
@@ -500,6 +519,14 @@ export default function ServersPage() {
           titleKey="admin.nav.serverList"
           actions={
             <>
+              <Input
+                className="server-search-input"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder={t("admin.servers.searchPlaceholder")}
+                aria-label={t("admin.servers.searchPlaceholder")}
+                prefix={<Search size={15} aria-hidden />}
+              />
               <span
                 className="admin-bulk-actions"
                 data-active={selectedUuids.size > 0 || undefined}
