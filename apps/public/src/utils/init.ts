@@ -8,7 +8,7 @@ import { h } from 'vue'
 import LoginDialog from '@/components/LoginDialog.vue'
 import { useAppStore } from '@/stores/app'
 import { useNodesStore } from '@/stores/nodes'
-import { getSharedApi } from '@/utils/api'
+import { getSharedApi, RealtimeWebSocket } from '@/utils/api'
 import { getSharedRpc, RpcError } from '@/utils/rpc'
 
 /** 初始化配置 */
@@ -39,8 +39,10 @@ class InitManager {
   private pollTimer: ReturnType<typeof setInterval> | null = null
   private isPolling = false
   private isInitialized = false
+  private loadedAllNodes = false
   private useWebSocket: boolean | null = null // 根据主题配置决定
   private sse: EventSource | null = null
+  private realtimeWs: RealtimeWebSocket | null = null
   private postFailureCount = 0
   private visibilityHandler: (() => void) | null = null
 
@@ -228,8 +230,24 @@ class InitManager {
   /**
    * 获取节点数据和最新状态
    */
-  private async fetchNodesData(): Promise<void> {
+  private async fetchNodesData(forceAll = false): Promise<void> {
     try {
+      const detailUuid = forceAll ? null : this.detailUuid()
+      if (detailUuid) {
+        // A direct /instance/<uuid> load only needs that node. The full list
+        // is fetched lazily when the user returns to the home page.
+        const [client, status] = await Promise.all([
+          this.rpc.getNodes(detailUuid) as Promise<Client>,
+          this.rpc.getNodesLatestStatus(detailUuid) as Promise<NodeStatus>,
+        ])
+        this.nodesStore.initNodes(
+          { [detailUuid]: client },
+          { [detailUuid]: status },
+        )
+        this.loadedAllNodes = false
+        return
+      }
+
       // 并行获取节点信息和最新状态
       const [clientsResult, statusesResult] = await Promise.all([
         this.rpc.getNodes() as Promise<Record<string, Client>>,
@@ -238,6 +256,7 @@ class InitManager {
 
       // 初始化节点数据
       this.nodesStore.initNodes(clientsResult, statusesResult)
+      this.loadedAllNodes = true
     }
     catch (error) {
       console.error('[InitManager] Failed to fetch nodes data:', error)
@@ -245,12 +264,31 @@ class InitManager {
     }
   }
 
+  /** Returns the UUID when the current route is a single instance page. */
+  private detailUuid(): string | null {
+    const match = window.location.pathname.match(/^\/instance\/([^/]+)/)
+    if (!match?.[1])
+      return null
+    try {
+      return decodeURIComponent(match[1])
+    }
+    catch {
+      return null
+    }
+  }
+
+  /** Loads the full list only when a detail-first navigation needs it. */
+  async ensureFullNodes(): Promise<void> {
+    if (this.isInitialized && !this.loadedAllNodes)
+      await this.fetchNodesData(true)
+  }
+
   /**
    * The public node API intentionally hides IPs. A logged-in administrator
    * may read the admin client list so IP quality / ASN metadata can work.
    */
   private async fetchAdminIps(): Promise<void> {
-    if (!this.appStore.isLoggedIn)
+    if (!this.appStore.isLoggedIn || this.detailUuid())
       return
     try {
       const overrides: Record<string, { ipv4?: string, ipv6?: string }> = {}
@@ -300,6 +338,7 @@ class InitManager {
     if (this.useWebSocket) {
       // 尝试建立 WebSocket 连接
       this.connectWebSocket()
+      this.startRealtimeWebSocket()
     }
     else {
       // HTTP 模式：直接设置 RPC 客户端为 HTTP 模式
@@ -323,11 +362,19 @@ class InitManager {
    * and falls back to HTTP polling if the stream cannot be established.
    */
   private startSse(): void {
+    this.realtimeWs?.close()
+    this.realtimeWs = null
     this.sse?.close()
     this.useWebSocket = false
     this.nodesStore.updateWsState('connecting', 0)
     const source = new EventSource('/api/clients/sse')
     this.sse = source
+    let sseErrors = 0
+
+    source.onopen = () => {
+      sseErrors = 0
+      this.nodesStore.updateWsState('connected', 0)
+    }
 
     source.addEventListener('nodes', (event) => {
       try {
@@ -338,6 +385,7 @@ class InitManager {
         this.nodesStore.applySseSnapshot(online, payload.data?.data ?? {})
         this.nodesStore.updateWsState('connected', 0)
         this.appStore.connectionError = false
+        this.stopPolling()
       }
       catch (error) {
         console.warn('[InitManager] Invalid SSE payload:', error)
@@ -345,13 +393,48 @@ class InitManager {
     })
 
     source.onerror = () => {
+      if (sseErrors < 3 && source.readyState === EventSource.CONNECTING) {
+        // EventSource reconnects automatically after transient network errors;
+        // do not turn a healthy SSE deployment into permanent HTTP polling.
+        sseErrors += 1
+        this.nodesStore.updateWsState('reconnecting', sseErrors)
+        return
+      }
       source.close()
       this.sse = null
       this.nodesStore.updateWsState('disconnected')
-      // Fall back to the HTTP polling path without touching existing APIs.
+      // Only after repeated failures fall back to the HTTP polling path.
       this.rpc.getClient().setTransport(false)
       this.startPolling()
     }
+  }
+
+  /**
+   * Node-list realtime WebSocket. The JSON-RPC WebSocket is request/response,
+   * so it cannot deliver node snapshots by itself.
+   */
+  private startRealtimeWebSocket(): void {
+    this.realtimeWs?.close()
+    const ws = new RealtimeWebSocket({
+      reconnectInterval: this.config.wsReconnectInterval,
+      maxReconnectAttempts: this.config.wsMaxReconnectAttempts,
+    })
+    this.realtimeWs = ws
+    ws.subscribe((payload) => {
+      if (payload.status !== 'success')
+        return
+      const online = new Set(payload.data?.online ?? [])
+      this.nodesStore.applySseSnapshot(online, payload.data?.data ?? {})
+      this.nodesStore.updateWsState('connected', 0)
+      this.appStore.connectionError = false
+      this.stopPolling()
+    })
+    ws.onError(() => this.nodesStore.updateWsState('reconnecting', 1))
+    void ws.connect().catch(() => {
+      this.nodesStore.updateWsState('disconnected')
+      // Only fall back to HTTP if the realtime WS cannot connect.
+      this.startPolling()
+    })
   }
 
   /**
@@ -595,6 +678,8 @@ class InitManager {
    * 销毁管理器
    */
   destroy(): void {
+    this.realtimeWs?.close()
+    this.realtimeWs = null
     this.sse?.close()
     this.sse = null
     this.stopPolling()

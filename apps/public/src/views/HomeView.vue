@@ -10,6 +10,7 @@ import { formatBytes, formatBytesPerSecond, formatUptime } from '@/utils/helper'
 import { getOSName } from '@/utils/osImageHelper'
 import { isNodeInGroup } from '@/utils/groupHelper'
 import { isRegionMatch } from '@/utils/regionHelper'
+import { getInitManager } from '@/utils/init'
 
 // 定义组件名称，用于 KeepAlive 匹配
 defineOptions({
@@ -211,6 +212,7 @@ watch(
 )
 
 onMounted(() => {
+  void getInitManager()?.ensureFullNodes()
   nextTick(updateGroupTabIndicator)
   window.addEventListener('resize', updateGroupTabIndicator)
 })

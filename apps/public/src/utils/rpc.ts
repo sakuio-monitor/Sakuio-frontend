@@ -541,15 +541,25 @@ export class SakuioRpc {
   /**
    * 获取所有节点信息
    */
-  async getNodes(): Promise<Record<string, Client>> {
-    return this.client.call<Record<string, Client>>('common:getNodes')
+  async getNodes(): Promise<Record<string, Client>>
+  async getNodes(uuid: string): Promise<Client>
+  async getNodes(uuid?: string): Promise<Record<string, Client> | Client> {
+    return this.client.call<Record<string, Client> | Client>(
+      'common:getNodes',
+      uuid ? { uuid } : undefined,
+    )
   }
 
   /**
    * 获取所有节点最新状态
    */
-  async getNodesLatestStatus(): Promise<Record<string, NodeStatus>> {
-    return this.client.call<Record<string, NodeStatus>>('common:getNodesLatestStatus')
+  async getNodesLatestStatus(): Promise<Record<string, NodeStatus>>
+  async getNodesLatestStatus(uuid: string): Promise<NodeStatus>
+  async getNodesLatestStatus(uuid?: string): Promise<Record<string, NodeStatus> | NodeStatus> {
+    return this.client.call<Record<string, NodeStatus> | NodeStatus>(
+      'common:getNodesLatestStatus',
+      uuid ? { uuid } : undefined,
+    )
   }
 
   /**

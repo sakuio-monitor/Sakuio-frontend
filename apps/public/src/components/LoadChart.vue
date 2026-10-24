@@ -154,6 +154,7 @@ const error = ref<string | null>(null)
 
 // 节点信息
 const nodeInfo = computed(() => nodesStore.nodesByUuid.get(props.uuid))
+const transportMode = computed(() => appStore.rpcTransportMode)
 
 // RPC 客户端
 const rpc = getSharedRpc()
@@ -852,6 +853,68 @@ const processChartOption = computed(() => ({
   ],
 }))
 
+// SSE/WebSocket 模式下由节点快照驱动实时图表，不发 RPC 轮询。
+watch(
+  () => {
+    const node = nodesStore.nodes.find(item => item.uuid === props.uuid)
+    if (!node)
+      return null
+    return {
+      time: node.time,
+      cpu: node.cpu,
+      gpu: node.gpu,
+      ram: node.ram,
+      swap: node.swap,
+      load: node.load,
+      load5: node.load5,
+      load15: node.load15,
+      disk: node.disk,
+      net_in: node.net_in,
+      net_out: node.net_out,
+      net_total_up: node.net_total_up,
+      net_total_down: node.net_total_down,
+      process: node.process,
+      connections: node.connections,
+      connections_udp: node.connections_udp,
+    }
+  },
+  (snapshot) => {
+    if (!snapshot || !isRealtime.value || transportMode.value === 'http')
+      return
+    const point: StatusRecord = {
+      client: props.uuid,
+      time: snapshot.time,
+      cpu: snapshot.cpu,
+      gpu: snapshot.gpu,
+      ram: snapshot.ram,
+      ram_total: nodeInfo.value?.mem_total ?? 0,
+      swap: snapshot.swap,
+      swap_total: nodeInfo.value?.swap_total ?? 0,
+      load: snapshot.load,
+      load5: snapshot.load5,
+      load15: snapshot.load15,
+      temp: 0,
+      disk: snapshot.disk,
+      disk_total: nodeInfo.value?.disk_total ?? 0,
+      net_in: snapshot.net_in,
+      net_out: snapshot.net_out,
+      net_total_up: snapshot.net_total_up,
+      net_total_down: snapshot.net_total_down,
+      process: snapshot.process,
+      connections: snapshot.connections,
+      connections_udp: snapshot.connections_udp,
+    }
+    const rows = [...remoteData.value]
+    const last = rows[rows.length - 1]
+    if (last && last.time === point.time)
+      rows[rows.length - 1] = point
+    else
+      rows.push(point)
+    remoteData.value = rows.slice(-150)
+  },
+  { deep: false },
+)
+
 // ==================== 实时更新 ====================
 
 // 使用 VueUse 的 useIntervalFn 自动管理定时器
@@ -861,9 +924,10 @@ const { pause: pauseRealtimeUpdate, resume: resumeRealtimeUpdate } = useInterval
   { immediate: false },
 )
 
-// 根据是否为实时模式控制定时器
-watch(isRealtime, (realtime) => {
-  if (realtime) {
+// 只有配置为 HTTP 轮询时才使用定时器。SSE/WebSocket 模式下实时点来自
+// nodesStore 的推送，不能再额外 POST common:getNodeRecentStatus。
+watch([isRealtime, () => appStore.rpcTransportMode], ([realtime, mode]) => {
+  if (realtime && mode === 'http') {
     resumeRealtimeUpdate()
   }
   else {
