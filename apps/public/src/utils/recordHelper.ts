@@ -38,6 +38,7 @@ export interface RecordFormat {
   net_total_down: number | null
   process: number | null
   connections: number | null
+  connections_tcp?: number | null
   connections_udp: number | null
 }
 

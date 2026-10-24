@@ -182,8 +182,22 @@ function statusToRecordFormat(records: StatusRecord[]): RecordFormat[] {
     net_total_down: r.net_total_down ?? null,
     process: r.process ?? null,
     connections: r.connections ?? null,
+    connections_tcp: r.connections_tcp ?? null,
     connections_udp: r.connections_udp ?? null,
   }))
+}
+
+function tcpConnectionCount(record: RecordFormat): number {
+  const explicit = record.connections_tcp
+  if (explicit !== null && explicit !== undefined)
+    return Math.max(0, Math.round(explicit))
+  const total = Number(record.connections ?? 0)
+  const udp = Number(record.connections_udp ?? 0)
+  return Math.max(0, Math.round(total - udp))
+}
+
+function udpConnectionCount(record: RecordFormat): number {
+  return Math.max(0, Math.round(Number(record.connections_udp ?? 0)))
 }
 
 async function fetchRecentData() {
@@ -751,7 +765,7 @@ const connectionsChartOption = computed(() => ({
       id: 'tcp',
       name: 'TCP',
       type: 'line',
-      data: chartData.value.map(r => r.connections ?? 0),
+      data: chartData.value.map(tcpConnectionCount),
       smooth: 0.6,
       showSymbol: false,
       lineStyle: { width: 2.5, color: chartColors.primary, cap: 'round' as const },
@@ -760,7 +774,7 @@ const connectionsChartOption = computed(() => ({
       id: 'udp',
       name: 'UDP',
       type: 'line',
-      data: chartData.value.map(r => r.connections_udp ?? 0),
+      data: chartData.value.map(udpConnectionCount),
       smooth: 0.6,
       showSymbol: false,
       lineStyle: { width: 2.5, color: chartColors.tertiary, cap: 'round' as const },
@@ -1021,10 +1035,10 @@ onMounted(() => {
               <span class="text-base font-bold">连接</span>
               <div class="text-sm flex gap-1 items-baseline">
                 <span style="color: var(--n-text-color-3)">TCP:</span>
-                <span :style="{ fontFamily: appStore.numberFontFamily, color: 'var(--n-text-color-1)' }">{{ latestStatus?.connections ?? '-' }}</span>
+                <span :style="{ fontFamily: appStore.numberFontFamily, color: 'var(--n-text-color-1)' }">{{ latestStatus ? tcpConnectionCount(latestStatus) : '-' }}</span>
                 <span style="color: var(--n-text-color-3)">｜</span>
                 <span style="color: var(--n-text-color-3)">UDP:</span>
-                <span :style="{ fontFamily: appStore.numberFontFamily, color: 'var(--n-text-color-1)' }">{{ latestStatus?.connections_udp ?? '-' }}</span>
+                <span :style="{ fontFamily: appStore.numberFontFamily, color: 'var(--n-text-color-1)' }">{{ latestStatus ? udpConnectionCount(latestStatus) : '-' }}</span>
               </div>
             </div>
           </template>

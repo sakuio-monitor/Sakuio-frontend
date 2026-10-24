@@ -132,6 +132,7 @@ export interface NodeStatus {
   net_total_down: number
   process: number
   connections: number
+  connections_tcp?: number
   connections_udp: number
   online: boolean
   uptime: number
@@ -159,6 +160,7 @@ export interface StatusRecord {
   net_total_down: number
   process: number
   connections: number
+  connections_tcp?: number
   connections_udp: number
 }
 
