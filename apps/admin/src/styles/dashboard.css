@@ -272,3 +272,30 @@
 .dash-traffic__tooltip > div > span { display: inline-flex; align-items: center; gap: 6px; color: var(--color-gray-500); }
 .dash-traffic__tooltip b { color: var(--color-black); font-family: var(--font-family-number); font-weight: 600; }
 .dash-dot--dashed { opacity: .55; outline: 1px dashed currentColor; outline-offset: 1px; }
+
+/* Let the traffic chart consume the full card body instead of letterboxing
+ * a fixed 620x230 viewBox inside a wider/taller widget. */
+.dash-traffic-shell {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  align-items: stretch;
+}
+
+.dash-traffic {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+}
+
+.dash-traffic__plot {
+  flex: 1;
+  min-height: 180px;
+  width: 100%;
+}
+
+.dash-traffic__svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}

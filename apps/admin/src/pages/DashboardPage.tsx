@@ -40,7 +40,7 @@ import {
   Wifi,
   X,
 } from "lucide-react";
-import { memo, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import {
@@ -154,8 +154,33 @@ function chartTime(ms: number, range: string, spanMs: number): string {
 function TrafficChart({ data }: { data: DashboardData }) {
   const points = data.traffic.points;
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
-  const width = 620;
-  const height = 230;
+  const plotRef = useRef<HTMLDivElement>(null);
+  const [chartSize, setChartSize] = useState({ width: 620, height: 230 });
+
+  useLayoutEffect(() => {
+    const element = plotRef.current;
+    if (!element) return;
+    const update = () => {
+      const rect = element.getBoundingClientRect();
+      setChartSize((previous) => {
+        const next = {
+          width: Math.max(320, Math.round(rect.width)),
+          height: Math.max(180, Math.round(rect.height)),
+        };
+        return next.width === previous.width && next.height === previous.height
+          ? previous
+          : next;
+      });
+    };
+    update();
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(update);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  const width = chartSize.width;
+  const height = chartSize.height;
   const padLeft = 64;
   const padRight = 58;
   const padTop = 14;
@@ -187,6 +212,7 @@ function TrafficChart({ data }: { data: DashboardData }) {
       <div className="dash-traffic__legend">
         <span className="dash-traffic__total">累计 ↑ {formatBytes(data.traffic.total_up)} ↓ {formatBytes(data.traffic.total_down)}</span>
       </div>
+      <div className="dash-traffic__plot" ref={plotRef}>
       <svg
         viewBox={`0 0 ${width} ${height}`}
         className="dash-traffic__svg"
@@ -269,6 +295,7 @@ function TrafficChart({ data }: { data: DashboardData }) {
           </g>
         ) : null}
       </svg>
+      </div>
       {hovered ? (
         <div
           className={`dash-traffic__tooltip${hoverRight ? " is-right" : ""}`}
@@ -733,7 +760,11 @@ export default function DashboardPage() {
     const close = watchDashboardLive((live) => {
       // The live frame only updates the small overview block. Reloading all
       // dashboard widgets on every frame caused the whole page to flicker.
-      setLiveOverview({ online: live.online, total: live.total });
+      setLiveOverview((previous) => (
+        previous && previous.online === live.online && previous.total === live.total
+          ? previous
+          : { online: live.online, total: live.total }
+      ));
       if (live.revision !== revisionRef.current) {
         revisionRef.current = live.revision;
         const now = Date.now();

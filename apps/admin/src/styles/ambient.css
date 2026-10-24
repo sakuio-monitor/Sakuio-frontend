@@ -70,8 +70,5 @@ body,
   background-color: var(--ambient-base);
 }
 
-.ambient-surface::before,
-.background-container {
-  transform: translateZ(0);
-  backface-visibility: hidden;
-}
+/* Do not promote the backdrop ancestor: a transformed containing block makes
+ * Chrome re-sample backdrop-filter layers and causes whole-page flashes. */

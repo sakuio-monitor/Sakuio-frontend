@@ -94,8 +94,7 @@ function Donut({
               style={{
                 strokeDasharray: `${percent} ${100 - percent}`,
                 strokeDashoffset: -offset,
-                transition:
-                  "stroke-dasharray 700ms cubic-bezier(0.22, 1, 0.36, 1), stroke-dashoffset 700ms cubic-bezier(0.22, 1, 0.36, 1)",
+                transition: "none",
               }}
             />
           );
