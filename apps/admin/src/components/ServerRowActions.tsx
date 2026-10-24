@@ -22,6 +22,7 @@ export type ServerActionRow = {
   ipv6: string;
   agent_version?: string | null;
   group_name?: string;
+  tags?: string;
   private_remark?: string;
   price?: number;
   billing_cycle?: number;
@@ -67,15 +68,17 @@ type ServerRowActionsProps = {
   row: ServerActionRow;
   /** 全量候选分组（来自当前列表所有行，用于分组选择输入框的实时匹配） */
   groupOptions?: string[];
+  /** 全量候选标签（来自当前列表所有行，用于标签选择输入框的实时匹配） */
+  tagOptions?: string[];
   onChanged: () => void;
 };
 
 type MoreTab = "host" | "edit" | "billing";
 
-/** group_name 以逗号分隔存储多分组 */
-function splitGroups(value: string | null | undefined): string[] {
+/** group_name/tags 以分号分隔存储多个值；兼容历史逗号分组。 */
+function splitValues(value: string | null | undefined): string[] {
   return (value ?? "")
-    .split(",")
+    .split(/[;,]/)
     .map((s) => s.trim())
     .filter(Boolean);
 }
@@ -182,7 +185,7 @@ function formatDateTime(value: string | null | undefined): string {
   });
 }
 
-export function ServerRowActions({ row, groupOptions, onChanged }: ServerRowActionsProps) {
+export function ServerRowActions({ row, groupOptions, tagOptions, onChanged }: ServerRowActionsProps) {
   const { t } = useTranslation();
   const { confirm, confirmDialog } = useConfirmDialog();
   const [moreOpen, setMoreOpen] = useState(false);
@@ -190,7 +193,8 @@ export function ServerRowActions({ row, groupOptions, onChanged }: ServerRowActi
   const [saving, setSaving] = useState(false);
 
   const [editName, setEditName] = useState(row.name);
-  const [editGroups, setEditGroups] = useState<string[]>(splitGroups(row.group_name));
+  const [editGroups, setEditGroups] = useState<string[]>(splitValues(row.group_name));
+  const [editTags, setEditTags] = useState<string[]>(splitValues(row.tags));
   const [editRemark, setEditRemark] = useState(row.private_remark ?? "");
   const [editReportInterval, setEditReportInterval] = useState(
     String(row.report_interval_ms ?? 1000),
@@ -268,7 +272,8 @@ export function ServerRowActions({ row, groupOptions, onChanged }: ServerRowActi
     try {
       await patchClient({
         name: editName,
-        group_name: editGroups.join(","),
+        group_name: editGroups.join(";"),
+        tags: editTags.join(";"),
         private_remark: editRemark,
         report_interval_ms: Math.max(200, Math.min(3_600_000, Number(editReportInterval) || 1000)),
       });
@@ -353,7 +358,8 @@ export function ServerRowActions({ row, groupOptions, onChanged }: ServerRowActi
 
   function openMore() {
     setEditName(row.name);
-    setEditGroups(splitGroups(row.group_name));
+    setEditGroups(splitValues(row.group_name));
+    setEditTags(splitValues(row.tags));
     setEditRemark(row.private_remark ?? "");
     setPrice(String(row.price ?? 0));
     setBillingCycle(String(row.billing_cycle ?? 0));
@@ -562,6 +568,24 @@ export function ServerRowActions({ row, groupOptions, onChanged }: ServerRowActi
                 suggestions={groupOptions}
                 placeholder={t("admin.servers.groupPlaceholder")}
                 inputAriaLabel={t("admin.servers.group")}
+              />
+            </label>
+            <label className="admin-sidebar-form__label">
+              <span className="admin-sidebar-form__label-text">
+                {t("admin.servers.tags")}
+                <CellTooltip
+                  tip={t("admin.servers.fieldHelp.tags")}
+                  className="admin-field-info"
+                >
+                  <Info size={14} aria-hidden />
+                </CellTooltip>
+              </span>
+              <TagSelectInput
+                value={editTags}
+                onChange={setEditTags}
+                suggestions={tagOptions}
+                placeholder={t("admin.servers.tagsPlaceholder")}
+                inputAriaLabel={t("admin.servers.tags")}
               />
             </label>
             <label className="admin-sidebar-form__label">

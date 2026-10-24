@@ -5,7 +5,7 @@ export function parseNodeGroups(group: string | null | undefined): string[] {
   const seen = new Set<string>()
   const groups: string[] = []
 
-  for (const item of group.split(';')) {
+  for (const item of group.split(/[;,]/)) {
     const normalized = item.trim()
     if (!normalized || seen.has(normalized))
       continue

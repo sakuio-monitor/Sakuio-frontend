@@ -26,6 +26,7 @@ type ClientRow = {
   ipv6: string;
   agent_version?: string | null;
   group_name?: string;
+  tags?: string;
   private_remark?: string;
   price?: number;
   billing_cycle?: number;
@@ -286,8 +287,19 @@ export default function ServersPage() {
   const groupOptions = useMemo(() => {
     const set = new Set<string>();
     for (const r of pageData.items) {
-      for (const g of (r.group_name ?? "").split(",")) {
+      for (const g of (r.group_name ?? "").split(/[;,]/)) {
         const t = g.trim();
+        if (t) set.add(t);
+      }
+    }
+    return [...set];
+  }, [pageData.items]);
+
+  const tagOptions = useMemo(() => {
+    const set = new Set<string>();
+    for (const r of pageData.items) {
+      for (const tag of (r.tags ?? "").split(";")) {
+        const t = tag.trim();
         if (t) set.add(t);
       }
     }
@@ -375,15 +387,35 @@ export default function ServersPage() {
         title: t("admin.servers.group"),
         render: (row) => {
           const groups = (row.group_name ?? "")
-            .split(",")
+            .split(/[;,]/)
             .map((g) => g.trim())
             .filter(Boolean);
           if (groups.length === 0) return <span className="data-table-cell">—</span>;
           return (
-            <div className="admin-billing-tags" title={groups.join(", ")}>
+            <div className="admin-billing-tags" title={groups.join("; ")}>
               {groups.map((g) => (
                 <span key={g} className="data-table-tag data-table-tag--blue">
                   {g}
+                </span>
+              ))}
+            </div>
+          );
+        },
+      },
+      {
+        key: "tags",
+        title: t("admin.servers.tags"),
+        render: (row) => {
+          const tags = (row.tags ?? "")
+            .split(";")
+            .map((tag) => tag.trim())
+            .filter(Boolean);
+          if (tags.length === 0) return <span className="data-table-cell">—</span>;
+          return (
+            <div className="admin-billing-tags" title={tags.join("; ")}>
+              {tags.map((tag) => (
+                <span key={tag} className="data-table-tag data-table-tag--orange">
+                  {tag}
                 </span>
               ))}
             </div>
@@ -416,12 +448,13 @@ export default function ServersPage() {
           <ServerRowActions
             row={row}
             groupOptions={groupOptions}
+            tagOptions={tagOptions}
             onChanged={() => setListEpoch((n) => n + 1)}
           />
         ),
       },
     ],
-    [t, groupOptions, latestAgentVersion],
+    [t, groupOptions, tagOptions, latestAgentVersion],
   );
 
   function openCreateSidebar() {
@@ -487,7 +520,7 @@ export default function ServersPage() {
       const res = await fetch("/api/admin/clients/batch-group", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ uuids, group_name: bulkGroups.join(",") }),
+        body: JSON.stringify({ uuids, group_name: bulkGroups.join(";") }),
       });
       if (!res.ok) {
         const data = (await res.json().catch(() => ({}))) as { message?: string };

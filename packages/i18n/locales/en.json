@@ -610,9 +610,12 @@
       "swap": "Swap",
       "coresLogical": "{{n}} logical cores",
       "coresPhysical": "{{n}} physical cores",
+      "tags": "Tags",
+      "tagsPlaceholder": "Type a tag and press Enter, add multiple",
       "groupPlaceholder": "Type a group and press Enter, add multiple",
       "fieldHelp": {
         "name": "Display name of the node, used in the admin panel and public dashboards. Can be changed anytime.",
+        "tags": "Tags are public metadata, separated by semicolons, compatible with Komari public themes.",
         "group": "Type and press Enter to add a group; multiple groups are allowed. Unknown groups are created automatically. Groups are used for filtering and organizing nodes.",
         "privateRemark": "Private note visible to admins only; never shown to visitors or on public themes.",
         "price": "Use -1 for free (shows a \"Free\" badge); empty or 0 means unset; other values render as currency + price.",
