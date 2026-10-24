@@ -407,6 +407,7 @@ export default function AboutPage() {
   const [versionInfo, setVersionInfo] = useState<{
     version?: string;
     build_time?: string;
+    build_commit?: string;
     agent_min?: string;
     agent_max?: string;
   }>({});
@@ -490,6 +491,17 @@ export default function AboutPage() {
                 {versionInfo.build_time && versionInfo.build_time !== "0"
                   ? new Date(Number(versionInfo.build_time) * 1000).toLocaleString()
                   : t("admin.about.unknown")}
+                {versionInfo.build_commit && versionInfo.build_commit !== "unknown" ? (
+                  <a
+                    className="about-commit-link"
+                    href={`https://github.com/sakuio-monitor/Sakuio/commit/${versionInfo.build_commit}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    ({<ExternalLink size={12} aria-hidden />}
+                    {versionInfo.build_commit})
+                  </a>
+                ) : null}
               </small>
             </div>
             <div className="about-system-card">

@@ -41,7 +41,6 @@
   border-right: 1px solid var(--sidebar-border);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  box-shadow: 2px 0 16px rgba(20, 24, 32, 0.05);
   transition: width var(--menu-motion);
 }
 

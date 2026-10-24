@@ -589,3 +589,17 @@
   font-size: 12px;
   line-height: 1.6;
 }
+
+.about-commit-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 6px;
+  color: var(--primary-color);
+  font-family: var(--font-family-number);
+  text-decoration: none;
+}
+
+.about-commit-link:hover {
+  text-decoration: underline;
+}

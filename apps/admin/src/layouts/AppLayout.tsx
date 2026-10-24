@@ -500,7 +500,6 @@ export default function AppLayout() {
       <main className="app-main">
         {isMobile ? (
           <header className="mobile-topbar">
-            <h1 className="mobile-topbar__title">{currentPageLabel}</h1>
             <div className="mobile-topbar__actions">
               <ThemeToggleButton mode={mode} onCycle={cycleMode} />
               <LanguageToggleButton dark={dark} />
@@ -520,7 +519,6 @@ export default function AppLayout() {
           </header>
         ) : (
           <header className="app-topbar">
-            <span className="app-topbar__page">{currentPageLabel}</span>
             <div className="app-topbar__actions">
               <ThemeToggleButton mode={mode} onCycle={cycleMode} />
               <LanguageToggleButton dark={dark} />
