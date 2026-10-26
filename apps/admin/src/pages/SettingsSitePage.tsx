@@ -75,6 +75,7 @@ export default function SettingsSitePage() {
         ws_origin_check_enabled: settings.ws_origin_check_enabled,
         ws_allowed_origins: parseOrigins(wsOrigins),
         ssrf_protection: settings.ssrf_protection,
+        trust_proxy_headers: settings.trust_proxy_headers,
         show_partial_ip: settings.show_partial_ip,
         agent_connect_address: settings.agent_connect_address,
         private_site: settings.private_site,
@@ -261,6 +262,20 @@ export default function SettingsSitePage() {
             checked={settings.ssrf_protection}
             label={t("admin.siteSettings.ssrf")}
             onChange={(checked) => patch({ ssrf_protection: checked })}
+          />
+        </div>
+
+        <div className="site-settings-row">
+          <div className="site-settings-row__text">
+            <span>{t("admin.siteSettings.trustProxyHeaders")}</span>
+            <span className="admin-sidebar-form__hint">
+              {t("admin.siteSettings.trustProxyHeadersHint")}
+            </span>
+          </div>
+          <Switch
+            checked={settings.trust_proxy_headers}
+            label={t("admin.siteSettings.trustProxyHeaders")}
+            onChange={(checked) => patch({ trust_proxy_headers: checked })}
           />
         </div>
 

@@ -381,7 +381,9 @@
       "retention30": "30 天",
       "retention180": "180 天",
       "retention365": "365 天",
-      "retentionForever": "永久保存"
+      "retentionForever": "永久保存",
+      "trustProxyHeaders": "信任反向代理 / CDN 请求头",
+      "trustProxyHeadersHint": "开启后从 X-Forwarded-For、X-Real-IP、CF-Connecting-IP、EO-Connecting-IP 等请求头读取客户端 IP。源站可被公网直接访问时请保持关闭，否则客户端可以伪造 IP。"
     },
     "database": {
       "loadFailed": "数据库信息加载失败",

@@ -6,6 +6,7 @@ export type SiteSettings = {
   ws_origin_check_enabled: boolean;
   ws_allowed_origins: string[];
   ssrf_protection: boolean;
+  trust_proxy_headers: boolean;
   show_partial_ip: boolean;
   agent_connect_address: string;
   auto_discovery_key: string;

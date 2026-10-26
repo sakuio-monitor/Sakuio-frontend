@@ -381,7 +381,9 @@
       "retention30": "30 days",
       "retention180": "180 days",
       "retention365": "365 days",
-      "retentionForever": "Keep forever"
+      "retentionForever": "Keep forever",
+      "trustProxyHeaders": "Trust reverse proxy / CDN headers",
+      "trustProxyHeadersHint": "Read the client IP from X-Forwarded-For, X-Real-IP, CF-Connecting-IP, EO-Connecting-IP and similar headers. Keep this off when the origin can be reached directly; otherwise clients can spoof their IP."
     },
     "database": {
       "loadFailed": "Failed to load database info",
