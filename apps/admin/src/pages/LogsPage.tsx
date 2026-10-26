@@ -203,6 +203,7 @@ export default function LogsPage() {
         key: "target",
         title: t("admin.logs.target"),
         width: 280,
+        fixedWidth: true,
         render: (row) => (
           <code className="audit-target" title={row.path}>
             {row.target}
@@ -212,6 +213,8 @@ export default function LogsPage() {
       {
         key: "detail",
         title: t("admin.logs.detail"),
+        width: 420,
+        fixedWidth: true,
         render: (row) => (
           <span className="audit-detail" title={row.detail}>
             {row.detail || "-"}
@@ -245,6 +248,8 @@ export default function LogsPage() {
       {
         key: "actions",
         title: t("common.action"),
+        width: 64,
+        fixedWidth: true,
         render: (row) => (
           <div className="data-table-actions data-table-actions--icons">
             <CellTooltip tip={t("admin.logs.viewDetail")}>

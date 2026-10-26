@@ -172,8 +172,12 @@
 /* Let the final column reach the container edge instead of leaving blank
    space after the fixed-width columns. */
 .data-table.data-table--entity-list.data-table--audit-logs {
-  table-layout: auto;
+  table-layout: fixed;
   width: 100%;
+}
+
+.audit-detail {
+  max-width: 100%;
 }
 
 .audit-ip-geo {
