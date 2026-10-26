@@ -971,7 +971,7 @@
       "warningTitle": "Usage warning",
       "warning": "Do not install Sakuio Agent on machines you do not own or have explicit written authorization to manage. Unauthorized installation, operation or control of an Agent may violate computer security, privacy and data protection laws. The operator bears all legal responsibility, administrative penalties, civil damages and third-party claims; the Sakuio repository maintainers and all contributors accept no liability.",
       "sections": {
-        "rust": "Rust / Server",
+        "rust": "Server / Rust",
         "rustDesc": "Main Rust components used by Sakuio Server, Agent and shared protocol crates.",
         "react": "Admin / React",
         "reactDesc": "React and frontend tooling used by Sakuio Admin.",

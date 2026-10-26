@@ -15,17 +15,22 @@ const LICENSE_SECTIONS: LicenseSection[] = [
     descriptionKey: "admin.about.sections.rustDesc",
     groups: [
       {
-        license: "MIT / Apache-2.0",
+        license: "MIT OR Apache-2.0",
         packages: [
-          "axum", "tokio", "sqlx", "serde", "serde_json", "reqwest",
-          "tower", "tower-http", "tracing", "tracing-subscriber",
-          "sea-query", "uuid", "chrono", "thiserror", "anyhow",
-          "futures-util", "bytes", "rand", "hex", "sha2", "zip",
-          "url", "mime_guess",
+          "sqlx", "serde", "serde_json", "reqwest", "sea-query", "uuid",
+          "chrono", "thiserror", "anyhow", "futures-util", "rand",
+          "hex", "sha2", "url", "serde_yaml",
         ],
       },
-      { license: "Apache-2.0", packages: ["rustls", "ring"] },
-      { license: "MIT / Apache-2.0", packages: ["cbor4ii", "serde_yaml"] },
+      {
+        license: "MIT",
+        packages: [
+          "axum", "tokio", "tower", "tower-http", "tracing",
+          "tracing-subscriber", "bytes", "zip", "mime_guess", "cbor4ii",
+        ],
+      },
+      { license: "Apache-2.0 OR ISC OR MIT", packages: ["rustls"] },
+      { license: "Apache-2.0 AND ISC", packages: ["ring"] },
     ],
   },
   {
@@ -38,11 +43,11 @@ const LICENSE_SECTIONS: LicenseSection[] = [
         packages: [
           "react", "react-dom", "react-router-dom", "i18next", "react-i18next",
           "@radix-ui/themes", "monaco-editor", "sonner", "clsx",
-          "tailwind-merge", "vite", "typescript",
+          "tailwind-merge", "vite", "@xterm/xterm",
         ],
       },
       { license: "ISC", packages: ["lucide-react"] },
-      { license: "MIT", packages: ["@xterm/xterm"] },
+      { license: "Apache-2.0", packages: ["typescript"] },
     ],
   },
   {
@@ -53,11 +58,11 @@ const LICENSE_SECTIONS: LicenseSection[] = [
       {
         license: "MIT",
         packages: [
-          "vue", "vue-router", "pinia", "naive-ui", "echarts",
-          "vue-echarts", "@vueuse/core", "unocss", "sass", "vite",
-          "typescript",
+          "vue", "vue-router", "pinia", "naive-ui", "vue-echarts",
+          "@vueuse/core", "unocss", "sass", "vite",
         ],
       },
+      { license: "Apache-2.0", packages: ["echarts", "typescript"] },
     ],
   },
 ];

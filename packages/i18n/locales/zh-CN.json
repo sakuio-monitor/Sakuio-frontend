@@ -972,7 +972,7 @@
       "warningTitle": "使用警告",
       "warning": "严禁将 Sakuio Agent 安装到非本人所有、或未取得明确书面授权的机器上。未经授权在他人设备上安装、运行或控制 Agent，可能违反计算机信息系统安全、隐私、数据保护等法律法规。由此产生的一切法律责任、行政处罚、民事赔偿及第三方索赔，均由实际操作者本人承担；Sakuio 仓库维护者及所有贡献者不承担任何责任。",
       "sections": {
-        "rust": "Rust / 服务端",
+        "rust": "服务端 / Rust",
         "rustDesc": "Sakuio Server、Agent 与共享协议库使用的主要 Rust 组件。",
         "react": "管理后台 / React",
         "reactDesc": "Sakuio Admin 使用的 React 与前端工具链。",
